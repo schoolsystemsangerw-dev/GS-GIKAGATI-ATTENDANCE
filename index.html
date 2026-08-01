@@ -3,120 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Head Teacher Master Control - GS Gikagati</title>
+    <title>Official Master Control | GS Gikagati</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 font-sans flex flex-col min-h-screen">
+<body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen selection:bg-blue-900 selection:text-white">
     <div class="flex-1 flex flex-col">
         
         <!-- Official Top Header & Moving Marquee -->
-        <header class="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white shadow-xl border-b-4 border-amber-500">
-            <!-- Moving Marquee -->
-            <div class="bg-amber-500 text-blue-950 font-bold text-sm py-2 overflow-hidden whitespace-nowrap shadow-inner">
-                <div class="inline-block animate-[marquee_20s_linear_infinite] tracking-wider">
-                    ✨ WELCOME TO GS GIKAGATI - Seek The Truth ✨ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ✨ WELCOME TO GS GIKAGATI - Seek The Truth ✨
+        <header class="bg-blue-950 text-white shadow-md border-b-2 border-amber-500">
+            <!-- Institutional Marquee Banner -->
+            <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden whitespace-nowrap uppercase shadow-inner">
+                <div class="inline-block animate-[marquee_25s_linear_infinite]">
+                    🏛️ GS GIKAGATI OFFICIAL ADMINISTRATIVE PORTAL &nbsp;&bull;&nbsp; SEEK THE TRUTH &nbsp;&bull;&nbsp; STAFF ATTENDANCE & SYSTEM CONTROL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🏛️ GS GIKAGATI OFFICIAL ADMINISTRATIVE PORTAL &nbsp;&bull;&nbsp; SEEK THE TRUTH &nbsp;&bull;&nbsp; STAFF ATTENDANCE & SYSTEM CONTROL
                 </div>
             </div>
 
             <!-- Main Header Content -->
-            <div class="max-w-7xl mx-auto px-8 py-6 flex flex-col lg:flex-row justify-between items-center gap-6">
-                <div class="flex items-center space-x-6">
-                    <div class="w-24 h-24 bg-white rounded-2xl p-2 shadow-lg border-4 border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
-                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-900 font-black text-sm\'>GSG</span>';">
+            <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col lg:flex-row justify-between items-center gap-6">
+                <div class="flex items-center space-x-5">
+                    <div class="w-20 h-20 bg-white rounded-xl p-1.5 shadow border-2 border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
+                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-950 font-black text-xs\'>GSG</span>';">
                     </div>
                     <div>
                         <div class="flex items-center space-x-3 mb-1">
-                            <h1 class="text-3xl lg:text-4xl font-black tracking-wide text-white drop-shadow-md">GS GIKAGATI</h1>
-                            <span class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">Public School</span>
+                            <h1 class="text-2xl lg:text-3xl font-black tracking-tight text-white">GS GIKAGATI</h1>
+                            <span class="bg-blue-900 border border-blue-700 text-amber-400 text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider">Official Portal</span>
                         </div>
-                        <p class="text-sm text-amber-300 font-semibold tracking-wide">Head Teacher Master Control Panel | Welcome, Ladislas</p>
+                        <p class="text-xs text-slate-300 font-medium">Head Teacher Master Control Panel &bull; Authorized User: <span class="text-amber-300 font-bold">Ladislas</span></p>
                     </div>
                 </div>
 
-                <!-- Static Address & Information Grid -->
-                <div class="bg-blue-900/80 border border-blue-700/60 rounded-2xl p-4 text-xs text-blue-100 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 shadow-inner">
-                    <div><span class="text-amber-400 font-bold">Province:</span> East</div>
-                    <div><span class="text-amber-400 font-bold">District:</span> Nyagatare</div>
-                    <div><span class="text-amber-400 font-bold">Sector:</span> Karama</div>
-                    <div><span class="text-amber-400 font-bold">Cell:</span> Gikagati</div>
-                    <div><span class="text-amber-400 font-bold">Village:</span> Rutegamawi</div>
-                    <div><span class="text-amber-400 font-bold">Phone:</span> 0788754668</div>
+                <!-- Administrative Location Info Card -->
+                <div class="bg-blue-900/60 border border-blue-800 rounded-xl p-3 text-[11px] text-slate-200 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1">
+                    <div><span class="text-amber-400 font-semibold">Province:</span> East</div>
+                    <div><span class="text-amber-400 font-semibold">District:</span> Nyagatare</div>
+                    <div><span class="text-amber-400 font-semibold">Sector:</span> Karama</div>
+                    <div><span class="text-amber-400 font-semibold">Cell:</span> Gikagati</div>
+                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamawi</div>
+                    <div><span class="text-amber-400 font-semibold">Phone:</span> 0788754668</div>
                 </div>
 
-                <!-- Logout Button -->
+                <!-- Secure Logout -->
                 <div>
-                    <a href="index.html" class="bg-red-600 hover:bg-red-700 text-white text-xs px-6 py-3 rounded-xl font-bold shadow-md transition duration-200 flex items-center space-x-1">
-                        <span>Logout</span>
+                    <a href="index.html" class="bg-red-700 hover:bg-red-800 text-white text-xs px-5 py-2.5 rounded-lg font-bold shadow transition duration-150 flex items-center space-x-1 border border-red-600">
+                        <span>Sign Out</span>
                     </a>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content Layout with Navigation Sidebar -->
+        <!-- Main Content Layout with Sidebar Navigation -->
         <div class="max-w-7xl w-full mx-auto p-6 flex flex-col md:flex-row gap-6 flex-1">
             
             <!-- Left Sidebar Navigation / View Controls -->
-            <aside class="w-full md:w-64 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col gap-3 shrink-0 h-fit">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">Dashboard Views</h3>
-                <button onclick="switchView('staff')" id="btnStaffView" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm bg-blue-900 text-white shadow transition flex items-center justify-between">
+            <aside class="w-full md:w-64 bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 flex flex-col gap-2.5 shrink-0 h-fit">
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 pt-1 mb-0.5">Control Views</h3>
+                
+                <button onclick="switchView('staff')" id="btnStaffView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-blue-950 text-white shadow-sm transition flex items-center justify-between group">
                     <span>Staff Overview</span>
-                    <span class="text-xs bg-blue-800 px-2 py-0.5 rounded-full" id="sidebarTotalCount">-</span>
+                    <span class="text-[10px] bg-blue-900 text-amber-300 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarTotalCount">-</span>
                 </button>
-                <button onclick="switchView('checkins')" id="btnCheckinsView" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <button onclick="switchView('checkins')" id="btnCheckinsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
                     <span>Check-In Logs</span>
-                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full" id="sidebarCheckinCount">-</span>
+                    <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckinCount">-</span>
                 </button>
-                <button onclick="switchView('checkouts')" id="btnCheckoutsView" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <button onclick="switchView('checkouts')" id="btnCheckoutsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
                     <span>Check-Out Logs</span>
-                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full" id="sidebarCheckoutCount">-</span>
+                    <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckoutCount">-</span>
                 </button>
 
-                <hr class="border-slate-100 my-2">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">Attendance Filters</h3>
-                <button onclick="switchView('ontime')" id="btnOnTimeView" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
-                    <span>On Time</span>
-                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full" id="sidebarOnTimeCount">-</span>
+                <div class="h-px bg-slate-200 my-2"></div>
+                
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Attendance Filters</h3>
+                
+                <button onclick="switchView('ontime')" id="btnOnTimeView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>On Time Today</span>
+                    </span>
+                    <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarOnTimeCount">-</span>
                 </button>
-                <button onclick="switchView('late')" id="btnLateView" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
-                    <span>Late Arrival</span>
-                    <span class="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full" id="sidebarLateCount">-</span>
+                <button onclick="switchView('late')" id="btnLateView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span>Late Arrivals Today</span>
+                    </span>
+                    <span class="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarLateCount">-</span>
                 </button>
             </aside>
 
             <!-- Main Display Area -->
-            <main class="flex-1">
-                <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-blue-900">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Staff Members</p>
-                        <h3 class="text-3xl font-black text-slate-800 mt-2" id="totalCount">-</h3>
+            <main class="flex-1 flex flex-col gap-6">
+                <!-- Statistics Summary Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-blue-950 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Staff Registered</p>
+                        <h3 class="text-3xl font-black text-slate-900 mt-2 font-mono" id="totalCount">-</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Present Today</p>
-                        <h3 class="text-3xl font-black text-emerald-600 mt-2" id="presentCount">-</h3>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-emerald-600 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Present Today</p>
+                        <h3 class="text-3xl font-black text-emerald-600 mt-2 font-mono" id="presentCount">-</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-rose-500">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Absent / Pending</p>
-                        <h3 class="text-3xl font-black text-rose-600 mt-2" id="absentCount">-</h3>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-rose-600 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Absent / Pending Today</p>
+                        <h3 class="text-3xl font-black text-rose-600 mt-2 font-mono" id="absentCount">-</h3>
                     </div>
                 </div>
 
-                <!-- Dynamic Data Table Section -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-hidden">
-                    <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                <!-- Dynamic Data Table Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-6 flex flex-col">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-slate-100 gap-4">
                         <div>
-                            <h3 class="text-lg font-bold text-slate-800" id="tableTitle">Master Staff Attendance Overview</h3>
-                            <p class="text-xs text-slate-500" id="tableSubtitle">Real-time database sync from Supabase staff records</p>
+                            <h3 class="text-base font-black text-slate-900 uppercase tracking-wide" id="tableTitle">Master Staff Attendance Overview</h3>
+                            <p class="text-xs text-slate-500 mt-0.5" id="tableSubtitle">Real-time database records synced directly from Supabase</p>
                         </div>
-                        <button onclick="loadDashboardData()" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-xl transition shadow">
-                            Refresh Dashboard
+                        <button onclick="loadDashboardData()" class="px-4 py-2 bg-slate-900 hover:bg-blue-950 text-white text-xs font-bold rounded-lg transition shadow-sm flex items-center space-x-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span>Refresh Records</span>
                         </button>
                     </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr id="tableHeaderRow" class="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50">
+                                <tr id="tableHeaderRow" class="border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/70">
                                     <th class="py-3 px-4">SDMS ID</th>
                                     <th class="py-3 px-4">Staff Name</th>
                                     <th class="py-3 px-4">Position</th>
@@ -124,9 +135,9 @@
                                     <th class="py-3 px-4">Today's Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="masterTableBody" class="text-sm text-slate-600 divide-y divide-slate-100">
+                            <tbody id="masterTableBody" class="text-xs text-slate-600 divide-y divide-slate-100">
                                 <tr>
-                                    <td colspan="5" class="py-6 text-center text-slate-400 font-medium">Loading database from Supabase...</td>
+                                    <td colspan="5" class="py-8 text-center text-slate-400 font-medium">Establishing connection to database...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -136,15 +147,15 @@
         </div>
     </div>
 
-    <!-- Professional Footer -->
-    <footer class="bg-slate-900 text-slate-400 text-xs py-6 px-6 text-center border-t border-slate-800 mt-auto">
+    <!-- Official Institutional Footer -->
+    <footer class="bg-slate-950 text-slate-400 text-xs py-6 px-6 text-center border-t border-slate-900 mt-auto">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p>&copy; 2026 GS Gikagati. All rights reserved. | Powered by Government of Rwanda.</p>
-            <p class="text-slate-300 font-medium">IT CREATOR AND DESIGNER: <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-amber-400 hover:underline">schoolsystems.ange.rw@gmail.com</a></p>
+            <p>&copy; 2026 GS Gikagati &bull; All Rights Reserved &bull; Government of Rwanda Public Institution.</p>
+            <p class="text-slate-300 font-medium">IT CREATOR & DESIGNER: <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-amber-400 hover:underline">schoolsystems.ange.rw@gmail.com</a></p>
         </div>
     </footer>
 
-    <!-- Marquee Animation Keyframes Styling -->
+    <!-- Marquee Keyframes -->
     <style>
         @keyframes marquee {
             0% { transform: translateX(100%); }
@@ -175,7 +186,7 @@
             const sidebarLate = document.getElementById('sidebarLateCount');
 
             try {
-                // 1. Fetch all staff members
+                // 1. Fetch staff members
                 const { data: staffData, error: staffError } = await supabaseClient
                     .from('staffs')
                     .select('*');
@@ -183,7 +194,7 @@
                 if (staffError) throw staffError;
                 cachedStaff = staffData || [];
 
-                // 2. Fetch all attendance records
+                // 2. Fetch attendances
                 const { data: attData, error: attError } = await supabaseClient
                     .from('attendances')
                     .select('*')
@@ -222,15 +233,12 @@
                 });
 
                 let presentCount = 0;
-                let absentCount = 0;
-
                 cachedStaff.forEach(staff => {
                     if (todayAttendanceMap[staff.sdms_id]) {
                         presentCount++;
-                    } else {
-                        absentCount++;
                     }
                 });
+                let absentCount = cachedStaff.length - presentCount;
 
                 // Update Metric Cards
                 totalCountElem.textContent = cachedStaff.length;
@@ -247,7 +255,7 @@
                 renderView();
 
             } catch (err) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500 font-medium">Error loading data: ${err.message}</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-rose-600 font-medium">Database Connection Error: ${err.message}</td></tr>`;
                 console.error("Dashboard Sync Error:", err);
             }
         }
@@ -260,8 +268,8 @@
                 const btn = document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}View`);
                 if (btn) {
                     btn.className = viewName === v 
-                        ? 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm bg-blue-900 text-white shadow transition flex items-center justify-between'
-                        : 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between';
+                        ? 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-blue-950 text-white shadow-sm transition flex items-center justify-between group'
+                        : 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group';
                 }
             });
 
@@ -283,7 +291,7 @@
 
             if (currentView === 'staff') {
                 titleElem.textContent = "Master Staff Attendance Overview";
-                subtitleElem.textContent = "Real-time database sync from Supabase staff records";
+                subtitleElem.textContent = "Real-time institutional roster status synced from Supabase";
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
@@ -293,7 +301,7 @@
                 `;
 
                 if (cachedStaff.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No staff members found.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
                     return;
                 }
 
@@ -309,32 +317,32 @@
                     const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                     const record = todayMap[staff.sdms_id];
                     
-                    let badge = '<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold uppercase">Pending</span>';
+                    let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
                     
                     if (record) {
                         if (record.status === 'check-out') {
-                            badge = '<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">Checked Out</span>';
+                            badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>';
                         } else if (record.status === 'check-in' && record.created_at) {
                             const checkInDate = new Date(record.created_at);
                             const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
                             const cutoffMinutes = 7 * 60 + 30; // 7:30 AM limit
 
                             if (totalMinutes > cutoffMinutes) {
-                                badge = `<span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold uppercase">Late (${checkInDate.toLocaleTimeString()})</span>`;
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
                             } else {
-                                badge = `<span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">On Time (${checkInDate.toLocaleTimeString()})</span>`;
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
                             }
                         }
                     }
 
                     const row = document.createElement('tr');
-                    row.className = 'hover:bg-slate-50 transition duration-150';
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
-                        <td class="py-3.5 px-4 font-semibold text-slate-800">${staff.sdms_id || '-'}</td>
-                        <td class="py-3.5 px-4 font-medium text-slate-900">${fullName}</td>
-                        <td class="py-3.5 px-4 text-slate-600">${staff.position_name || '-'}</td>
-                        <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold">${staff.system_role || '-'}</span></td>
-                        <td class="py-3.5 px-4">${badge}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
+                        <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium border border-slate-200">${staff.system_role || '-'}</span></td>
+                        <td class="py-3 px-4">${badge}</td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -342,13 +350,13 @@
             } else if (currentView === 'checkins' || currentView === 'ontime' || currentView === 'late') {
                 if (currentView === 'checkins') {
                     titleElem.textContent = "All Check-In Logs";
-                    subtitleElem.textContent = "Complete history of staff check-in submissions";
+                    subtitleElem.textContent = "Complete chronological history of staff check-in submissions";
                 } else if (currentView === 'ontime') {
                     titleElem.textContent = "On-Time Staff Arrivals Today";
-                    subtitleElem.textContent = "Staff members who checked in on or before 7:30 AM today";
+                    subtitleElem.textContent = "Staff members who completed check-in on or before 7:30 AM";
                 } else if (currentView === 'late') {
                     titleElem.textContent = "Late Staff Arrivals Today";
-                    subtitleElem.textContent = "Staff members who checked in after 7:30 AM today";
+                    subtitleElem.textContent = "Staff members who completed check-in after 7:30 AM";
                 }
 
                 headerRow.innerHTML = `
@@ -376,39 +384,39 @@
                 }
 
                 if (logs.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No records found for this filter.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-in entries found matching this criterion.</td></tr>`;
                     return;
                 }
 
                 tableBody.innerHTML = '';
                 logs.forEach(record => {
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
-                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString() : '-';
+                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
                     
-                    let statusBadge = '<span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">On Time</span>';
+                    let statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time</span>';
                     if (record.created_at) {
                         const checkInDate = new Date(record.created_at);
                         const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
                         if (totalMinutes > (7 * 60 + 30)) {
-                            statusBadge = '<span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold uppercase">Late</span>';
+                            statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late</span>';
                         }
                     }
 
                     const row = document.createElement('tr');
-                    row.className = 'hover:bg-slate-50 transition duration-150';
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
-                        <td class="py-3.5 px-4 font-semibold text-slate-800">${record.sdms_id || '-'}</td>
-                        <td class="py-3.5 px-4 font-medium text-slate-900">${name}</td>
-                        <td class="py-3.5 px-4">${statusBadge}</td>
-                        <td class="py-3.5 px-4 text-slate-600">${record.date || '-'}</td>
-                        <td class="py-3.5 px-4 text-slate-600">${timeFormatted}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
                     `;
                     tableBody.appendChild(row);
                 });
 
             } else if (currentView === 'checkouts') {
                 titleElem.textContent = "All Check-Out Logs";
-                subtitleElem.textContent = "Complete history of staff check-out submissions";
+                subtitleElem.textContent = "Complete chronological history of staff check-out submissions";
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
@@ -419,29 +427,29 @@
 
                 const checkoutLogs = cachedAttendances.filter(r => r.status === 'check-out');
                 if (checkoutLogs.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No check-out logs found.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-out records found.</td></tr>`;
                     return;
                 }
 
                 tableBody.innerHTML = '';
                 checkoutLogs.forEach(record => {
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
-                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString() : '-';
+                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
                     const row = document.createElement('tr');
-                    row.className = 'hover:bg-slate-50 transition duration-150';
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
-                        <td class="py-3.5 px-4 font-semibold text-slate-800">${record.sdms_id || '-'}</td>
-                        <td class="py-3.5 px-4 font-medium text-slate-900">${name}</td>
-                        <td class="py-3.5 px-4"><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">${record.status}</span></td>
-                        <td class="py-3.5 px-4 text-slate-600">${record.date || '-'}</td>
-                        <td class="py-3.5 px-4 text-slate-600">${timeFormatted}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4"><span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out</span></td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
                     `;
                     tableBody.appendChild(row);
                 });
             }
         }
 
-        // Run when page loads
+        // Initialize dashboard sync on load
         loadDashboardData();
     </script>
 </body>
