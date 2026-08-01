@@ -10,37 +10,42 @@
 <body class="bg-slate-50 font-sans">
     <div class="min-h-screen flex flex-col">
         
-        <!-- Official Top Header & Marquee Banner -->
+        <!-- Official Top Header & Moving Marquee -->
         <header class="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white shadow-lg border-b-4 border-amber-500">
-            <!-- Scrolling Marquee Banner -->
+            <!-- Moving Marquee (Only Motto/Welcome message) -->
             <div class="bg-amber-500 text-blue-950 font-bold text-xs py-1.5 overflow-hidden whitespace-nowrap shadow-inner">
-                <div class="inline-block animate-[marquee_25s_linear_infinite] tracking-wider">
-                    ✨ WELCOME TO GS GIKAGATI - SEEK THE TRUTH ✨ &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 📍 Province: East, District: Nyagatare, Sector: Karama, Cell: Gikagati, Village: Rutegamawi &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 📞 Phone: 0788754668 ✨
+                <div class="inline-block animate-[marquee_20s_linear_infinite] tracking-wider">
+                    ✨ WELCOME TO GS GIKAGATI - Seek The Truth ✨ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ✨ WELCOME TO GS GIKAGATI - Seek The Truth ✨
                 </div>
             </div>
 
             <!-- Main Header Content -->
-            <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
                 <div class="flex items-center space-x-4">
-                    <!-- Logo with Fallback Handle -->
                     <div class="w-14 h-14 bg-white rounded-full p-1 shadow-md border-2 border-amber-400 flex items-center justify-center overflow-hidden">
                         <img src="../gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-900 font-extrabold text-xs\'>GSG</span>';">
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
                             <h1 class="text-2xl font-black tracking-wide text-white">GS GIKAGATI</h1>
-                            <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Public School</span>
+                            <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Public</span>
                         </div>
                         <p class="text-xs text-amber-300 font-medium tracking-wide">Head Teacher Master Control Panel | Welcome, Ladislas</p>
                     </div>
                 </div>
 
-                <!-- School Info Badges & Logout -->
-                <div class="flex items-center space-x-4">
-                    <div class="hidden lg:block text-right text-xs text-slate-300 border-r border-blue-800 pr-4">
-                        <p><strong class="text-white">Category:</strong> 9-12YBE School</p>
-                        <p><strong class="text-white">Owner:</strong> Government of Rwanda</p>
-                    </div>
+                <!-- Static Address & Information Grid -->
+                <div class="bg-blue-900/60 border border-blue-800 rounded-xl p-3 text-xs text-blue-100 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1">
+                    <div><span class="text-amber-400 font-semibold">Province:</span> East</div>
+                    <div><span class="text-amber-400 font-semibold">District:</span> Nyagatare</div>
+                    <div><span class="text-amber-400 font-semibold">Sector:</span> Karama</div>
+                    <div><span class="text-amber-400 font-semibold">Cell:</span> Gikagati</div>
+                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamawi</div>
+                    <div><span class="text-amber-400 font-semibold">Phone:</span> 0788754668</div>
+                </div>
+
+                <!-- Logout Button -->
+                <div>
                     <a href="../index.html" class="bg-red-600 hover:bg-red-700 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md transition duration-200 flex items-center space-x-1">
                         <span>Logout</span>
                     </a>
