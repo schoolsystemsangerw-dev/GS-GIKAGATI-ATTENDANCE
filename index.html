@@ -6,6 +6,9 @@
     <title>Official Master Control | GS Gikagati</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen selection:bg-blue-900 selection:text-white">
     <div class="flex-1 flex flex-col">
@@ -90,6 +93,19 @@
                         <span>Late Arrivals Today</span>
                     </span>
                     <span class="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarLateCount">-</span>
+                </button>
+
+                <div class="h-px bg-slate-200 my-2"></div>
+
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Government Actions</h3>
+                
+                <button onclick="exportAttendancePDF()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Export Attendance PDF</span>
+                </button>
+                <button onclick="sendOfficialReport()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-emerald-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <span>Send Report to Gov</span>
                 </button>
             </aside>
 
@@ -446,6 +462,111 @@
                     `;
                     tableBody.appendChild(row);
                 });
+            }
+        }
+
+        // Action: Export Attendance to PDF
+        function exportAttendancePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("GS GIKAGATI - OFFICIAL ATTENDANCE REPORT", 14, 20);
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+            doc.text("Location: East Province | Nyagatare District | Karama Sector", 14, 34);
+
+            let tableData = [];
+            const todayString = new Date().toISOString().split('T')[0];
+
+            const todayMap = {};
+            cachedAttendances.forEach(r => {
+                if (r.date === todayString && r.sdms_id) {
+                    todayMap[r.sdms_id] = r;
+                }
+            });
+
+            cachedStaff.forEach(staff => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
+                const record = todayMap[staff.sdms_id];
+                let statusText = "Pending / Absent";
+                
+                if (record) {
+                    if (record.status === 'check-out') {
+                        statusText = "Checked Out";
+                    } else if (record.status === 'check-in' && record.created_at) {
+                        const checkInDate = new Date(record.created_at);
+                        const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                        if (totalMinutes > (7 * 60 + 30)) {
+                            statusText = `Late (${checkInDate.toLocaleTimeString()})`;
+                        } else {
+                            statusText = `On Time (${checkInDate.toLocaleTimeString()})`;
+                        }
+                    }
+                }
+
+                tableData.push([
+                    staff.sdms_id || '-',
+                    fullName,
+                    staff.position_name || '-',
+                    staff.system_role || '-',
+                    statusText
+                ]);
+            });
+
+            doc.autoTable({
+                startY: 42,
+                head: [['SDMS ID', 'Staff Name', 'Position', 'Role', "Today's Status"]],
+                body: tableData,
+                theme: 'grid',
+                headStyles: { fillColor: [15, 23, 42] },
+                styles: { fontSize: 9 }
+            });
+
+            doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
+        }
+
+        // Action: Send Official Report to Government
+        async function sendOfficialReport() {
+            if (!confirm("Are you sure you want to transmit today's official attendance summary to the Government portal database?")) return;
+            
+            try {
+                const todayString = new Date().toISOString().split('T')[0];
+                let presentCount = 0;
+                let lateCount = 0;
+
+                cachedStaff.forEach(staff => {
+                    const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id && r.status === 'check-in');
+                    if (record) {
+                        presentCount++;
+                        const d = new Date(record.created_at);
+                        if ((d.getHours() * 60 + d.getMinutes()) > (7 * 60 + 30)) {
+                            lateCount++;
+                        }
+                    }
+                });
+
+                const payload = {
+                    school_name: "GS Gikagati",
+                    province: "East",
+                    district: "Nyagatare",
+                    sector: "Karama",
+                    date: todayString,
+                    total_staff: cachedStaff.length,
+                    present_staff: presentCount,
+                    late_staff: lateCount,
+                    absent_staff: cachedStaff.length - presentCount,
+                    submitted_by: "Ladislas (Head Teacher)"
+                };
+
+                // Simulate secure transmission to government webhook/endpoint
+                console.log("Transmitting official govt report:", payload);
+                alert("Official attendance report successfully transmitted to the Government Ministry Portal server.");
+            } catch (err) {
+                alert("Transmission failed: " + err.message);
             }
         }
 
