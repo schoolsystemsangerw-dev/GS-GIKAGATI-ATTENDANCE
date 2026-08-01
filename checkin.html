@@ -79,7 +79,6 @@
 
     <!-- Script Logic -->
     <script>
-        // Supabase Initialization
         const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
         
@@ -97,7 +96,6 @@
         const submitBtn = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMsg');
 
-        // Toggle Action Type
         btnCheckIn.addEventListener('click', () => {
             actionType = 'Check In';
             btnCheckIn.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-emerald-500 bg-emerald-500/20 text-emerald-400 transition';
@@ -110,10 +108,13 @@
             btnCheckIn.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-slate-600 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 transition';
         });
 
-        // Load Staff Records into Dropdown
+        // Load Staff Records using exact database column names
         async function loadStaff() {
             try {
-                const { data, error } = await supabaseClient.from('staffs').select('name, sdms_id');
+                const { data, error } = await supabaseClient
+                    .from('staffs')
+                    .select('sdms_id, first_name, last_name');
+                
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
@@ -125,22 +126,22 @@
                 data.forEach(staff => {
                     const option = document.createElement('option');
                     option.value = staff.sdms_id;
-                    option.textContent = staff.name;
+                    // Combines first and last name for the dropdown display
+                    option.textContent = `${staff.first_name || ''} ${staff.last_name || ''}`.trim();
                     staffSelect.appendChild(option);
                 });
             } catch (err) {
                 staffSelect.innerHTML = '<option value="">-- Error Loading Staff --</option>';
-                console.error("Supabase Error:", err);
+                console.error("Supabase Error Details:", err);
             }
         }
 
-        // Initialize Camera Stream
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 videoElement.srcObject = stream;
             } catch (err) {
-                console.error("Camera access denied or unavailable:", err);
+                console.error("Camera access denied:", err);
                 statusMsg.textContent = "Warning: Camera access is required for verification.";
                 statusMsg.className = "mt-4 text-center text-xs font-semibold text-amber-400";
             }
@@ -149,7 +150,6 @@
         loadStaff();
         initCamera();
 
-        // Submit Attendance Record & Validate Password
         submitBtn.addEventListener('click', async () => {
             const selectedSdms = staffSelect.value;
             const passwordInput = sdmsPassword.value.trim();
