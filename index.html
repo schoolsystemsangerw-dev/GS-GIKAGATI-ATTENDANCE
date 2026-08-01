@@ -188,7 +188,7 @@
                 cachedAttendances.forEach(record => {
                     const recordDate = record.date || '';
                     if (recordDate === todayString && record.sdms_id) {
-                        todayAttendanceMap[record.sdms_id] = record.status;
+                        todayAttendanceMap[record.sdms_id] = record;
                     }
                     if (record.status === 'check-in') {
                         checkinCountToday++;
@@ -275,19 +275,32 @@
                 const todayMap = {};
                 cachedAttendances.forEach(r => {
                     if (r.date === todayString && r.sdms_id) {
-                        todayMap[r.sdms_id] = r.status;
+                        todayMap[r.sdms_id] = r;
                     }
                 });
 
                 tableBody.innerHTML = '';
                 cachedStaff.forEach(staff => {
                     const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
-                    const status = todayMap[staff.sdms_id];
-                    let badge = status === 'check-in' 
-                        ? '<span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">Checked In</span>'
-                        : (status === 'check-out' 
-                            ? '<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">Checked Out</span>'
-                            : '<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold uppercase">Pending</span>');
+                    const record = todayMap[staff.sdms_id];
+                    
+                    let badge = '<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold uppercase">Pending</span>';
+                    
+                    if (record) {
+                        if (record.status === 'check-out') {
+                            badge = '<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">Checked Out</span>';
+                        } else if (record.status === 'check-in' && record.created_at) {
+                            const checkInDate = new Date(record.created_at);
+                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                            const cutoffMinutes = 7 * 60 + 30; // 7:30 AM limit
+
+                            if (totalMinutes > cutoffMinutes) {
+                                badge = `<span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold uppercase">Late (${checkInDate.toLocaleTimeString()})</span>`;
+                            } else {
+                                badge = `<span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">On Time (${checkInDate.toLocaleTimeString()})</span>`;
+                            }
+                        }
+                    }
 
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50 transition duration-150';
@@ -307,7 +320,7 @@
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
-                    <th class="py-3 px-4">Status Action</th>
+                    <th class="py-3 px-4">Arrival Status</th>
                     <th class="py-3 px-4">Date</th>
                     <th class="py-3 px-4">Exact Time</th>
                 `;
@@ -322,12 +335,22 @@
                 checkinLogs.forEach(record => {
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                     const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString() : '-';
+                    
+                    let statusBadge = '<span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">On Time</span>';
+                    if (record.created_at) {
+                        const checkInDate = new Date(record.created_at);
+                        const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                        if (totalMinutes > (7 * 60 + 30)) {
+                            statusBadge = '<span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold uppercase">Late</span>';
+                        }
+                    }
+
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50 transition duration-150';
                     row.innerHTML = `
                         <td class="py-3.5 px-4 font-semibold text-slate-800">${record.sdms_id || '-'}</td>
                         <td class="py-3.5 px-4 font-medium text-slate-900">${name}</td>
-                        <td class="py-3.5 px-4"><span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">${record.status}</span></td>
+                        <td class="py-3.5 px-4">${statusBadge}</td>
                         <td class="py-3.5 px-4 text-slate-600">${record.date || '-'}</td>
                         <td class="py-3.5 px-4 text-slate-600">${timeFormatted}</td>
                     `;
