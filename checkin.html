@@ -85,7 +85,7 @@
         const { createClient } = window.supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let actionType = 'Check In';
+        let actionType = 'check-in'; // Updated to standard format
 
         const btnCheckIn = document.getElementById('btnCheckIn');
         const btnCheckOut = document.getElementById('btnCheckOut');
@@ -97,18 +97,17 @@
         const statusMsg = document.getElementById('statusMsg');
 
         btnCheckIn.addEventListener('click', () => {
-            actionType = 'Check In';
+            actionType = 'check-in';
             btnCheckIn.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-emerald-500 bg-emerald-500/20 text-emerald-400 transition';
             btnCheckOut.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-slate-600 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition';
         });
 
         btnCheckOut.addEventListener('click', () => {
-            actionType = 'Check Out';
+            actionType = 'check-out';
             btnCheckOut.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-amber-500 bg-amber-500/20 text-amber-400 transition';
             btnCheckIn.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-slate-600 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 transition';
         });
 
-        // Load Staff Records using exact database column names
         async function loadStaff() {
             try {
                 const { data, error } = await supabaseClient
@@ -126,7 +125,6 @@
                 data.forEach(staff => {
                     const option = document.createElement('option');
                     option.value = staff.sdms_id;
-                    // Combines first and last name for the dropdown display
                     option.textContent = `${staff.first_name || ''} ${staff.last_name || ''}`.trim();
                     staffSelect.appendChild(option);
                 });
@@ -189,7 +187,7 @@
                 if (insertError) throw insertError;
 
                 statusMsg.className = 'mt-4 text-center text-xs font-semibold text-emerald-400';
-                statusMsg.textContent = `Success! Recorded ${actionType} at ${new Date().toLocaleTimeString()}.`;
+                statusMsg.textContent = `Success! Attendance recorded successfully.`;
 
                 setTimeout(() => { location.reload(); }, 3000);
 
