@@ -529,18 +529,16 @@
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
 
-        // Action: Send Official Report to Government with Email Prompt
+        // Action: Ask Government Email and Send Report
         async function sendOfficialReport() {
-            // Prompt user for the government destination email
-            const govEmail = prompt("Enter the official government destination email address (e.g., sector.karama@nyagatare.gov.rw):", "sector.karama@nyagatare.gov.rw");
+            const govEmail = prompt("Enter the official government destination email address where the attendance report should be sent:", "sector.karama@nyagatare.gov.rw");
             
-            if (!govEmail) {
-                return; // Cancelled if empty or canceled
+            if (govEmail === null) {
+                return; // User clicked Cancel
             }
 
-            // Basic email validation check
-            if (!govEmail.includes("@") || !govEmail.includes(".")) {
-                alert("Please enter a valid official email address.");
+            if (!govEmail.trim() || !govEmail.includes("@") || !govEmail.includes(".")) {
+                alert("Operation cancelled or invalid email format provided.");
                 return;
             }
 
@@ -571,12 +569,11 @@
                     late_staff: lateCount,
                     absent_staff: cachedStaff.length - presentCount,
                     submitted_by: "Ladislas (Head Teacher)",
-                    destination_email: govEmail
+                    destination_email: govEmail.trim()
                 };
 
-                // Simulate secure transmission to government email & endpoint
-                console.log("Transmitting official govt report to:", govEmail, payload);
-                alert(`Official attendance report successfully transmitted to government destination:\n${govEmail}`);
+                console.log("Transmitting official report to email:", payload);
+                alert(`Official attendance report successfully transmitted to:\n${govEmail.trim()}`);
             } catch (err) {
                 alert("Transmission failed: " + err.message);
             }
