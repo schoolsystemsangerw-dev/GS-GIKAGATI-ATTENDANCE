@@ -3,60 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Head Teacher Master Control - GS Gikagati</title>
+    <title>Login - GS Gikagati Attendance System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 font-sans">
-    <div class="min-h-screen flex flex-col">
-        <!-- Top Navigation -->
-        <header class="bg-blue-900 text-white shadow-md py-4 px-6 flex justify-between items-center">
+<body class="bg-slate-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-2xl shadow-md w-full max-w-md border border-slate-200">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+            <img src="gikagati.png" alt="GS Gikagati Logo" class="w-20 h-20 mx-auto mb-4 object-contain">
+            <h1 class="text-2xl font-bold text-slate-800">GS GIKAGATI</h1>
+            <p class="text-sm text-slate-500 mt-1">Teacher Attendance Management System</p>
+        </div>
+
+        <!-- Role Selection Form -->
+        <form id="loginForm" class="space-y-4">
             <div>
-                <h1 class="text-xl font-bold">GS GIKAGATI - Head Teacher Dashboard</h1>
-                <p class="text-xs text-blue-200">Master Control Panel | Welcome, Ladislas</p>
-            </div>
-            <a href="../index.html" class="bg-blue-800 hover:bg-blue-700 text-xs px-4 py-2 rounded-lg font-semibold transition">Logout</a>
-        </header>
-
-        <!-- Main Content Area -->
-        <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Total Staff Members</p>
-                    <h3 class="text-3xl font-extrabold text-slate-800 mt-2">59</h3>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Present Today</p>
-                    <h3 class="text-3xl font-extrabold text-green-600 mt-2" id="presentCount">-</h3>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Absent / Pending</p>
-                    <h3 class="text-3xl font-extrabold text-red-600 mt-2" id="absentCount">-</h3>
-                </div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Select Your Role / Portal</label>
+                <select id="roleSelect" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm">
+                    <option value="head-teacher">Head Teacher (Ladislas)</option>
+                    <option value="deputy">Deputy (Marie Therese / Jean Marie Vianne)</option>
+                    <option value="dos">Director of Studies (DOS)</option>
+                </select>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <h3 class="text-lg font-bold text-slate-800 mb-4">Master Staff Attendance Overview</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-200 text-xs text-slate-400 uppercase">
-                                <th class="py-3 px-4">SDMS ID</th>
-                                <th class="py-3 px-4">Staff Name</th>
-                                <th class="py-3 px-4">Position</th>
-                                <th class="py-3 px-4">Role</th>
-                                <th class="py-3 px-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="staffTableBody" class="text-sm text-slate-600">
-                            <tr>
-                                <td colspan="5" class="py-4 text-center text-slate-400">Loading staff database...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Access Code / PIN</label>
+                <input type="password" id="accessPin" placeholder="Enter security PIN" required class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm">
             </div>
-        </main>
+
+            <button type="submit" class="w-full bg-blue-900 text-white py-3 rounded-lg font-semibold hover:bg-blue-800 transition shadow-sm">
+                Access Dashboard
+            </button>
+        </form>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const role = document.getElementById('roleSelect').value;
+            
+            // Simple routing based on role selection
+            if (role === 'head-teacher') {
+                window.location.href = 'head-teacher/dashboard.html';
+            } else if (role === 'deputy') {
+                alert('Deputy dashboard coming up next!');
+            } else if (role === 'dos') {
+                alert('DOS dashboard coming up next!');
+            }
+        });
+    </script>
 </body>
 </html>
