@@ -72,9 +72,9 @@
         async function loadStaffAttendance() {
             const tableBody = document.getElementById('staffTableBody');
             
-            // Fetch staff from your Supabase 'staff' table
+            // Fetch staff from your Supabase 'staffs' table
             const { data, error } = await supabaseClient
-                .from('staff')
+                .from('staffs')
                 .select('*');
 
             if (error) {
