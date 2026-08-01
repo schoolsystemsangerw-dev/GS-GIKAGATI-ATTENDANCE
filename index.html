@@ -87,16 +87,17 @@
                 return;
             }
 
-            // Populate the table dynamically with your staff records
+            // Populate the table dynamically using correct column fields
             tableBody.innerHTML = '';
             data.forEach(staff => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                 const row = document.createElement('tr');
                 row.className = 'border-b border-slate-100 hover:bg-slate-50';
                 row.innerHTML = `
                     <td class="py-3 px-4 font-medium text-slate-800">${staff.sdms_id || '-'}</td>
-                    <td class="py-3 px-4">${staff.name || '-'}</td>
-                    <td class="py-3 px-4">${staff.position || '-'}</td>
-                    <td class="py-3 px-4">${staff.role || '-'}</td>
+                    <td class="py-3 px-4">${fullName}</td>
+                    <td class="py-3 px-4">${staff.position_name || '-'}</td>
+                    <td class="py-3 px-4">${staff.system_role || '-'}</td>
                     <td class="py-3 px-4"><span class="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">Pending</span></td>
                 `;
                 tableBody.appendChild(row);
