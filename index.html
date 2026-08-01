@@ -7,47 +7,47 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 font-sans">
-    <div class="min-h-screen flex flex-col">
+<body class="bg-slate-50 font-sans flex flex-col min-h-screen">
+    <div class="flex-1 flex flex-col">
         
         <!-- Official Top Header & Moving Marquee -->
-        <header class="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white shadow-lg border-b-4 border-amber-500">
-            <!-- Moving Marquee (Only Motto/Welcome message) -->
-            <div class="bg-amber-500 text-blue-950 font-bold text-xs py-1.5 overflow-hidden whitespace-nowrap shadow-inner">
+        <header class="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white shadow-xl border-b-4 border-amber-500">
+            <!-- Moving Marquee -->
+            <div class="bg-amber-500 text-blue-950 font-bold text-sm py-2 overflow-hidden whitespace-nowrap shadow-inner">
                 <div class="inline-block animate-[marquee_20s_linear_infinite] tracking-wider">
                     ✨ WELCOME TO GS GIKAGATI - Seek The Truth ✨ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ✨ WELCOME TO GS GIKAGATI - Seek The Truth ✨
                 </div>
             </div>
 
-            <!-- Main Header Content -->
-            <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
-                <div class="flex items-center space-x-4">
-                    <div class="w-14 h-14 bg-white rounded-full p-1 shadow-md border-2 border-amber-400 flex items-center justify-center overflow-hidden">
-                        <!-- Corrected image path pointing to gikagati.png in the same directory -->
-                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-900 font-extrabold text-xs\'>GSG</span>';">
+            <!-- Main Header Content (Enlarged Header and Logo) -->
+            <div class="max-w-7xl mx-auto px-8 py-6 flex flex-col lg:flex-row justify-between items-center gap-6">
+                <div class="flex items-center space-x-6">
+                    <!-- Very Big Logo -->
+                    <div class="w-24 h-24 bg-white rounded-2xl p-2 shadow-lg border-4 border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
+                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-900 font-black text-sm\'>GSG</span>';">
                     </div>
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <h1 class="text-2xl font-black tracking-wide text-white">GS GIKAGATI</h1>
-                            <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Public</span>
+                        <div class="flex items-center space-x-3 mb-1">
+                            <h1 class="text-3xl lg:text-4xl font-black tracking-wide text-white drop-shadow-md">GS GIKAGATI</h1>
+                            <span class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">Public School</span>
                         </div>
-                        <p class="text-xs text-amber-300 font-medium tracking-wide">Head Teacher Master Control Panel | Welcome, Ladislas</p>
+                        <p class="text-sm text-amber-300 font-semibold tracking-wide">Head Teacher Master Control Panel | Welcome, Ladislas</p>
                     </div>
                 </div>
 
                 <!-- Static Address & Information Grid -->
-                <div class="bg-blue-900/60 border border-blue-800 rounded-xl p-3 text-xs text-blue-100 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1">
-                    <div><span class="text-amber-400 font-semibold">Province:</span> East</div>
-                    <div><span class="text-amber-400 font-semibold">District:</span> Nyagatare</div>
-                    <div><span class="text-amber-400 font-semibold">Sector:</span> Karama</div>
-                    <div><span class="text-amber-400 font-semibold">Cell:</span> Gikagati</div>
-                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamawi</div>
-                    <div><span class="text-amber-400 font-semibold">Phone:</span> 0788754668</div>
+                <div class="bg-blue-900/80 border border-blue-700/60 rounded-2xl p-4 text-xs text-blue-100 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 shadow-inner">
+                    <div><span class="text-amber-400 font-bold">Province:</span> East</div>
+                    <div><span class="text-amber-400 font-bold">District:</span> Nyagatare</div>
+                    <div><span class="text-amber-400 font-bold">Sector:</span> Karama</div>
+                    <div><span class="text-amber-400 font-bold">Cell:</span> Gikagati</div>
+                    <div><span class="text-amber-400 font-bold">Village:</span> Rutegamawi</div>
+                    <div><span class="text-amber-400 font-bold">Phone:</span> 0788754668</div>
                 </div>
 
                 <!-- Logout Button -->
                 <div>
-                    <a href="index.html" class="bg-red-600 hover:bg-red-700 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md transition duration-200 flex items-center space-x-1">
+                    <a href="index.html" class="bg-red-600 hover:bg-red-700 text-white text-xs px-6 py-3 rounded-xl font-bold shadow-md transition duration-200 flex items-center space-x-1">
                         <span>Logout</span>
                     </a>
                 </div>
@@ -101,6 +101,14 @@
             </div>
         </main>
     </div>
+
+    <!-- Professional Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 px-6 text-center border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p>© 2026 GS Gikagati. All rights reserved. | Powered by Government of Rwanda.</p>
+            <p class="text-slate-300 font-medium">IT CREATOR AND DESIGNER: <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-amber-400 hover:underline">schoolsystems.ange.rw@gmail.com</a></p>
+        </div>
+    </footer>
 
     <!-- Marquee Animation Keyframes Styling -->
     <style>
