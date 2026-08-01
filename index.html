@@ -147,7 +147,7 @@
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentView = 'staff'; // 'staff', 'checkins', or 'checkouts'
+        let currentView = 'staff'; 
         let cachedStaff = [];
         let cachedAttendances = [];
 
@@ -181,19 +181,18 @@
 
                 const todayString = new Date().toISOString().split('T')[0];
                 
-                // Build maps and counts for today
                 const todayAttendanceMap = {};
                 let checkinCountToday = 0;
                 let checkoutCountToday = 0;
 
                 cachedAttendances.forEach(record => {
-                    const recordDate = record.date || (record.created_at ? record.created_at.split('T')[0] : '');
+                    const recordDate = record.date || '';
                     if (recordDate === todayString && record.sdms_id) {
                         todayAttendanceMap[record.sdms_id] = record.status;
                     }
-                    if (record.status && record.status.toLowerCase().includes('in')) {
+                    if (record.status === 'check-in') {
                         checkinCountToday++;
-                    } else if (record.status && record.status.toLowerCase().includes('out')) {
+                    } else if (record.status === 'check-out') {
                         checkoutCountToday++;
                     }
                 });
@@ -216,10 +215,9 @@
 
                 // Update Sidebar Badges
                 sidebarTotal.textContent = cachedStaff.length;
-                sidebarCheckin.textContent = cachedAttendances.filter(r => r.status && r.status.toLowerCase().includes('in')).length;
-                sidebarCheckout.textContent = cachedAttendances.filter(r => r.status && r.status.toLowerCase().includes('out')).length;
+                sidebarCheckin.textContent = cachedAttendances.filter(r => r.status === 'check-in').length;
+                sidebarCheckout.textContent = cachedAttendances.filter(r => r.status === 'check-out').length;
 
-                // Render active view table
                 renderView();
 
             } catch (err) {
@@ -231,7 +229,6 @@
         function switchView(viewName) {
             currentView = viewName;
             
-            // Update button styles in sidebar
             document.getElementById('btnStaffView').className = viewName === 'staff' 
                 ? 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm bg-blue-900 text-white shadow transition flex items-center justify-between'
                 : 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between';
@@ -277,8 +274,7 @@
                 const todayString = new Date().toISOString().split('T')[0];
                 const todayMap = {};
                 cachedAttendances.forEach(r => {
-                    const rDate = r.date || (r.created_at ? r.created_at.split('T')[0] : '');
-                    if (rDate === todayString && r.sdms_id) {
+                    if (r.date === todayString && r.sdms_id) {
                         todayMap[r.sdms_id] = r.status;
                     }
                 });
@@ -287,9 +283,11 @@
                 cachedStaff.forEach(staff => {
                     const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                     const status = todayMap[staff.sdms_id];
-                    let badge = status 
-                        ? (status.toLowerCase().includes('in') ? '<span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">Checked In</span>' : '<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">Checked Out</span>')
-                        : '<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold uppercase">Pending</span>';
+                    let badge = status === 'check-in' 
+                        ? '<span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">Checked In</span>'
+                        : (status === 'check-out' 
+                            ? '<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">Checked Out</span>'
+                            : '<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold uppercase">Pending</span>');
 
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50 transition duration-150';
@@ -314,7 +312,7 @@
                     <th class="py-3 px-4">Exact Time</th>
                 `;
 
-                const checkinLogs = cachedAttendances.filter(r => r.status && r.status.toLowerCase().includes('in'));
+                const checkinLogs = cachedAttendances.filter(r => r.status === 'check-in');
                 if (checkinLogs.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No check-in logs found.</td></tr>`;
                     return;
@@ -347,7 +345,7 @@
                     <th class="py-3 px-4">Exact Time</th>
                 `;
 
-                const checkoutLogs = cachedAttendances.filter(r => r.status && r.status.toLowerCase().includes('out'));
+                const checkoutLogs = cachedAttendances.filter(r => r.status === 'check-out');
                 if (checkoutLogs.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No check-out logs found.</td></tr>`;
                     return;
