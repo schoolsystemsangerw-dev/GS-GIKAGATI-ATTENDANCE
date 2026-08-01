@@ -71,6 +71,17 @@
                     <span>Check-Out Logs</span>
                     <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full" id="sidebarCheckoutCount">-</span>
                 </button>
+
+                <hr class="border-slate-100 my-2">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">Attendance Filters</h3>
+                <button onclick="switchView('ontime')" id="btnOnTimeView" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                    <span>On Time</span>
+                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full" id="sidebarOnTimeCount">-</span>
+                </button>
+                <button onclick="switchView('late')" id="btnLateView" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                    <span>Late Arrival</span>
+                    <span class="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full" id="sidebarLateCount">-</span>
+                </button>
             </aside>
 
             <!-- Main Display Area -->
@@ -160,6 +171,8 @@
             const sidebarTotal = document.getElementById('sidebarTotalCount');
             const sidebarCheckin = document.getElementById('sidebarCheckinCount');
             const sidebarCheckout = document.getElementById('sidebarCheckoutCount');
+            const sidebarOnTime = document.getElementById('sidebarOnTimeCount');
+            const sidebarLate = document.getElementById('sidebarLateCount');
 
             try {
                 // 1. Fetch all staff members
@@ -184,6 +197,8 @@
                 const todayAttendanceMap = {};
                 let checkinCountToday = 0;
                 let checkoutCountToday = 0;
+                let onTimeCountToday = 0;
+                let lateCountToday = 0;
 
                 cachedAttendances.forEach(record => {
                     const recordDate = record.date || '';
@@ -192,6 +207,15 @@
                     }
                     if (record.status === 'check-in') {
                         checkinCountToday++;
+                        if (record.created_at) {
+                            const checkInDate = new Date(record.created_at);
+                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                            if (totalMinutes > (7 * 60 + 30)) {
+                                lateCountToday++;
+                            } else {
+                                onTimeCountToday++;
+                            }
+                        }
                     } else if (record.status === 'check-out') {
                         checkoutCountToday++;
                     }
@@ -217,6 +241,8 @@
                 sidebarTotal.textContent = cachedStaff.length;
                 sidebarCheckin.textContent = cachedAttendances.filter(r => r.status === 'check-in').length;
                 sidebarCheckout.textContent = cachedAttendances.filter(r => r.status === 'check-out').length;
+                sidebarOnTime.textContent = onTimeCountToday;
+                sidebarLate.textContent = lateCountToday;
 
                 renderView();
 
@@ -229,17 +255,15 @@
         function switchView(viewName) {
             currentView = viewName;
             
-            document.getElementById('btnStaffView').className = viewName === 'staff' 
-                ? 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm bg-blue-900 text-white shadow transition flex items-center justify-between'
-                : 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between';
-
-            document.getElementById('btnCheckinsView').className = viewName === 'checkins' 
-                ? 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm bg-blue-900 text-white shadow transition flex items-center justify-between'
-                : 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between';
-
-            document.getElementById('btnCheckoutsView').className = viewName === 'checkouts' 
-                ? 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm bg-blue-900 text-white shadow transition flex items-center justify-between'
-                : 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between';
+            const views = ['staff', 'checkins', 'checkouts', 'ontime', 'late'];
+            views.forEach(v => {
+                const btn = document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}View`);
+                if (btn) {
+                    btn.className = viewName === v 
+                        ? 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm bg-blue-900 text-white shadow transition flex items-center justify-between'
+                        : 'w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition flex items-center justify-between';
+                }
+            });
 
             renderView();
         }
@@ -254,6 +278,8 @@
             cachedStaff.forEach(s => {
                 staffLookup[s.sdms_id] = `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Unknown Staff';
             });
+
+            const todayString = new Date().toISOString().split('T')[0];
 
             if (currentView === 'staff') {
                 titleElem.textContent = "Master Staff Attendance Overview";
@@ -271,7 +297,6 @@
                     return;
                 }
 
-                const todayString = new Date().toISOString().split('T')[0];
                 const todayMap = {};
                 cachedAttendances.forEach(r => {
                     if (r.date === todayString && r.sdms_id) {
@@ -314,9 +339,18 @@
                     tableBody.appendChild(row);
                 });
 
-            } else if (currentView === 'checkins') {
-                titleElem.textContent = "All Check-In Logs";
-                subtitleElem.textContent = "Complete history of staff check-in submissions";
+            } else if (currentView === 'checkins' || currentView === 'ontime' || currentView === 'late') {
+                if (currentView === 'checkins') {
+                    titleElem.textContent = "All Check-In Logs";
+                    subtitleElem.textContent = "Complete history of staff check-in submissions";
+                } else if (currentView === 'ontime') {
+                    titleElem.textContent = "On-Time Staff Arrivals Today";
+                    subtitleElem.textContent = "Staff members who checked in on or before 7:30 AM today";
+                } else if (currentView === 'late') {
+                    titleElem.textContent = "Late Staff Arrivals Today";
+                    subtitleElem.textContent = "Staff members who checked in after 7:30 AM today";
+                }
+
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
@@ -325,14 +359,29 @@
                     <th class="py-3 px-4">Exact Time</th>
                 `;
 
-                const checkinLogs = cachedAttendances.filter(r => r.status === 'check-in');
-                if (checkinLogs.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No check-in logs found.</td></tr>`;
+                let logs = cachedAttendances.filter(r => r.status === 'check-in');
+                
+                if (currentView === 'ontime') {
+                    logs = logs.filter(r => {
+                        if (!r.created_at) return false;
+                        const d = new Date(r.created_at);
+                        return (d.getHours() * 60 + d.getMinutes()) <= (7 * 60 + 30);
+                    });
+                } else if (currentView === 'late') {
+                    logs = logs.filter(r => {
+                        if (!r.created_at) return false;
+                        const d = new Date(r.created_at);
+                        return (d.getHours() * 60 + d.getMinutes()) > (7 * 60 + 30);
+                    });
+                }
+
+                if (logs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No records found for this filter.</td></tr>`;
                     return;
                 }
 
                 tableBody.innerHTML = '';
-                checkinLogs.forEach(record => {
+                logs.forEach(record => {
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                     const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString() : '-';
                     
