@@ -19,10 +19,9 @@
                 </div>
             </div>
 
-            <!-- Main Header Content (Enlarged Header and Logo) -->
+            <!-- Main Header Content -->
             <div class="max-w-7xl mx-auto px-8 py-6 flex flex-col lg:flex-row justify-between items-center gap-6">
                 <div class="flex items-center space-x-6">
-                    <!-- Very Big Logo -->
                     <div class="w-24 h-24 bg-white rounded-2xl p-2 shadow-lg border-4 border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
                         <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-900 font-black text-sm\'>GSG</span>';">
                     </div>
@@ -60,7 +59,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-blue-900">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Staff Members</p>
-                    <h3 class="text-3xl font-black text-slate-800 mt-2">59</h3>
+                    <h3 class="text-3xl font-black text-slate-800 mt-2" id="totalCount">-</h3>
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Present Today</p>
@@ -79,6 +78,9 @@
                         <h3 class="text-lg font-bold text-slate-800">Master Staff Attendance Overview</h3>
                         <p class="text-xs text-slate-500">Real-time database sync from Supabase staff records</p>
                     </div>
+                    <button onclick="loadStaffAttendance()" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-xl transition shadow">
+                        Refresh Dashboard
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -88,7 +90,7 @@
                                 <th class="py-3 px-4">Staff Name</th>
                                 <th class="py-3 px-4">Position</th>
                                 <th class="py-3 px-4">Role</th>
-                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4">Today's Status</th>
                             </tr>
                         </thead>
                         <tbody id="staffTableBody" class="text-sm text-slate-600 divide-y divide-slate-100">
@@ -105,7 +107,7 @@
     <!-- Professional Footer -->
     <footer class="bg-slate-900 text-slate-400 text-xs py-6 px-6 text-center border-t border-slate-800 mt-auto">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p>© 2026 GS Gikagati. All rights reserved. | Powered by Government of Rwanda.</p>
+            <p>&copy; 2026 GS Gikagati. All rights reserved. | Powered by Government of Rwanda.</p>
             <p class="text-slate-300 font-medium">IT CREATOR AND DESIGNER: <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-amber-400 hover:underline">schoolsystems.ange.rw@gmail.com</a></p>
         </div>
     </footer>
@@ -119,7 +121,6 @@
     </style>
 
     <script>
-        // Supabase Connection using your project credentials
         const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
 
@@ -127,37 +128,87 @@
 
         async function loadStaffAttendance() {
             const tableBody = document.getElementById('staffTableBody');
-            
-            // Fetch staff from your Supabase 'staffs' table
-            const { data, error } = await supabaseClient
-                .from('staffs')
-                .select('*');
+            const totalCountElem = document.getElementById('totalCount');
+            const presentCountElem = document.getElementById('presentCount');
+            const absentCountElem = document.getElementById('absentCount');
 
-            if (error) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500 font-medium">Error loading staff: ${error.message}</td></tr>`;
-                return;
+            try {
+                // 1. Fetch all staff members
+                const { data: staffData, error: staffError } = await supabaseClient
+                    .from('staffs')
+                    .select('*');
+
+                if (staffError) throw staffError;
+
+                if (!staffData || staffData.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No staff members found in database.</td></tr>`;
+                    totalCountElem.textContent = '0';
+                    presentCountElem.textContent = '0';
+                    absentCountElem.textContent = '0';
+                    return;
+                }
+
+                // 2. Fetch today's attendance records
+                const todayDate = new Date().toISOString().split('T')[0];
+                const { data: attData, error: attError } = await supabaseClient
+                    .from('attendances')
+                    .select('*')
+                    .eq('date', todayDate);
+
+                if (attError) throw attError;
+
+                // Map attendances by sdms_id for fast lookup
+                const attendanceMap = {};
+                if (attData) {
+                    attData.forEach(record => {
+                        attendanceMap[record.sdms_id] = record.status; // e.g., 'check-in' or 'check-out'
+                    });
+                }
+
+                let presentCount = 0;
+                let absentCount = 0;
+
+                // 3. Populate table dynamically & compute counters
+                tableBody.innerHTML = '';
+                staffData.forEach(staff => {
+                    const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
+                    const sdmsId = staff.sdms_id;
+                    const status = attendanceMap[sdmsId];
+
+                    let statusBadge = '';
+                    if (status) {
+                        presentCount++;
+                        if (status.toLowerCase().includes('in')) {
+                            statusBadge = `<span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase">Checked In</span>`;
+                        } else {
+                            statusBadge = `<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">Checked Out</span>`;
+                        }
+                    } else {
+                        absentCount++;
+                        statusBadge = `<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold uppercase">Pending</span>`;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3.5 px-4 font-semibold text-slate-800">${sdmsId || '-'}</td>
+                        <td class="py-3.5 px-4 font-medium text-slate-900">${fullName}</td>
+                        <td class="py-3.5 px-4 text-slate-600">${staff.position_name || '-'}</td>
+                        <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold">${staff.system_role || '-'}</span></td>
+                        <td class="py-3.5 px-4">${statusBadge}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Update metric cards
+                totalCountElem.textContent = staffData.length;
+                presentCountElem.textContent = presentCount;
+                absentCountElem.textContent = absentCount;
+
+            } catch (err) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500 font-medium">Error loading data: ${err.message}</td></tr>`;
+                console.error("Dashboard Sync Error:", err);
             }
-
-            if (!data || data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No staff members found in database.</td></tr>`;
-                return;
-            }
-
-            // Populate the table dynamically using correct column fields
-            tableBody.innerHTML = '';
-            data.forEach(staff => {
-                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-slate-50 transition duration-150';
-                row.innerHTML = `
-                    <td class="py-3.5 px-4 font-semibold text-slate-800">${staff.sdms_id || '-'}</td>
-                    <td class="py-3.5 px-4 font-medium text-slate-900">${fullName}</td>
-                    <td class="py-3.5 px-4 text-slate-600">${staff.position_name || '-'}</td>
-                    <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold">${staff.system_role || '-'}</span></td>
-                    <td class="py-3.5 px-4"><span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">Pending</span></td>
-                `;
-                tableBody.appendChild(row);
-            });
         }
 
         // Run when page loads
