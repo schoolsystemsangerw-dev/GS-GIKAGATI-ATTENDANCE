@@ -7,43 +7,77 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 font-sans">
+<body class="bg-slate-50 font-sans">
     <div class="min-h-screen flex flex-col">
-        <!-- Top Navigation -->
-        <header class="bg-blue-900 text-white shadow-md py-4 px-6 flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <img src="../gikagati.png" alt="Logo" class="w-10 h-10 object-contain bg-white rounded-full p-1">
-                <div>
-                    <h1 class="text-xl font-bold">GS GIKAGATI - Head Teacher Dashboard</h1>
-                    <p class="text-xs text-blue-200">Master Control Panel | Welcome, Ladislas</p>
+        
+        <!-- Official Top Header & Marquee Banner -->
+        <header class="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white shadow-lg border-b-4 border-amber-500">
+            <!-- Scrolling Marquee Banner -->
+            <div class="bg-amber-500 text-blue-950 font-bold text-xs py-1.5 overflow-hidden whitespace-nowrap shadow-inner">
+                <div class="inline-block animate-[marquee_25s_linear_infinite] tracking-wider">
+                    ✨ WELCOME TO GS GIKAGATI - SEEK THE TRUTH ✨ &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 📍 Province: East, District: Nyagatare, Sector: Karama, Cell: Gikagati, Village: Rutegamawi &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 📞 Phone: 0788754668 ✨
                 </div>
             </div>
-            <a href="../index.html" class="bg-blue-800 hover:bg-blue-700 text-xs px-4 py-2 rounded-lg font-semibold transition">Logout</a>
+
+            <!-- Main Header Content -->
+            <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-4">
+                    <!-- Logo with Fallback Handle -->
+                    <div class="w-14 h-14 bg-white rounded-full p-1 shadow-md border-2 border-amber-400 flex items-center justify-center overflow-hidden">
+                        <img src="../gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-900 font-extrabold text-xs\'>GSG</span>';">
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-2xl font-black tracking-wide text-white">GS GIKAGATI</h1>
+                            <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Public School</span>
+                        </div>
+                        <p class="text-xs text-amber-300 font-medium tracking-wide">Head Teacher Master Control Panel | Welcome, Ladislas</p>
+                    </div>
+                </div>
+
+                <!-- School Info Badges & Logout -->
+                <div class="flex items-center space-x-4">
+                    <div class="hidden lg:block text-right text-xs text-slate-300 border-r border-blue-800 pr-4">
+                        <p><strong class="text-white">Category:</strong> 9-12YBE School</p>
+                        <p><strong class="text-white">Owner:</strong> Government of Rwanda</p>
+                    </div>
+                    <a href="../index.html" class="bg-red-600 hover:bg-red-700 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md transition duration-200 flex items-center space-x-1">
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
         </header>
 
         <!-- Main Content Area -->
         <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
+            <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Total Staff Members</p>
-                    <h3 class="text-3xl font-extrabold text-slate-800 mt-2">59</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-blue-900">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Staff Members</p>
+                    <h3 class="text-3xl font-black text-slate-800 mt-2">59</h3>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Present Today</p>
-                    <h3 class="text-3xl font-extrabold text-green-600 mt-2" id="presentCount">-</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Present Today</p>
+                    <h3 class="text-3xl font-black text-emerald-600 mt-2" id="presentCount">-</h3>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Absent / Pending</p>
-                    <h3 class="text-3xl font-extrabold text-red-600 mt-2" id="absentCount">-</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-rose-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Absent / Pending</p>
+                    <h3 class="text-3xl font-black text-rose-600 mt-2" id="absentCount">-</h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <h3 class="text-lg font-bold text-slate-800 mb-4">Master Staff Attendance Overview</h3>
+            <!-- Staff Attendance Table Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-hidden">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Master Staff Attendance Overview</h3>
+                        <p class="text-xs text-slate-500">Real-time database sync from Supabase staff records</p>
+                    </div>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-200 text-xs text-slate-400 uppercase">
+                            <tr class="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50">
                                 <th class="py-3 px-4">SDMS ID</th>
                                 <th class="py-3 px-4">Staff Name</th>
                                 <th class="py-3 px-4">Position</th>
@@ -51,9 +85,9 @@
                                 <th class="py-3 px-4">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="staffTableBody" class="text-sm text-slate-600">
+                        <tbody id="staffTableBody" class="text-sm text-slate-600 divide-y divide-slate-100">
                             <tr>
-                                <td colspan="5" class="py-4 text-center text-slate-400">Loading staff database from Supabase...</td>
+                                <td colspan="5" class="py-6 text-center text-slate-400 font-medium">Loading staff database from Supabase...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -61,6 +95,14 @@
             </div>
         </main>
     </div>
+
+    <!-- Marquee Animation Keyframes Styling -->
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
 
     <script>
         // Supabase Connection using your project credentials
@@ -78,12 +120,12 @@
                 .select('*');
 
             if (error) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-red-500">Error loading staff: ${error.message}</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500 font-medium">Error loading staff: ${error.message}</td></tr>`;
                 return;
             }
 
             if (!data || data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No staff members found in database.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No staff members found in database.</td></tr>`;
                 return;
             }
 
@@ -92,13 +134,13 @@
             data.forEach(staff => {
                 const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                 const row = document.createElement('tr');
-                row.className = 'border-b border-slate-100 hover:bg-slate-50';
+                row.className = 'hover:bg-slate-50 transition duration-150';
                 row.innerHTML = `
-                    <td class="py-3 px-4 font-medium text-slate-800">${staff.sdms_id || '-'}</td>
-                    <td class="py-3 px-4">${fullName}</td>
-                    <td class="py-3 px-4">${staff.position_name || '-'}</td>
-                    <td class="py-3 px-4">${staff.system_role || '-'}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">Pending</span></td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${staff.sdms_id || '-'}</td>
+                    <td class="py-3.5 px-4 font-medium text-slate-900">${fullName}</td>
+                    <td class="py-3.5 px-4 text-slate-600">${staff.position_name || '-'}</td>
+                    <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold">${staff.system_role || '-'}</span></td>
+                    <td class="py-3.5 px-4"><span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">Pending</span></td>
                 `;
                 tableBody.appendChild(row);
             });
