@@ -6,8 +6,6 @@
     <title>Staff Attendance Check-In | GS Gikagati</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -58,8 +56,6 @@
                 <div class="relative bg-slate-900 border border-slate-700 rounded-lg overflow-hidden flex flex-col items-center justify-center p-2">
                     <video id="videoElement" autoplay playsinline class="w-full h-48 object-cover rounded-lg bg-black"></video>
                     <canvas id="canvasElement" class="hidden"></canvas>
-                    <img id="photoPreview" class="hidden w-full h-48 object-cover rounded-lg" alt="Captured photo">
-                    <button type="button" id="retakeBtn" class="hidden mt-2 w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition">Retake Photo</button>
                 </div>
             </div>
 
@@ -79,12 +75,14 @@
         <p>&copy; 2026 GS Gikagati. All rights reserved. | Powered by Government of Rwanda</p>
     </footer>
 
-    <!-- Script Logic -->
-    <script>
-        // Supabase Initialization
+    <!-- Script Logic using ESM Supabase Client -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        // Supabase Initialization with your exact credentials
         const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let actionType = 'Check In';
 
@@ -110,7 +108,7 @@
             btnCheckIn.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-slate-600 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 transition';
         });
 
-        // Load Staff Records into Dropdown (Displaying only the name)
+        // Load Staff Records into Dropdown (Displaying names only, storing SDMS ID as value)
         async function loadStaff() {
             try {
                 const { data, error } = await supabaseClient.from('staffs').select('name, sdms_id');
@@ -119,7 +117,6 @@
                 staffSelect.innerHTML = '<option value="">-- Select Your Name --</option>';
                 data.forEach(staff => {
                     const option = document.createElement('option');
-                    // Store the sdms_id as the option value so we can match it securely on submit
                     option.value = staff.sdms_id;
                     option.textContent = staff.name;
                     staffSelect.appendChild(option);
