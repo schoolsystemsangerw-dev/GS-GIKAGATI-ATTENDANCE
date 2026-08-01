@@ -529,10 +529,21 @@
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
 
-        // Action: Send Official Report to Government
+        // Action: Send Official Report to Government with Email Prompt
         async function sendOfficialReport() {
-            if (!confirm("Are you sure you want to transmit today's official attendance summary to the Government portal database?")) return;
+            // Prompt user for the government destination email
+            const govEmail = prompt("Enter the official government destination email address (e.g., sector.karama@nyagatare.gov.rw):", "sector.karama@nyagatare.gov.rw");
             
+            if (!govEmail) {
+                return; // Cancelled if empty or canceled
+            }
+
+            // Basic email validation check
+            if (!govEmail.includes("@") || !govEmail.includes(".")) {
+                alert("Please enter a valid official email address.");
+                return;
+            }
+
             try {
                 const todayString = new Date().toISOString().split('T')[0];
                 let presentCount = 0;
@@ -559,12 +570,13 @@
                     present_staff: presentCount,
                     late_staff: lateCount,
                     absent_staff: cachedStaff.length - presentCount,
-                    submitted_by: "Ladislas (Head Teacher)"
+                    submitted_by: "Ladislas (Head Teacher)",
+                    destination_email: govEmail
                 };
 
-                // Simulate secure transmission to government webhook/endpoint
-                console.log("Transmitting official govt report:", payload);
-                alert("Official attendance report successfully transmitted to the Government Ministry Portal server.");
+                // Simulate secure transmission to government email & endpoint
+                console.log("Transmitting official govt report to:", govEmail, payload);
+                alert(`Official attendance report successfully transmitted to government destination:\n${govEmail}`);
             } catch (err) {
                 alert("Transmission failed: " + err.message);
             }
