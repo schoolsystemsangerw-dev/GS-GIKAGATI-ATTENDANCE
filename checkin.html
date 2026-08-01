@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Attendance Check-In - GS Gikagati</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 font-sans min-h-screen flex flex-col justify-between text-white">
+
+    <!-- Header -->
+    <header class="bg-blue-950 border-b-4 border-amber-500 py-4 px-6 text-center shadow-lg">
+        <h1 class="text-2xl font-black tracking-wide">GS GIKAGATI ATTENDANCE PORTAL</h1>
+        <p class="text-xs text-amber-300 font-semibold mt-1">Scan • Authenticate • Verify • Record</p>
+    </header>
+
+    <!-- Main Form Container -->
+    <main class="max-w-md w-full mx-auto p-6 my-auto">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+            <h2 class="text-lg font-bold text-amber-400 mb-4 text-center">Daily Staff Verification</h2>
+
+            <form id="checkInForm" class="space-y-4">
+                <!-- Action Type Selection -->
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Select Action</label>
+                    <select id="actionType" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-400">
+                        <option value="Check In">Check In (Morning Arrival)</option>
+                        <option value="Check Out">Check Out (Departure)</option>
+                    </select>
+                </div>
+
+                <!-- Select Staff Name -->
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Choose Your Name</label>
+                    <select id="staffSelect" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-400">
+                        <option value="">Loading staff list...</option>
+                    </select>
+                </div>
+
+                <!-- SDMS ID Password Entry -->
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Enter SDMS ID (Password)</label>
+                    <input type="password" id="sdmsPassword" required placeholder="Enter your SDMS ID" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-400">
+                </div>
+
+                <!-- Live Camera Photo Capture -->
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Live Photo Verification</label>
+                    <div class="relative bg-black rounded-xl overflow-hidden border-2 border-slate-700 aspect-video flex items-center justify-center">
+                        <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
+                        <canvas id="canvas" class="hidden"></canvas>
+                        <img id="capturedImage" class="hidden w-full h-full object-cover">
+                    </div>
+                    <button type="button" id="snapBtn" class="mt-2 w-full bg-slate-700 hover:bg-slate-600 text-xs font-bold py-2 rounded-xl transition">Capture Photo</button>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition duration-200 mt-2">
+                    Submit Attendance Record
+                </button>
+            </form>
+
+            <div id="statusMessage" class="mt-4 text-center text-xs font-semibold"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 text-center text-xs text-slate-500 border-t border-slate-800">
+        © 2026 GS Gikagati. All rights reserved. | Powered by Government of Rwanda. IT CREATOR AND DESIGNER; schoolsystems.ange.rw@gmail.com
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let capturedBlob = null;
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const capturedImage = document.getElementById('capturedImage');
+        const snapBtn = document.getElementById('snapBtn');
+
+        // Access Device Camera
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => { alert('Camera access is required for verification.'); });
+
+        // Capture snapshot from video stream
+        snapBtn.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                capturedBlob = blob;
+                capturedImage.src = URL.createObjectURL(blob);
+                capturedImage.classList.remove('hidden');
+                video.classList.add('hidden');
+                snapBtn.textContent = 'Retake Photo';
+            }, 'image/jpeg', 0.8);
+        });
+
+        // Load Staff Names into Dropdown from your 'staffs' table
+        async function loadStaffDropdown() {
+            const staffSelect = document.getElementById('staffSelect');
+            const { data, error } = await supabaseClient.from('staffs').select('sdms_id, first_name, last_name').order('first_name');
+            
+            if (error) {
+                staffSelect.innerHTML = '<option value="">Error loading staff</option>';
+                return;
+            }
+
+            staffSelect.innerHTML = '<option value="">-- Select Your Name --</option>';
+            data.forEach(staff => {
+                const opt = document.createElement('option');
+                opt.value = staff.sdms_id;
+                opt.textContent = `${staff.first_name || ''} ${staff.last_name || ''} (SDMS: ${staff.sdms_id})`;
+                staffSelect.appendChild(opt);
+            });
+        }
+        loadStaffDropdown();
+
+        // Handle Form Submission
+        document.getElementById('checkInForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const statusMsg = document.getElementById('statusMessage');
+            
+            const selectedSdms = document.getElementById('staffSelect').value;
+            const enteredPassword = document.getElementById('sdmsPassword').value.trim();
+            const actionType = document.getElementById('actionType').value;
+
+            if (!capturedBlob) {
+                alert('Please capture your verification photo before submitting.');
+                return;
+            }
+
+            // Verify if entered password matches the selected staff SDMS ID
+            if (selectedSdms !== enteredPassword) {
+                statusMsg.className = 'mt-4 text-center text-xs font-semibold text-rose-400';
+                statusMsg.textContent = 'Verification Failed: SDMS ID does not match selected name.';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing & Uploading...';
+
+            try {
+                // Insert attendance record directly into your 'attendances' table with current timestamp
+                const { error: insertError } = await supabaseClient
+                    .from('attendances')
+                    .insert([{
+                        sdms_id: selectedSdms,
+                        status: actionType, // Records 'Check In' or 'Check Out'
+                        created_at: new Date().toISOString()
+                    }]);
+
+                if (insertError) throw insertError;
+
+                statusMsg.className = 'mt-4 text-center text-xs font-semibold text-emerald-400';
+                statusMsg.textContent = `Success! Recorded ${actionType} at ${new Date().toLocaleTimeString()}.`;
+                
+                setTimeout(() => { location.reload(); }, 3000);
+
+            } catch (err) {
+                statusMsg.className = 'mt-4 text-center text-xs font-semibold text-rose-400';
+                statusMsg.textContent = `Error: ${err.message}`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Attendance Record';
+            }
+        });
+    </script>
+</body>
+</html>
