@@ -529,9 +529,9 @@
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
 
-        // Action: Transmit Report via Supabase Edge Function Backend
-        async function sendOfficialReport() {
-            const govEmail = prompt("Enter the official government destination email address where the attendance report should be sent:", "sector.karama@nyagatare.gov.rw");
+        // Action: Official Report Transmission via mailto (Integrated & Free Tier Optimized)
+        function sendOfficialReport() {
+            const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
             
             if (govEmail === null) {
                 return; // User clicked Cancel
@@ -542,52 +542,48 @@
                 return;
             }
 
-            try {
-                const todayString = new Date().toISOString().split('T')[0];
-                let presentCount = 0;
-                let lateCount = 0;
+            const todayString = new Date().toISOString().split('T')[0];
+            let presentCount = 0;
+            let lateCount = 0;
 
-                cachedStaff.forEach(staff => {
-                    const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id && r.status === 'check-in');
-                    if (record) {
-                        presentCount++;
-                        const d = new Date(record.created_at);
-                        if ((d.getHours() * 60 + d.getMinutes()) > (7 * 60 + 30)) {
-                            lateCount++;
-                        }
+            cachedStaff.forEach(staff => {
+                const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id && r.status === 'check-in');
+                if (record) {
+                    presentCount++;
+                    const checkInTime = new Date(record.created_at);
+                    if ((checkInTime.getHours() * 60 + checkInTime.getMinutes()) > (7 * 60 + 30)) {
+                        lateCount++;
                     }
-                });
+                }
+            });
 
-                const payload = {
-                    school_name: "GS Gikagati",
-                    province: "East",
-                    district: "Nyagatare",
-                    sector: "Karama",
-                    date: todayString,
-                    total_staff: cachedStaff.length,
-                    present_staff: presentCount,
-                    late_staff: lateCount,
-                    absent_staff: cachedStaff.length - presentCount,
-                    submitted_by: "Ladislas (Head Teacher)",
-                    destination_email: govEmail.trim()
-                };
+            const absentCount = cachedStaff.length - presentCount;
 
-                // Invoke Supabase Edge Function to securely process and send email from server
-                const { data, error } = await supabaseClient.functions.invoke('send-attendance-email', {
-                    body: payload
-                });
+            const subject = encodeURIComponent(`Official Daily Attendance Report - GS Gikagati (${todayString})`);
+            const body = encodeURIComponent(
+                `OFFICIAL DAILY ATTENDANCE REPORT\n` +
+                `----------------------------------------\n` +
+                `Institution: GS Gikagati\n` +
+                `Administrative Location: East Province | Nyagatare District | Karama Sector\n` +
+                `Date of Report: ${todayString}\n\n` +
+                `ATTENDANCE SUMMARY:\n` +
+                `- Total Registered Staff: ${cachedStaff.length}\n` +
+                `- Present On Time: ${presentCount - lateCount}\n` +
+                `- Late Arrivals (> 07:30 AM): ${lateCount}\n` +
+                `- Total Present: ${presentCount}\n` +
+                `- Absent / Pending: ${absentCount}\n\n` +
+                `----------------------------------------\n` +
+                `Submitted via GS Gikagati Master Control Portal\n` +
+                `Authorized by Head Teacher: Ladislas`
+            );
 
-                if (error) throw error;
-
-                alert(`Official attendance report successfully transmitted to:\n${govEmail.trim()}`);
-            } catch (err) {
-                alert("Transmission failed: " + err.message);
-                console.error("Email Transmission Error:", err);
-            }
+            window.location.href = `mailto:${govEmail.trim()}?subject=${subject}&body=${body}`;
         }
 
         // Initialize dashboard sync on load
-        loadDashboardData();
+        window.onload = function() {
+            loadDashboardData();
+        };
     </script>
 </body>
 </html>
