@@ -529,7 +529,7 @@
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
 
-        // Action: Ask Government Email and Send Report
+        // Action: Transmit Report via Supabase Edge Function Backend
         async function sendOfficialReport() {
             const govEmail = prompt("Enter the official government destination email address where the attendance report should be sent:", "sector.karama@nyagatare.gov.rw");
             
@@ -572,10 +572,17 @@
                     destination_email: govEmail.trim()
                 };
 
-                console.log("Transmitting official report to email:", payload);
+                // Invoke Supabase Edge Function to securely process and send email from server
+                const { data, error } = await supabaseClient.functions.invoke('send-attendance-email', {
+                    body: payload
+                });
+
+                if (error) throw error;
+
                 alert(`Official attendance report successfully transmitted to:\n${govEmail.trim()}`);
             } catch (err) {
                 alert("Transmission failed: " + err.message);
+                console.error("Email Transmission Error:", err);
             }
         }
 
