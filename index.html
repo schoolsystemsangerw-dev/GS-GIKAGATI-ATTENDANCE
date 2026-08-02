@@ -94,6 +94,13 @@
                     </span>
                     <span class="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarLateCount">-</span>
                 </button>
+                <button onclick="switchView('dailylogs')" id="btnDailylogsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span>daily logs by weekday</span>
+                    </span>
+                    <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarDailyLogsCount">-</span>
+                </button>
 
                 <div class="h-px bg-slate-200 my-2"></div>
 
@@ -200,6 +207,7 @@
             const sidebarCheckout = document.getElementById('sidebarCheckoutCount');
             const sidebarOnTime = document.getElementById('sidebarOnTimeCount');
             const sidebarLate = document.getElementById('sidebarLateCount');
+            const sidebarDailyLogs = document.getElementById('sidebarDailyLogsCount');
 
             try {
                 // 1. Fetch staff members
@@ -267,6 +275,7 @@
                 sidebarCheckout.textContent = cachedAttendances.filter(r => r.status === 'check-out').length;
                 sidebarOnTime.textContent = onTimeCountToday;
                 sidebarLate.textContent = lateCountToday;
+                sidebarDailyLogs.textContent = cachedAttendances.length;
 
                 renderView();
 
@@ -279,7 +288,7 @@
         function switchView(viewName) {
             currentView = viewName;
             
-            const views = ['staff', 'checkins', 'checkouts', 'ontime', 'late'];
+            const views = ['staff', 'checkins', 'checkouts', 'ontime', 'late', 'dailylogs'];
             views.forEach(v => {
                 const btn = document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}View`);
                 if (btn) {
@@ -459,6 +468,67 @@
                         <td class="py-3 px-4"><span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out</span></td>
                         <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
                         <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } else if (currentView === 'dailylogs') {
+                titleElem.textContent = "Daily Logs By Weekday";
+                subtitleElem.textContent = "Day-by-day breakdown of check-ins, check-outs, on time statuses, and late records";
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">Date / Weekday</th>
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Action Type</th>
+                    <th class="py-3 px-4">Status / Time</th>
+                `;
+
+                if (cachedAttendances.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No attendance logs available.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                cachedAttendances.forEach(record => {
+                    const name = staffLookup[record.sdms_id] || 'Unknown Staff';
+                    const recordDateStr = record.date || (record.created_at ? record.created_at.split('T')[0] : '');
+                    
+                    let weekdayName = '-';
+                    if (recordDateStr) {
+                        const dateObj = new Date(recordDateStr + 'T00:00:00');
+                        weekdayName = dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+                    }
+
+                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                    
+                    let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-700 border border-slate-200">-</span>';
+                    
+                    if (record.status === 'check-in') {
+                        if (record.created_at) {
+                            const checkInDate = new Date(record.created_at);
+                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                            if (totalMinutes > (7 * 60 + 30)) {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${timeFormatted})</span>`;
+                            } else {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${timeFormatted})</span>`;
+                            }
+                        } else {
+                            badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Check-In</span>`;
+                        }
+                    } else if (record.status === 'check-out') {
+                        badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out (${timeFormatted})</span>`;
+                    } else {
+                        badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">${record.status || 'Unknown'} (${timeFormatted})</span>`;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-semibold text-slate-900">${weekdayName}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4 uppercase text-[11px] font-bold text-slate-700">${record.status || '-'}</td>
+                        <td class="py-3 px-4">${badge}</td>
                     `;
                     tableBody.appendChild(row);
                 });
