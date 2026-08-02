@@ -529,7 +529,7 @@
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
 
-        // Action: Official Report Transmission via mailto (Integrated & Free Tier Optimized)
+        // Action: Official Report Transmission via Gmail Web Direct Compose (Reliable & Browser-Friendly)
         function sendOfficialReport() {
             const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
             
@@ -559,8 +559,8 @@
 
             const absentCount = cachedStaff.length - presentCount;
 
-            const subject = encodeURIComponent(`Official Daily Attendance Report - GS Gikagati (${todayString})`);
-            const body = encodeURIComponent(
+            const subject = `Official Daily Attendance Report - GS Gikagati (${todayString})`;
+            const body = 
                 `OFFICIAL DAILY ATTENDANCE REPORT\n` +
                 `----------------------------------------\n` +
                 `Institution: GS Gikagati\n` +
@@ -574,10 +574,11 @@
                 `- Absent / Pending: ${absentCount}\n\n` +
                 `----------------------------------------\n` +
                 `Submitted via GS Gikagati Master Control Portal\n` +
-                `Authorized by Head Teacher: Ladislas`
-            );
+                `Authorized by Head Teacher: Ladislas`;
 
-            window.location.href = `mailto:${govEmail.trim()}?subject=${subject}&body=${body}`;
+            // Opens Gmail web compose tab directly with prefilled parameters
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.open(gmailUrl, '_blank');
         }
 
         // Initialize dashboard sync on load
