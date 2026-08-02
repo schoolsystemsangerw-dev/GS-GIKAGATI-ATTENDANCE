@@ -474,12 +474,12 @@
 
             } else if (currentView === 'dailylogs') {
                 titleElem.textContent = "Daily Logs By Weekday";
-                subtitleElem.textContent = "Day-by-day breakdown of check-ins, check-outs, on time statuses, and late records";
+                subtitleElem.textContent = "Grouped day-by-day logs with clear visual separation between different days";
                 headerRow.innerHTML = `
-                    <th class="py-3 px-4">Date / Weekday</th>
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
                     <th class="py-3 px-4">Action Type</th>
+                    <th class="py-3 px-4">Date / Weekday</th>
                     <th class="py-3 px-4">Status / Time</th>
                 `;
 
@@ -489,48 +489,75 @@
                 }
 
                 tableBody.innerHTML = '';
+
+                // Group attendances by date string (e.g., '2026-06-05')
+                const groupedByDate = {};
                 cachedAttendances.forEach(record => {
-                    const name = staffLookup[record.sdms_id] || 'Unknown Staff';
-                    const recordDateStr = record.date || (record.created_at ? record.created_at.split('T')[0] : '');
-                    
-                    let weekdayName = '-';
-                    if (recordDateStr) {
-                        const dateObj = new Date(recordDateStr + 'T00:00:00');
-                        weekdayName = dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+                    const recordDateStr = record.date || (record.created_at ? record.created_at.split('T')[0] : 'Unknown Date');
+                    if (!groupedByDate[recordDateStr]) {
+                        groupedByDate[recordDateStr] = [];
                     }
+                    groupedByDate[recordDateStr].push(record);
+                });
 
-                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
-                    
-                    let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-700 border border-slate-200">-</span>';
-                    
-                    if (record.status === 'check-in') {
-                        if (record.created_at) {
-                            const checkInDate = new Date(record.created_at);
-                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
-                            if (totalMinutes > (7 * 60 + 30)) {
-                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${timeFormatted})</span>`;
-                            } else {
-                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${timeFormatted})</span>`;
-                            }
-                        } else {
-                            badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Check-In</span>`;
-                        }
-                    } else if (record.status === 'check-out') {
-                        badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out (${timeFormatted})</span>`;
-                    } else {
-                        badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">${record.status || 'Unknown'} (${timeFormatted})</span>`;
-                    }
+                // Sort dates descending (newest day first)
+                const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
 
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-slate-50/80 transition duration-150';
-                    row.innerHTML = `
-                        <td class="py-3 px-4 font-semibold text-slate-900">${weekdayName}</td>
-                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
-                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
-                        <td class="py-3 px-4 uppercase text-[11px] font-bold text-slate-700">${record.status || '-'}</td>
-                        <td class="py-3 px-4">${badge}</td>
+                sortedDates.forEach((dateStr, index) => {
+                    // 1. Create a distinct section header row for each day
+                    const dateObj = new Date(dateStr + 'T00:00:00');
+                    const weekdayName = !isNaN(dateObj) 
+                        ? dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) 
+                        : dateStr;
+
+                    const separatorRow = document.createElement('tr');
+                    // Add top spacing/border if it's not the first day block to create visual separation
+                    const topMarginClass = index > 0 ? 'border-t-4 border-slate-200' : '';
+                    separatorRow.className = `bg-slate-100 font-bold text-slate-900 ${topMarginClass}`;
+                    separatorRow.innerHTML = `
+                        <td colspan="5" class="py-3 px-4 text-xs uppercase tracking-wider text-blue-950 flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                            <span>📅 Date Group: ${weekdayName} (${dateStr})</span>
+                        </td>
                     `;
-                    tableBody.appendChild(row);
+                    tableBody.appendChild(separatorRow);
+
+                    // 2. Render records belonging to this specific date
+                    groupedByDate[dateStr].forEach(record => {
+                        const name = staffLookup[record.sdms_id] || 'Unknown Staff';
+                        const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                        
+                        let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-700 border border-slate-200">-</span>';
+                        
+                        if (record.status === 'check-in') {
+                            if (record.created_at) {
+                                const checkInDate = new Date(record.created_at);
+                                const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                                if (totalMinutes > (7 * 60 + 30)) {
+                                    badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${timeFormatted})</span>`;
+                                } else {
+                                    badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${timeFormatted})</span>`;
+                                }
+                            } else {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Check-In</span>`;
+                            }
+                        } else if (record.status === 'check-out') {
+                            badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out (${timeFormatted})</span>`;
+                        } else {
+                            badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">${record.status || 'Unknown'} (${timeFormatted})</span>`;
+                        }
+
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-slate-50/80 transition duration-150';
+                        row.innerHTML = `
+                            <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                            <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                            <td class="py-3 px-4 uppercase text-[11px] font-bold text-slate-700">${record.status || '-'}</td>
+                            <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
+                            <td class="py-3 px-4">${badge}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
                 });
             }
         }
