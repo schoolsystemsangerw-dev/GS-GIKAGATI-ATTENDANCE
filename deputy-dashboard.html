@@ -64,6 +64,10 @@
                     <span>Check-Out Logs</span>
                     <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckoutCount">-</span>
                 </button>
+                <button onclick="switchView('dailylogs')" id="btnDailylogsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 transition flex items-center justify-between group">
+                    <span>Daily Logs by Weekday</span>
+                    <span class="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded font-mono font-semibold">Days</span>
+                </button>
                 <div class="h-px bg-slate-200 my-2"></div>
                 <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Actions</h3>
                 <button onclick="exportAttendancePDF()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition flex items-center space-x-2 group">
@@ -152,7 +156,7 @@
 
         function switchView(viewName) {
             currentView = viewName;
-            ['staff', 'checkins', 'checkouts'].forEach(v => {
+            ['staff', 'checkins', 'checkouts', 'dailylogs'].forEach(v => {
                 const btn = document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}View`);
                 if (btn) {
                     btn.className = viewName === v 
@@ -161,6 +165,27 @@
                 }
             });
             renderView();
+        }
+
+        function groupAttendancesByDay(attendances) {
+            const grouped = {};
+            attendances.forEach(record => {
+                const dateKey = record.date; 
+                if (!grouped[dateKey]) {
+                    grouped[dateKey] = {
+                        date: dateKey,
+                        dayName: new Date(dateKey).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }),
+                        checkins: [],
+                        checkouts: []
+                    };
+                }
+                if (record.status === 'check-in') {
+                    grouped[dateKey].checkins.push(record);
+                } else if (record.status === 'check-out') {
+                    grouped[dateKey].checkouts.push(record);
+                }
+            });
+            return Object.values(grouped).sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
         function renderView() {
@@ -247,6 +272,55 @@
                         <td class="py-3 px-4 font-mono">${timeFormatted}</td>
                     `;
                     tableBody.appendChild(row);
+                });
+            } else if (currentView === 'dailylogs') {
+                titleElem.textContent = "Daily Separated Attendance Logs";
+                subtitleElem.textContent = "Chronological history grouped by weekdays and dates";
+                
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Action Type</th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Exact Time</th>
+                `;
+
+                const groupedData = groupAttendancesByDay(cachedAttendances);
+                if (groupedData.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No attendance records found.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                groupedData.forEach(group => {
+                    const sectionRow = document.createElement('tr');
+                    sectionRow.className = 'bg-slate-100 border-t-2 border-slate-300';
+                    sectionRow.innerHTML = `
+                        <td colspan="5" class="py-2.5 px-4 font-black text-xs text-blue-950 uppercase tracking-wider">
+                            📅 ${group.dayName}
+                        </td>
+                    `;
+                    tableBody.appendChild(sectionRow);
+
+                    const dayRecords = [...group.checkins, ...group.checkouts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    dayRecords.forEach(record => {
+                        const name = staffLookup[record.sdms_id] || 'Unknown Staff';
+                        const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                        const isCheckin = record.status === 'check-in';
+                        const badgeClass = isCheckin ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200';
+                        const badgeText = isCheckin ? 'Check-In' : 'Check-Out';
+
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-slate-50 border-b border-slate-100';
+                        row.innerHTML = `
+                            <td class="py-3 px-4 font-mono font-bold">${record.sdms_id || '-'}</td>
+                            <td class="py-3 px-4 font-semibold">${name}</td>
+                            <td class="py-3 px-4"><span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase border ${badgeClass}">${badgeText}</span></td>
+                            <td class="py-3 px-4 font-mono text-slate-500">${record.date}</td>
+                            <td class="py-3 px-4 font-mono">${timeFormatted}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
                 });
             }
         }
