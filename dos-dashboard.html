@@ -8,13 +8,24 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 25s linear infinite;
+        }
+    </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen">
     <div class="flex-1 flex flex-col">
         <header class="bg-blue-950 text-white shadow-md border-b-2 border-amber-500">
-            <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden whitespace-nowrap uppercase shadow-inner">
-                <div class="inline-block animate-[marquee_25s_linear_infinite]">
-                    🏛️ GS GIKAGATI DOS PORTAL &nbsp;&bull;&nbsp; ACADEMIC STAFF ATTENDANCE MONITORING &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🏛️ GS GIKAGATI DOS PORTAL &nbsp;&bull;&nbsp; ACADEMIC STAFF ATTENDANCE MONITORING
+            <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden uppercase shadow-inner">
+                <div class="animate-marquee">
+                    WELCOME TO GS GIKAGATI. SEEK THE TRUTH &nbsp;&bull;&nbsp; DOS PORTAL &nbsp;&bull;&nbsp; ACADEMIC STAFF ATTENDANCE MONITORING &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WELCOME TO GS GIKAGATI. SEEK THE TRUTH &nbsp;&bull;&nbsp; DOS PORTAL &nbsp;&bull;&nbsp; ACADEMIC STAFF ATTENDANCE MONITORING
                 </div>
             </div>
             <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col lg:flex-row justify-between items-center gap-6">
@@ -141,30 +152,103 @@
 
         function switchView(viewName) {
             currentView = viewName;
+            ['staff', 'checkins', 'checkouts'].forEach(v => {
+                const btn = document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}View`);
+                if (btn) {
+                    btn.className = viewName === v 
+                        ? 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-blue-950 text-white shadow-sm transition flex items-center justify-between group'
+                        : 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 transition flex items-center justify-between group';
+                }
+            });
             renderView();
         }
 
         function renderView() {
             const tableBody = document.getElementById('masterTableBody');
-            const todayString = new Date().toISOString().split('T')[0];
-            const todayMap = {};
-            cachedAttendances.forEach(r => { if (r.date === todayString && r.sdms_id) todayMap[r.sdms_id] = r; });
+            const headerRow = document.getElementById('tableHeaderRow');
+            const titleElem = document.getElementById('tableTitle');
+            const subtitleElem = document.getElementById('tableSubtitle');
 
-            tableBody.innerHTML = '';
-            cachedStaff.forEach(staff => {
-                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim();
-                const record = todayMap[staff.sdms_id];
-                let badge = '<span class="px-2 py-1 rounded bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
-                if (record) {
-                    badge = record.status === 'check-out' 
-                        ? '<span class="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>' 
-                        : '<span class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>';
-                }
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-slate-50';
-                row.innerHTML = `<td class="py-3 px-4 font-mono font-bold">${staff.sdms_id}</td><td class="py-3 px-4 font-semibold">${fullName}</td><td class="py-3 px-4">${staff.position_name}</td><td class="py-3 px-4">${staff.system_role}</td><td class="py-3 px-4">${badge}</td>`;
-                tableBody.appendChild(row);
+            const staffLookup = {};
+            cachedStaff.forEach(s => {
+                staffLookup[s.sdms_id] = `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Unknown Staff';
             });
+
+            const todayString = new Date().toISOString().split('T')[0];
+
+            if (currentView === 'staff') {
+                titleElem.textContent = "Master Staff Attendance Overview";
+                subtitleElem.textContent = "Real-time institutional roster status synced from Supabase";
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Position</th>
+                    <th class="py-3 px-4">Role</th>
+                    <th class="py-3 px-4">Today's Status</th>
+                `;
+
+                const todayMap = {};
+                cachedAttendances.forEach(r => { if (r.date === todayString && r.sdms_id) todayMap[r.sdms_id] = r; });
+
+                tableBody.innerHTML = '';
+                cachedStaff.forEach(staff => {
+                    const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
+                    const record = todayMap[staff.sdms_id];
+                    let badge = '<span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
+                    if (record) {
+                        badge = record.status === 'check-out' 
+                            ? '<span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>' 
+                            : '<span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>';
+                    }
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold">${staff.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold">${fullName}</td>
+                        <td class="py-3 px-4">${staff.position_name || '-'}</td>
+                        <td class="py-3 px-4">${staff.system_role || '-'}</td>
+                        <td class="py-3 px-4">${badge}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else if (currentView === 'checkins' || currentView === 'checkouts') {
+                const isCheckin = currentView === 'checkins';
+                titleElem.textContent = isCheckin ? "All Check-In Logs" : "All Check-Out Logs";
+                subtitleElem.textContent = isCheckin ? "Chronological history of staff check-in submissions" : "Chronological history of staff check-out submissions";
+                
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Status Action</th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Exact Time</th>
+                `;
+
+                const logs = cachedAttendances.filter(r => r.status === (isCheckin ? 'check-in' : 'check-out'));
+                if (logs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No records found.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                logs.forEach(record => {
+                    const name = staffLookup[record.sdms_id] || 'Unknown Staff';
+                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                    const badgeClass = isCheckin ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200';
+                    const badgeText = isCheckin ? 'Check-In' : 'Check-Out';
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold">${record.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold">${name}</td>
+                        <td class="py-3 px-4"><span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase border ${badgeClass}">${badgeText}</span></td>
+                        <td class="py-3 px-4 font-mono">${record.date || '-'}</td>
+                        <td class="py-3 px-4 font-mono">${timeFormatted}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
         }
 
         function exportAttendancePDF() {
