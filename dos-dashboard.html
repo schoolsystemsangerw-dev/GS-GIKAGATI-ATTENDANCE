@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOS Portal | GS Gikagati</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen">
+    <div class="flex-1 flex flex-col">
+        <header class="bg-blue-950 text-white shadow-md border-b-2 border-amber-500">
+            <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden whitespace-nowrap uppercase shadow-inner">
+                <div class="inline-block animate-[marquee_25s_linear_infinite]">
+                    🏛️ GS GIKAGATI DOS PORTAL &nbsp;&bull;&nbsp; ACADEMIC STAFF ATTENDANCE MONITORING &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🏛️ GS GIKAGATI DOS PORTAL &nbsp;&bull;&nbsp; ACADEMIC STAFF ATTENDANCE MONITORING
+                </div>
+            </div>
+            <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col lg:flex-row justify-between items-center gap-6">
+                <div class="flex items-center space-x-5">
+                    <div class="w-20 h-20 bg-white rounded-xl p-1.5 shadow border-2 border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
+                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-950 font-black text-xs\'>GSG</span>';">
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-3 mb-1">
+                            <h1 class="text-2xl lg:text-3xl font-black tracking-tight text-white">GS GIKAGATI</h1>
+                            <span class="bg-blue-900 border border-blue-700 text-amber-400 text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider">DOS Portal</span>
+                        </div>
+                        <p class="text-xs text-slate-300 font-medium">Director of Studies Control Panel &bull; Authorized User: <span class="text-amber-300 font-bold">Jean Marie Vianne MBONYUMUKU</span></p>
+                    </div>
+                </div>
+                <div>
+                    <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-5 py-2.5 rounded-lg font-bold shadow transition duration-150 border border-slate-700 flex items-center space-x-1">
+                        <span>Sign Out</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-7xl w-full mx-auto p-6 flex flex-col md:flex-row gap-6 flex-1">
+            <aside class="w-full md:w-64 bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 flex flex-col gap-2.5 shrink-0 h-fit">
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 pt-1 mb-0.5">Control Views</h3>
+                <button onclick="switchView('staff')" id="btnStaffView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-blue-950 text-white shadow-sm transition flex items-center justify-between group">
+                    <span>Staff Overview</span>
+                    <span class="text-[10px] bg-blue-900 text-amber-300 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarTotalCount">-</span>
+                </button>
+                <button onclick="switchView('checkins')" id="btnCheckinsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 transition flex items-center justify-between group">
+                    <span>Check-In Logs</span>
+                    <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckinCount">-</span>
+                </button>
+                <button onclick="switchView('checkouts')" id="btnCheckoutsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 transition flex items-center justify-between group">
+                    <span>Check-Out Logs</span>
+                    <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckoutCount">-</span>
+                </button>
+                <div class="h-px bg-slate-200 my-2"></div>
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Actions</h3>
+                <button onclick="exportAttendancePDF()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <span>Export Attendance PDF</span>
+                </button>
+            </aside>
+
+            <main class="flex-1 flex flex-col gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-blue-950 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Staff Registered</p>
+                        <h3 class="text-3xl font-black text-slate-900 mt-2 font-mono" id="totalCount">-</h3>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-emerald-600 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Present Today</p>
+                        <h3 class="text-3xl font-black text-emerald-600 mt-2 font-mono" id="presentCount">-</h3>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-rose-600 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Absent / Pending Today</p>
+                        <h3 class="text-3xl font-black text-rose-600 mt-2 font-mono" id="absentCount">-</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                        <div>
+                            <h3 class="text-base font-black text-slate-900 uppercase tracking-wide" id="tableTitle">Master Staff Attendance Overview</h3>
+                            <p class="text-xs text-slate-500 mt-0.5" id="tableSubtitle">Real-time database records synced directly from Supabase</p>
+                        </div>
+                        <button onclick="loadDashboardData()" class="px-4 py-2 bg-slate-900 hover:bg-blue-950 text-white text-xs font-bold rounded-lg transition shadow-sm">Refresh Records</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr id="tableHeaderRow" class="border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/70">
+                                    <th class="py-3 px-4">SDMS ID</th>
+                                    <th class="py-3 px-4">Staff Name</th>
+                                    <th class="py-3 px-4">Position</th>
+                                    <th class="py-3 px-4">Role</th>
+                                    <th class="py-3 px-4">Today's Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="masterTableBody" class="text-xs text-slate-600 divide-y divide-slate-100">
+                                <tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">Connecting to database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentView = 'staff';
+        let cachedStaff = [];
+        let cachedAttendances = [];
+
+        async function loadDashboardData() {
+            try {
+                const { data: staffData } = await supabaseClient.from('staffs').select('*');
+                cachedStaff = staffData || [];
+                const { data: attData } = await supabaseClient.from('attendances').select('*').order('created_at', { ascending: false });
+                cachedAttendances = attData || [];
+
+                const todayString = new Date().toISOString().split('T')[0];
+                const todayAttendanceMap = {};
+                cachedAttendances.forEach(r => { if (r.date === todayString && r.sdms_id) todayAttendanceMap[r.sdms_id] = r; });
+
+                let presentCount = cachedStaff.filter(s => todayAttendanceMap[s.sdms_id]).length;
+                document.getElementById('totalCount').textContent = cachedStaff.length;
+                document.getElementById('presentCount').textContent = presentCount;
+                document.getElementById('absentCount').textContent = cachedStaff.length - presentCount;
+                document.getElementById('sidebarTotalCount').textContent = cachedStaff.length;
+                document.getElementById('sidebarCheckinCount').textContent = cachedAttendances.filter(r => r.status === 'check-in').length;
+                document.getElementById('sidebarCheckoutCount').textContent = cachedAttendances.filter(r => r.status === 'check-out').length;
+
+                renderView();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function switchView(viewName) {
+            currentView = viewName;
+            renderView();
+        }
+
+        function renderView() {
+            const tableBody = document.getElementById('masterTableBody');
+            const todayString = new Date().toISOString().split('T')[0];
+            const todayMap = {};
+            cachedAttendances.forEach(r => { if (r.date === todayString && r.sdms_id) todayMap[r.sdms_id] = r; });
+
+            tableBody.innerHTML = '';
+            cachedStaff.forEach(staff => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim();
+                const record = todayMap[staff.sdms_id];
+                let badge = '<span class="px-2 py-1 rounded bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
+                if (record) {
+                    badge = record.status === 'check-out' 
+                        ? '<span class="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>' 
+                        : '<span class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>';
+                }
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50';
+                row.innerHTML = `<td class="py-3 px-4 font-mono font-bold">${staff.sdms_id}</td><td class="py-3 px-4 font-semibold">${fullName}</td><td class="py-3 px-4">${staff.position_name}</td><td class="py-3 px-4">${staff.system_role}</td><td class="py-3 px-4">${badge}</td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function exportAttendancePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("GS GIKAGATI - DOS ATTENDANCE REPORT", 14, 20);
+            doc.autoTable({
+                startY: 30,
+                head: [['SDMS ID', 'Staff Name', 'Position', 'Role']],
+                body: cachedStaff.map(s => [s.sdms_id, `${s.first_name} ${s.last_name}`, s.position_name, s.system_role])
+            });
+            doc.save(`DOS_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        window.onload = loadDashboardData;
+    </script>
+</body>
+</html>
