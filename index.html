@@ -1,20 +1,305 @@
-// Render views based on currentView selection
-        if (currentView === 'staff' || !currentView) {
-            titleElem.textContent = "Staff Directory & Today's Status";
-            subtitleElem.textContent = "Real-time overview of active staff and daily attendance status";
-            
-            headerRow.innerHTML = `
-                <th class="py-3 px-4">SDMS ID</th>
-                <th class="py-3 px-4">Staff Name</th>
-                <th class="py-3 px-4">Position</th>
-                <th class="py-3 px-4">System Role</th>
-                <th class="py-3 px-4">Today's Status</th>
-            `;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GS Gikagati - Master Control Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 antialiased">
 
-            if (cachedStaff.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
-                return;
+    <!-- Top Navigation Bar -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">GS GIKAGATI</h1>
+                <p class="text-xs text-slate-400">Master Control Portal &bull; Head Teacher Dashboard</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="exportAttendancePDF()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-2">
+                    Export PDF
+                </button>
+                <button onclick="sendOfficialReport()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-2 shadow-sm">
+                    Send Official Report
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+
+        <!-- Navigation Tabs / Filters -->
+        <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-4">
+            <button onclick="switchView('staff')" id="btn-staff" class="px-4 py-2 text-xs font-bold rounded-lg bg-slate-900 text-white transition">Staff Directory</button>
+            <button onclick="switchView('checkins')" id="btn-checkins" class="px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition">All Check-Ins</button>
+            <button onclick="switchView('ontime')" id="btn-ontime" class="px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition">On-Time Today</button>
+            <button onclick="switchView('late')" id="btn-late" class="px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition">Late Today</button>
+            <button onclick="switchView('checkouts')" id="btn-checkouts" class="px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition">Check-Out Logs</button>
+        </div>
+
+        <!-- Section Title Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h2 id="view-title" class="text-lg font-bold text-slate-900">Staff Directory & Today's Status</h2>
+                    <p id="view-subtitle" class="text-xs text-slate-500 mt-0.5">Real-time overview of active staff and daily attendance status</p>
+                </div>
+                <button onclick="loadDashboardData()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md transition">
+                    Refresh Data
+                </button>
+            </div>
+
+            <!-- Data Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr id="table-header-row" class="bg-slate-50 text-slate-600 uppercase font-bold tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-4">SDMS ID</th>
+                            <th class="py-3 px-4">Staff Name</th>
+                            <th class="py-3 px-4">Position</th>
+                            <th class="py-3 px-4">System Role</th>
+                            <th class="py-3 px-4">Today's Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-100">
+                        <!-- Populated dynamically via script -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Core Script Logic -->
+    <script>
+        // Mock data state (Replace or hook into your backend endpoints as needed)
+        let cachedStaff = [
+            { sdms_id: "SDMS001", first_name: "Ladislas", last_name: "Habimana", position_name: "Head Teacher", system_role: "Admin" },
+            { sdms_id: "SDMS002", first_name: "Jean Claude", last_name: "Uwizeye", position_name: "Mathematics Teacher", system_role: "Staff" },
+            { sdms_id: "SDMS003", first_name: "Marie Claire", last_name: "Mukamana", position_name: "English Teacher", system_role: "Staff" }
+        ];
+
+        let cachedAttendances = [
+            { sdms_id: "SDMS001", date: new Date().toISOString().split('T')[0], status: "check-in", created_at: new Date(new Date().setHours(7, 15, 0)).toISOString() },
+            { sdms_id: "SDMS002", date: new Date().toISOString().split('T')[0], status: "check-in", created_at: new Date(new Date().setHours(7, 45, 0)).toISOString() }
+        ];
+
+        let staffLookup = {};
+        cachedStaff.forEach(s => {
+            staffLookup[s.sdms_id] = `${s.first_name || ''} ${s.last_name || ''}`.trim();
+        });
+
+        let currentView = 'staff';
+
+        function switchView(viewName) {
+            currentView = viewName;
+            
+            // Highlight active tab button
+            ['staff', 'checkins', 'ontime', 'late', 'checkouts'].forEach(v => {
+                const btn = document.getElementById(`btn-${v}`);
+                if (btn) {
+                    if (v === viewName) {
+                        btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-slate-900 text-white transition";
+                    } else {
+                        btn.className = "px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition";
+                    }
+                }
+            });
+
+            renderDashboardTable();
+        }
+
+        function loadDashboardData() {
+            renderDashboardTable();
+        }
+
+        function renderDashboardTable() {
+            const titleElem = document.getElementById('view-title');
+            const subtitleElem = document.getElementById('view-subtitle');
+            const headerRow = document.getElementById('table-header-row');
+            const tableBody = document.getElementById('table-body');
+            const todayString = new Date().toISOString().split('T')[0];
+
+            if (currentView === 'staff' || !currentView) {
+                titleElem.textContent = "Staff Directory & Today's Status";
+                subtitleElem.textContent = "Real-time overview of active staff and daily attendance status";
+                
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Position</th>
+                    <th class="py-3 px-4">System Role</th>
+                    <th class="py-3 px-4">Today's Status</th>
+                `;
+
+                if (cachedStaff.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
+                    return;
+                }
+
+                const todayMap = {};
+                cachedAttendances.forEach(r => {
+                    if (r.date === todayString && r.sdms_id) {
+                        todayMap[r.sdms_id] = r;
+                    }
+                });
+
+                tableBody.innerHTML = '';
+                cachedStaff.forEach(staff => {
+                    const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
+                    const record = todayMap[staff.sdms_id];
+                    
+                    let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
+                    
+                    if (record) {
+                        if (record.status === 'check-out') {
+                            badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>';
+                        } else if (record.status === 'check-in' && record.created_at) {
+                            const checkInDate = new Date(record.created_at);
+                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                            const cutoffMinutes = 7 * 60 + 30; // 7:30 AM limit
+
+                            if (totalMinutes > cutoffMinutes) {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                            } else {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                            }
+                        }
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
+                        <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium border border-slate-200">${staff.system_role || '-'}</span></td>
+                        <td class="py-3 px-4">${badge}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } else if (currentView === 'checkins' || currentView === 'ontime' || currentView === 'late') {
+                if (currentView === 'checkins') {
+                    titleElem.textContent = "All Check-In Logs";
+                    subtitleElem.textContent = "Complete chronological history of staff check-in submissions";
+                } else if (currentView === 'ontime') {
+                    titleElem.textContent = "On-Time Staff Arrivals Today";
+                    subtitleElem.textContent = "Staff members who completed check-in on or before 7:30 AM";
+                } else if (currentView === 'late') {
+                    titleElem.textContent = "Late Staff Arrivals Today";
+                    subtitleElem.textContent = "Staff members who completed check-in after 7:30 AM";
+                }
+
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Arrival Status</th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Exact Time</th>
+                `;
+
+                let logs = cachedAttendances.filter(r => r.status === 'check-in');
+                
+                if (currentView === 'ontime') {
+                    logs = logs.filter(r => {
+                        if (!r.created_at) return false;
+                        const d = new Date(r.created_at);
+                        return (d.getHours() * 60 + d.getMinutes()) <= (7 * 60 + 30);
+                    });
+                } else if (currentView === 'late') {
+                    logs = logs.filter(r => {
+                        if (!r.created_at) return false;
+                        const d = new Date(r.created_at);
+                        return (d.getHours() * 60 + d.getMinutes()) > (7 * 60 + 30);
+                    });
+                }
+
+                if (logs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-in entries found matching this criterion.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                logs.forEach(record => {
+                    const name = staffLookup[record.sdms_id] || 'Unknown Staff';
+                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                    
+                    let statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time</span>';
+                    if (record.created_at) {
+                        const checkInDate = new Date(record.created_at);
+                        const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                        if (totalMinutes > (7 * 60 + 30)) {
+                            statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late</span>';
+                        }
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } else if (currentView === 'checkouts') {
+                titleElem.textContent = "All Check-Out Logs";
+                subtitleElem.textContent = "Complete chronological history of staff check-out submissions";
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Status Action</th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Exact Time</th>
+                `;
+
+                const checkoutLogs = cachedAttendances.filter(r => r.status === 'check-out');
+                if (checkoutLogs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-out records found.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                checkoutLogs.forEach(record => {
+                    const name = staffLookup[record.sdms_id] || 'Unknown Staff';
+                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4"><span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out</span></td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
             }
+        }
+
+        // Action: Export Attendance to PDF
+        function exportAttendancePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("GS GIKAGATI - OFFICIAL ATTENDANCE REPORT", 14, 20);
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+            doc.text("Location: East Province | Nyagatare District | Karama Sector", 14, 34);
+
+            let tableData = [];
+            const todayString = new Date().toISOString().split('T')[0];
 
             const todayMap = {};
             cachedAttendances.forEach(r => {
@@ -23,262 +308,101 @@
                 }
             });
 
-            tableBody.innerHTML = '';
             cachedStaff.forEach(staff => {
                 const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                 const record = todayMap[staff.sdms_id];
-                
-                let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
+                let statusText = "Pending / Absent";
                 
                 if (record) {
                     if (record.status === 'check-out') {
-                        badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>';
+                        statusText = "Checked Out";
                     } else if (record.status === 'check-in' && record.created_at) {
                         const checkInDate = new Date(record.created_at);
                         const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
-                        const cutoffMinutes = 7 * 60 + 30; // 7:30 AM limit
-
-                        if (totalMinutes > cutoffMinutes) {
-                            badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                        if (totalMinutes > (7 * 60 + 30)) {
+                            statusText = `Late (${checkInDate.toLocaleTimeString()})`;
                         } else {
-                            badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                            statusText = `On Time (${checkInDate.toLocaleTimeString()})`;
                         }
                     }
                 }
 
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-slate-50/80 transition duration-150';
-                row.innerHTML = `
-                    <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
-                    <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium border border-slate-200">${staff.system_role || '-'}</span></td>
-                    <td class="py-3 px-4">${badge}</td>
-                `;
-                tableBody.appendChild(row);
+                tableData.push([
+                    staff.sdms_id || '-',
+                    fullName,
+                    staff.position_name || '-',
+                    staff.system_role || '-',
+                    statusText
+                ]);
             });
 
-        } else if (currentView === 'checkins' || currentView === 'ontime' || currentView === 'late') {
-            if (currentView === 'checkins') {
-                titleElem.textContent = "All Check-In Logs";
-                subtitleElem.textContent = "Complete chronological history of staff check-in submissions";
-            } else if (currentView === 'ontime') {
-                titleElem.textContent = "On-Time Staff Arrivals Today";
-                subtitleElem.textContent = "Staff members who completed check-in on or before 7:30 AM";
-            } else if (currentView === 'late') {
-                titleElem.textContent = "Late Staff Arrivals Today";
-                subtitleElem.textContent = "Staff members who completed check-in after 7:30 AM";
-            }
+            doc.autoTable({
+                startY: 42,
+                head: [['SDMS ID', 'Staff Name', 'Position', 'Role', "Today's Status"]],
+                body: tableData,
+                theme: 'grid',
+                headStyles: { fillColor: [15, 23, 42] },
+                styles: { fontSize: 9 }
+            });
 
-            headerRow.innerHTML = `
-                <th class="py-3 px-4">SDMS ID</th>
-                <th class="py-3 px-4">Staff Name</th>
-                <th class="py-3 px-4">Arrival Status</th>
-                <th class="py-3 px-4">Date</th>
-                <th class="py-3 px-4">Exact Time</th>
-            `;
+            doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
+        }
 
-            let logs = cachedAttendances.filter(r => r.status === 'check-in');
+        // Action: Official Report Transmission via Gmail Web Direct Compose
+        function sendOfficialReport() {
+            const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
             
-            if (currentView === 'ontime') {
-                logs = logs.filter(r => {
-                    if (!r.created_at) return false;
-                    const d = new Date(r.created_at);
-                    return (d.getHours() * 60 + d.getMinutes()) <= (7 * 60 + 30);
-                });
-            } else if (currentView === 'late') {
-                logs = logs.filter(r => {
-                    if (!r.created_at) return false;
-                    const d = new Date(r.created_at);
-                    return (d.getHours() * 60 + d.getMinutes()) > (7 * 60 + 30);
-                });
-            }
-
-            if (logs.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-in entries found matching this criterion.</td></tr>`;
+            if (govEmail === null) {
                 return;
             }
 
-            tableBody.innerHTML = '';
-            logs.forEach(record => {
-                const name = staffLookup[record.sdms_id] || 'Unknown Staff';
-                const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
-                
-                let statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time</span>';
-                if (record.created_at) {
-                    const checkInDate = new Date(record.created_at);
-                    const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
-                    if (totalMinutes > (7 * 60 + 30)) {
-                        statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late</span>';
-                    }
-                }
-
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-slate-50/80 transition duration-150';
-                row.innerHTML = `
-                    <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
-                    <td class="py-3 px-4">${statusBadge}</td>
-                    <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
-                    <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-
-        } else if (currentView === 'checkouts') {
-            titleElem.textContent = "All Check-Out Logs";
-            subtitleElem.textContent = "Complete chronological history of staff check-out submissions";
-            headerRow.innerHTML = `
-                <th class="py-3 px-4">SDMS ID</th>
-                <th class="py-3 px-4">Staff Name</th>
-                <th class="py-3 px-4">Status Action</th>
-                <th class="py-3 px-4">Date</th>
-                <th class="py-3 px-4">Exact Time</th>
-            `;
-
-            const checkoutLogs = cachedAttendances.filter(r => r.status === 'check-out');
-            if (checkoutLogs.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-out records found.</td></tr>`;
+            if (!govEmail.trim() || !govEmail.includes("@") || !govEmail.includes(".")) {
+                alert("Operation cancelled or invalid email format provided.");
                 return;
             }
 
-            tableBody.innerHTML = '';
-            checkoutLogs.forEach(record => {
-                const name = staffLookup[record.sdms_id] || 'Unknown Staff';
-                const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-slate-50/80 transition duration-150';
-                row.innerHTML = `
-                    <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
-                    <td class="py-3 px-4"><span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out</span></td>
-                    <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
-                    <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-    }
+            const todayString = new Date().toISOString().split('T')[0];
+            let presentCount = 0;
+            let lateCount = 0;
 
-    // Action: Export Attendance to PDF
-    function exportAttendancePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.text("GS GIKAGATI - OFFICIAL ATTENDANCE REPORT", 14, 20);
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
-        doc.text("Location: East Province | Nyagatare District | Karama Sector", 14, 34);
-
-        let tableData = [];
-        const todayString = new Date().toISOString().split('T')[0];
-
-        const todayMap = {};
-        cachedAttendances.forEach(r => {
-            if (r.date === todayString && r.sdms_id) {
-                todayMap[r.sdms_id] = r;
-            }
-        });
-
-        cachedStaff.forEach(staff => {
-            const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
-            const record = todayMap[staff.sdms_id];
-            let statusText = "Pending / Absent";
-            
-            if (record) {
-                if (record.status === 'check-out') {
-                    statusText = "Checked Out";
-                } else if (record.status === 'check-in' && record.created_at) {
-                    const checkInDate = new Date(record.created_at);
-                    const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
-                    if (totalMinutes > (7 * 60 + 30)) {
-                        statusText = `Late (${checkInDate.toLocaleTimeString()})`;
-                    } else {
-                        statusText = `On Time (${checkInDate.toLocaleTimeString()})`;
+            cachedStaff.forEach(staff => {
+                const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id && r.status === 'check-in');
+                if (record) {
+                    presentCount++;
+                    const checkInTime = new Date(record.created_at);
+                    if ((checkInTime.getHours() * 60 + checkInTime.getMinutes()) > (7 * 60 + 30)) {
+                        lateCount++;
                     }
                 }
-            }
+            });
 
-            tableData.push([
-                staff.sdms_id || '-',
-                fullName,
-                staff.position_name || '-',
-                staff.system_role || '-',
-                statusText
-            ]);
-        });
+            const absentCount = cachedStaff.length - presentCount;
 
-        doc.autoTable({
-            startY: 42,
-            head: [['SDMS ID', 'Staff Name', 'Position', 'Role', "Today's Status"]],
-            body: tableData,
-            theme: 'grid',
-            headStyles: { fillColor: [15, 23, 42] },
-            styles: { fontSize: 9 }
-        });
+            const subject = `Official Daily Attendance Report - GS Gikagati (${todayString})`;
+            const body = 
+                `OFFICIAL DAILY ATTENDANCE REPORT\n` +
+                `----------------------------------------\n` +
+                `Institution: GS Gikagati\n` +
+                `Administrative Location: East Province | Nyagatare District | Karama Sector\n` +
+                `Date of Report: ${todayString}\n\n` +
+                `ATTENDANCE SUMMARY:\n` +
+                `- Total Registered Staff: ${cachedStaff.length}\n` +
+                `- Present On Time: ${presentCount - lateCount}\n` +
+                `- Late Arrivals (> 07:30 AM): ${lateCount}\n` +
+                `- Total Present: ${presentCount}\n` +
+                `- Absent / Pending: ${absentCount}\n\n` +
+                `----------------------------------------\n` +
+                `Submitted via GS Gikagati Master Control Portal\n` +
+                `Authorized by Head Teacher: Ladislas`;
 
-        doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
-    }
-
-    // Action: Official Report Transmission via Gmail Web Direct Compose
-    function sendOfficialReport() {
-        const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
-        
-        if (govEmail === null) {
-            return;
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.open(gmailUrl, '_blank');
         }
 
-        if (!govEmail.trim() || !govEmail.includes("@") || !govEmail.includes(".")) {
-            alert("Operation cancelled or invalid email format provided.");
-            return;
-        }
-
-        const todayString = new Date().toISOString().split('T')[0];
-        let presentCount = 0;
-        let lateCount = 0;
-
-        cachedStaff.forEach(staff => {
-            const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id && r.status === 'check-in');
-            if (record) {
-                presentCount++;
-                const checkInTime = new Date(record.created_at);
-                if ((checkInTime.getHours() * 60 + checkInTime.getMinutes()) > (7 * 60 + 30)) {
-                    lateCount++;
-                }
-            }
-        });
-
-        const absentCount = cachedStaff.length - presentCount;
-
-        const subject = `Official Daily Attendance Report - GS Gikagati (${todayString})`;
-        const body = 
-            `OFFICIAL DAILY ATTENDANCE REPORT\n` +
-            `----------------------------------------\n` +
-            `Institution: GS Gikagati\n` +
-            `Administrative Location: East Province | Nyagatare District | Karama Sector\n` +
-            `Date of Report: ${todayString}\n\n` +
-            `ATTENDANCE SUMMARY:\n` +
-            `- Total Registered Staff: ${cachedStaff.length}\n` +
-            `- Present On Time: ${presentCount - lateCount}\n` +
-            `- Late Arrivals (> 07:30 AM): ${lateCount}\n` +
-            `- Total Present: ${presentCount}\n` +
-            `- Absent / Pending: ${absentCount}\n\n` +
-            `----------------------------------------\n` +
-            `Submitted via GS Gikagati Master Control Portal\n` +
-            `Authorized by Head Teacher: Ladislas`;
-
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.open(gmailUrl, '_blank');
-    }
-
-    // Initialize dashboard sync on load
-    window.onload = function() {
-        loadDashboardData();
-    };
-</script>
+        // Initialize dashboard sync on load
+        window.onload = function() {
+            loadDashboardData();
+        };
+    </script>
 </body>
 </html>
