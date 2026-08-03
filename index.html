@@ -3,86 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GS Gikagati - Master Control Portal</title>
+    <title>Official Master Control | GS Gikagati</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include jsPDF for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased">
-    <div class="flex h-screen overflow-hidden">
-        <!-- Left Sidebar -->
-        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800">
-            <div class="p-6 border-b border-slate-800">
-                <h1 class="text-lg font-bold text-white tracking-wide">GS GIKAGATI</h1>
-                <p class="text-xs text-slate-400 mt-1">Master Control Portal</p>
+<body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen selection:bg-blue-900 selection:text-white">
+    <div class="flex-1 flex flex-col">
+        
+        <!-- Official Top Header & Moving Marquee -->
+        <header class="bg-blue-950 text-white shadow-md border-b-2 border-amber-500">
+            <!-- Institutional Marquee Banner -->
+            <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden whitespace-nowrap uppercase shadow-inner">
+                <div class="inline-block animate-[marquee_25s_linear_infinite]">
+                    🏛️ GS GIKAGATI OFFICIAL ADMINISTRATIVE PORTAL &nbsp;&bull;&nbsp; SEEK THE TRUTH &nbsp;&bull;&nbsp; STAFF ATTENDANCE & SYSTEM CONTROL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🏛️ GS GIKAGATI OFFICIAL ADMINISTRATIVE PORTAL &nbsp;&bull;&nbsp; SEEK THE TRUTH &nbsp;&bull;&nbsp; STAFF ATTENDANCE & SYSTEM CONTROL
+                </div>
             </div>
-            <nav class="flex-1 px-4 py-6 space-y-2">
-                <button onclick="switchView('dashboard')" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium bg-slate-800 text-white transition">Dashboard</button>
-                <button onclick="switchView('ontime')" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition">On-Time Check-Ins</button>
-                <button onclick="switchView('late')" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition">Late Arrivals</button>
-                <button onclick="switchView('checkouts')" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition">Check-Out Logs</button>
-                <button onclick="switchView('dailylogs')" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition">Daily Logs By Weekday</button>
-                <button onclick="switchView('leavepermit')" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800/60 transition flex items-center justify-between">
-                    <span>Leave Permits</span>
-                    <span class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded">New</span>
-                </button>
-            </nav>
-            <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-                Karama Sector, Nyagatare
-            </div>
-        </aside>
 
-        <!-- Main Content Wrapper -->
-        <main class="flex-1 flex flex-col overflow-hidden">
-            <!-- Top Navbar -->
-            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10">
+            <!-- Main Header Content -->
+            <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col lg:flex-row justify-between items-center gap-6">
+                <div class="flex items-center space-x-5">
+                    <div class="w-20 h-20 bg-white rounded-xl p-1.5 shadow border-2 border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
+                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-950 font-black text-xs\'>GSG</span>';">
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-3 mb-1">
+                            <h1 class="text-2xl lg:text-3xl font-black tracking-tight text-white">GS GIKAGATI</h1>
+                            <span class="bg-blue-900 border border-blue-700 text-amber-400 text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider">Official Portal</span>
+                        </div>
+                        <p class="text-xs text-slate-300 font-medium">Head Teacher Master Control Panel &bull; Authorized User: <span class="text-amber-300 font-bold">Ladislas</span></p>
+                    </div>
+                </div>
+
+                <!-- Administrative Location Info Card -->
+                <div class="bg-blue-900/60 border border-blue-800 rounded-xl p-3 text-[11px] text-slate-200 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1">
+                    <div><span class="text-amber-400 font-semibold">Province:</span> East</div>
+                    <div><span class="text-amber-400 font-semibold">District:</span> Nyagatare</div>
+                    <div><span class="text-amber-400 font-semibold">Sector:</span> Karama</div>
+                    <div><span class="text-amber-400 font-semibold">Cell:</span> Gikagati</div>
+                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamawi</div>
+                    <div><span class="text-amber-400 font-semibold">Phone:</span> 0788754668</div>
+                </div>
+
+                <!-- Secure Logout -->
                 <div>
-                    <h2 id="view-title" class="text-xl font-bold text-slate-900">Dashboard Overview</h2>
-                    <p id="view-subtitle" class="text-xs text-slate-500">Real-time attendance tracking and monitoring</p>
+                    <a href="index.html" class="bg-red-700 hover:bg-red-800 text-white text-xs px-5 py-2.5 rounded-lg font-bold shadow transition duration-150 flex items-center space-x-1 border border-red-600">
+                        <span>Sign Out</span>
+                    </a>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <button onclick="exportAttendancePDF()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition flex items-center space-x-2">
-                        <span>Download PDF</span>
-                    </button>
-                    <button onclick="sendOfficialReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition flex items-center space-x-2">
-                        <span>Send Official Report</span>
-                    </button>
-                </div>
-            </header>
+            </div>
+        </header>
 
-            <!-- Dashboard Content Area -->
-            <div class="flex-1 overflow-y-auto p-8 bg-slate-50">
-                <div id="content-container">
-                    <!-- Dynamic view content injected here -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Staff</p>
-                            <h3 id="stat-total" class="text-3xl font-extrabold text-slate-900 mt-2">-</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Present On Time</p>
-                            <h3 id="stat-ontime" class="text-3xl font-extrabold text-emerald-600 mt-2">-</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Late Arrivals</p>
-                            <h3 id="stat-late" class="text-3xl font-extrabold text-rose-600 mt-2">-</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Absent / Pending</p>
-                            <h3 id="stat-absent" class="text-3xl font-extrabold text-amber-600 mt-2">-</h3>
-                        </div>
+        <!-- Main Content Layout with Sidebar Navigation -->
+        <div class="max-w-7xl w-full mx-auto p-6 flex flex-col md:flex-row gap-6 flex-1">
+            
+            <!-- Left Sidebar Navigation / View Controls -->
+            <aside class="w-full md:w-64 bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 flex flex-col gap-2.5 shrink-0 h-fit">
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 pt-1 mb-0.5">Control Views</h3>
+                
+                <button onclick="switchView('staff')" id="btnStaffView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-blue-950 text-white shadow-sm transition flex items-center justify-between group">
+                    <span>Staff Overview</span>
+                    <span class="text-[10px] bg-blue-900 text-amber-300 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarTotalCount">-</span>
+                </button>
+                <button onclick="switchView('checkins')" id="btnCheckinsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span>Check-In Logs</span>
+                    <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckinCount">-</span>
+                </button>
+                <button onclick="switchView('checkouts')" id="btnCheckoutsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span>Check-Out Logs</span>
+                    <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckoutCount">-</span>
+                </button>
+
+                <div class="h-px bg-slate-200 my-2"></div>
+                
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Attendance Filters</h3>
+                
+                <button onclick="switchView('ontime')" id="btnOnTimeView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>On Time Today</span>
+                    </span>
+                    <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarOnTimeCount">-</span>
+                </button>
+                <button onclick="switchView('late')" id="btnLateView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span>Late Arrivals Today</span>
+                    </span>
+                    <span class="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarLateCount">-</span>
+                </button>
+                <button onclick="switchView('dailylogs')" id="btnDailylogsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span>daily logs by weekday</span>
+                    </span>
+                    <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarDailyLogsCount">-</span>
+                </button>
+
+                <div class="h-px bg-slate-200 my-2"></div>
+
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Government Actions</h3>
+                
+                <button onclick="exportAttendancePDF()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Export Attendance PDF</span>
+                </button>
+                <button onclick="sendOfficialReport()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-emerald-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <span>Send Report to Gov</span>
+                </button>
+            </aside>
+
+            <!-- Main Display Area -->
+            <main class="flex-1 flex flex-col gap-6">
+                <!-- Statistics Summary Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-blue-950 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Staff Registered</p>
+                        <h3 class="text-3xl font-black text-slate-900 mt-2 font-mono" id="totalCount">-</h3>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-emerald-600 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Present Today</p>
+                        <h3 class="text-3xl font-black text-emerald-600 mt-2 font-mono" id="presentCount">-</h3>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-rose-600 flex flex-col justify-between">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Absent / Pending Today</p>
+                        <h3 class="text-3xl font-black text-rose-600 mt-2 font-mono" id="absentCount">-</h3>
                     </div>
                 </div>
 
-                <!-- Table Section -->
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-                        <h3 class="font-bold text-slate-900">Attendance Records</h3>
+                <!-- Dynamic Data Table Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-6 flex flex-col">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-slate-100 gap-4">
+                        <div>
+                            <h3 class="text-base font-black text-slate-900 uppercase tracking-wide" id="tableTitle">Master Staff Attendance Overview</h3>
+                            <p class="text-xs text-slate-500 mt-0.5" id="tableSubtitle">Real-time database records synced directly from Supabase</p>
+                        </div>
+                        <button onclick="loadDashboardData()" class="px-4 py-2 bg-slate-900 hover:bg-blue-950 text-white text-xs font-bold rounded-lg transition shadow-sm flex items-center space-x-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span>Refresh Records</span>
+                        </button>
                     </div>
+
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr id="table-header-row" class="bg-slate-50 text-slate-500 font-semibold text-xs uppercase tracking-wider border-b border-slate-200">
+                                <tr id="tableHeaderRow" class="border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/70">
                                     <th class="py-3 px-4">SDMS ID</th>
                                     <th class="py-3 px-4">Staff Name</th>
                                     <th class="py-3 px-4">Position</th>
@@ -90,106 +158,165 @@
                                     <th class="py-3 px-4">Today's Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="table-body" class="divide-y divide-slate-100">
+                            <tbody id="masterTableBody" class="text-xs text-slate-600 divide-y divide-slate-100">
                                 <tr>
-                                    <td colspan="5" class="py-8 text-center text-slate-400 font-medium">Loading attendance data...</td>
+                                    <td colspan="5" class="py-8 text-center text-slate-400 font-medium">Establishing connection to database...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
-    <!-- JavaScript Application Logic -->
+    <!-- Official Institutional Footer -->
+    <footer class="bg-slate-950 text-slate-400 text-xs py-6 px-6 text-center border-t border-slate-900 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p>&copy; 2026 GS Gikagati &bull; All Rights Reserved &bull; Government of Rwanda Public Institution.</p>
+            <p class="text-slate-300 font-medium">IT CREATOR & DESIGNER: <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-amber-400 hover:underline">schoolsystems.ange.rw@gmail.com</a></p>
+        </div>
+    </footer>
+
+    <!-- Marquee Keyframes -->
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+
     <script>
+        const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentView = 'staff'; 
         let cachedStaff = [];
         let cachedAttendances = [];
-        let staffLookup = {};
-        let currentView = 'dashboard';
 
-        // Load data from mock/API sources or initialize state
-        function loadDashboardData() {
-            // Simulated data structure initialization to maintain full standalone capability
-            cachedStaff = [
-                { sdms_id: 'SDMS001', first_name: 'Ladislas', last_name: '', position_name: 'Head Teacher', system_role: 'Administrator' },
-                { sdms_id: 'SDMS002', first_name: 'Jean', last_name: 'Bosco', position_name: 'Teacher', system_role: 'Staff' }
-            ];
-            cachedAttendances = [
-                { sdms_id: 'SDMS001', status: 'check-in', date: new Date().toISOString().split('T')[0], created_at: new Date().toISOString() }
-            ];
+        async function loadDashboardData() {
+            const tableBody = document.getElementById('masterTableBody');
+            const totalCountElem = document.getElementById('totalCount');
+            const presentCountElem = document.getElementById('presentCount');
+            const absentCountElem = document.getElementById('absentCount');
+            
+            const sidebarTotal = document.getElementById('sidebarTotalCount');
+            const sidebarCheckin = document.getElementById('sidebarCheckinCount');
+            const sidebarCheckout = document.getElementById('sidebarCheckoutCount');
+            const sidebarOnTime = document.getElementById('sidebarOnTimeCount');
+            const sidebarLate = document.getElementById('sidebarLateCount');
+            const sidebarDailyLogs = document.getElementById('sidebarDailyLogsCount');
 
-            cachedStaff.forEach(s => {
-                staffLookup[s.sdms_id] = `${s.first_name || ''} ${s.last_name || ''}`.trim();
-            });
+            try {
+                // 1. Fetch staff members
+                const { data: staffData, error: staffError } = await supabaseClient
+                    .from('staffs')
+                    .select('*');
 
-            renderCurrentView();
+                if (staffError) throw staffError;
+                cachedStaff = staffData || [];
+
+                // 2. Fetch attendances
+                const { data: attData, error: attError } = await supabaseClient
+                    .from('attendances')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (attError) throw attError;
+                cachedAttendances = attData || [];
+
+                const todayString = new Date().toISOString().split('T')[0];
+                
+                const todayAttendanceMap = {};
+                let checkinCountToday = 0;
+                let checkoutCountToday = 0;
+                let onTimeCountToday = 0;
+                let lateCountToday = 0;
+
+                cachedAttendances.forEach(record => {
+                    const recordDate = record.date || '';
+                    if (recordDate === todayString && record.sdms_id) {
+                        todayAttendanceMap[record.sdms_id] = record;
+                    }
+                    if (record.status === 'check-in') {
+                        checkinCountToday++;
+                        if (record.created_at) {
+                            const checkInDate = new Date(record.created_at);
+                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                            if (totalMinutes > (7 * 60 + 30)) {
+                                lateCountToday++;
+                            } else {
+                                onTimeCountToday++;
+                            }
+                        }
+                    } else if (record.status === 'check-out') {
+                        checkoutCountToday++;
+                    }
+                });
+
+                let presentCount = 0;
+                cachedStaff.forEach(staff => {
+                    if (todayAttendanceMap[staff.sdms_id]) {
+                        presentCount++;
+                    }
+                });
+                let absentCount = cachedStaff.length - presentCount;
+
+                // Update Metric Cards
+                totalCountElem.textContent = cachedStaff.length;
+                presentCountElem.textContent = presentCount;
+                absentCountElem.textContent = absentCount;
+
+                // Update Sidebar Badges
+                sidebarTotal.textContent = cachedStaff.length;
+                sidebarCheckin.textContent = cachedAttendances.filter(r => r.status === 'check-in').length;
+                sidebarCheckout.textContent = cachedAttendances.filter(r => r.status === 'check-out').length;
+                sidebarOnTime.textContent = onTimeCountToday;
+                sidebarLate.textContent = lateCountToday;
+                sidebarDailyLogs.textContent = cachedAttendances.length;
+
+                renderView();
+
+            } catch (err) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-rose-600 font-medium">Database Connection Error: ${err.message}</td></tr>`;
+                console.error("Dashboard Sync Error:", err);
+            }
         }
 
         function switchView(viewName) {
             currentView = viewName;
-            renderCurrentView();
+            
+            const views = ['staff', 'checkins', 'checkouts', 'ontime', 'late', 'dailylogs'];
+            views.forEach(v => {
+                const btn = document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}View`);
+                if (btn) {
+                    btn.className = viewName === v 
+                        ? 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-blue-950 text-white shadow-sm transition flex items-center justify-between group'
+                        : 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group';
+                }
+            });
+
+            renderView();
         }
 
-        function renderCurrentView() {
-            const titleElem = document.getElementById('view-title');
-            const subtitleElem = document.getElementById('view-subtitle');
-            const headerRow = document.getElementById('table-header-row');
-            const tableBody = document.getElementById('table-body');
-            const container = document.getElementById('content-container');
+        function renderView() {
+            const tableBody = document.getElementById('masterTableBody');
+            const headerRow = document.getElementById('tableHeaderRow');
+            const titleElem = document.getElementById('tableTitle');
+            const subtitleElem = document.getElementById('tableSubtitle');
 
-            // Handle Leave Permits Custom View
-            if (currentView === 'leavepermit') {
-                titleElem.textContent = "Leave Permits Management";
-                subtitleElem.textContent = "Manage staff leave applications and authorized permissions";
-                container.innerHTML = `
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6 flex justify-between items-center">
-                        <div>
-                            <h3 class="font-bold text-slate-900">Active Leave Requests</h3>
-                            <p class="text-xs text-slate-500">Review or grant permission slips for school staff</p>
-                        </div>
-                        <button onclick="alert('Leave application modal feature placeholder')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                            + New Leave Request
-                        </button>
-                    </div>
-                `;
-                headerRow.innerHTML = `
-                    <th class="py-3 px-4">SDMS ID</th>
-                    <th class="py-3 px-4">Staff Name</th>
-                    <th class="py-3 px-4">Leave Type</th>
-                    <th class="py-3 px-4">Duration</th>
-                    <th class="py-3 px-4">Approval Status</th>
-                `;
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No active leave permits recorded.</td></tr>`;
-                return;
-            }
+            const staffLookup = {};
+            cachedStaff.forEach(s => {
+                staffLookup[s.sdms_id] = `${s.first_name || ''} ${s.last_name || ''}`.trim() || 'Unknown Staff';
+            });
 
-            // Reset dashboard stats block if not on dashboard view
-            if (currentView === 'dashboard') {
-                container.innerHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Staff</p>
-                            <h3 id="stat-total" class="text-3xl font-extrabold text-slate-900 mt-2">${cachedStaff.length}</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Present On Time</p>
-                            <h3 id="stat-ontime" class="text-3xl font-extrabold text-emerald-600 mt-2">-</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Late Arrivals</p>
-                            <h3 id="stat-late" class="text-3xl font-extrabold text-rose-600 mt-2">-</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Absent / Pending</p>
-                            <h3 id="stat-absent" class="text-3xl font-extrabold text-amber-600 mt-2">-</h3>
-                        </div>
-                    </div>
-                `;
+            const todayString = new Date().toISOString().split('T')[0];
 
-                titleElem.textContent = "Dashboard Overview";
-                subtitleElem.textContent = "Real-time attendance tracking and monitoring";
+            if (currentView === 'staff') {
+                titleElem.textContent = "Master Staff Attendance Overview";
+                subtitleElem.textContent = "Real-time institutional roster status synced from Supabase";
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
@@ -198,72 +325,82 @@
                     <th class="py-3 px-4">Today's Status</th>
                 `;
 
-                const todayString = new Date().toISOString().split('T')[0];
-                let presentCount = 0;
-                let lateCount = 0;
-                let tableDataHTML = '';
+                if (cachedStaff.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
+                    return;
+                }
 
+                const todayMap = {};
+                cachedAttendances.forEach(r => {
+                    if (r.date === todayString && r.sdms_id) {
+                        todayMap[r.sdms_id] = r;
+                    }
+                });
+
+                tableBody.innerHTML = '';
                 cachedStaff.forEach(staff => {
-                    const name = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
-                    const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id);
-                    let statusText = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-700 border border-amber-200">Pending / Absent</span>';
-
+                    const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
+                    const record = todayMap[staff.sdms_id];
+                    
+                    let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
+                    
                     if (record) {
                         if (record.status === 'check-out') {
-                            statusText = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>';
-                            presentCount++;
+                            badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>';
                         } else if (record.status === 'check-in' && record.created_at) {
-                            presentCount++;
                             const checkInDate = new Date(record.created_at);
                             const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
-                            if (totalMinutes > (7 * 60 + 30)) {
-                                lateCount++;
-                                statusText = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                            const cutoffMinutes = 7 * 60 + 30; // 7:30 AM limit
+
+                            if (totalMinutes > cutoffMinutes) {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
                             } else {
-                                statusText = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
                             }
                         }
                     }
 
-                    tableDataHTML += `
-                        <tr class="hover:bg-slate-50/80 transition duration-150">
-                            <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
-                            <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
-                            <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
-                            <td class="py-3 px-4 text-slate-600">${staff.system_role || '-'}</td>
-                            <td class="py-3 px-4">${statusText}</td>
-                        </tr>
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
+                        <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium border border-slate-200">${staff.system_role || '-'}</span></td>
+                        <td class="py-3 px-4">${badge}</td>
                     `;
+                    tableBody.appendChild(row);
                 });
 
-                tableBody.innerHTML = tableDataHTML;
-                document.getElementById('stat-ontime').textContent = presentCount - lateCount;
-                document.getElementById('stat-late').textContent = lateCount;
-                document.getElementById('stat-absent').textContent = cachedStaff.length - presentCount;
-                return;
-            }
+            } else if (currentView === 'checkins' || currentView === 'ontime' || currentView === 'late') {
+                if (currentView === 'checkins') {
+                    titleElem.textContent = "All Check-In Logs";
+                    subtitleElem.textContent = "Complete chronological history of staff check-in submissions";
+                } else if (currentView === 'ontime') {
+                    titleElem.textContent = "On-Time Staff Arrivals Today";
+                    subtitleElem.textContent = "Staff members who completed check-in on or before 7:30 AM";
+                } else if (currentView === 'late') {
+                    titleElem.textContent = "Late Staff Arrivals Today";
+                    subtitleElem.textContent = "Staff members who completed check-in after 7:30 AM";
+                }
 
-            // Views: ontime, late, checkouts, dailylogs
-            container.innerHTML = '';
-            if (currentView === 'ontime' || currentView === 'late') {
-                titleElem.textContent = currentView === 'ontime' ? "On-Time Check-In Logs" : "Late Arrival Logs";
-                subtitleElem.textContent = "Filtered view based on the 07:30 AM arrival rule";
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
-                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4">Arrival Status</th>
                     <th class="py-3 px-4">Date</th>
                     <th class="py-3 px-4">Exact Time</th>
                 `;
 
                 let logs = cachedAttendances.filter(r => r.status === 'check-in');
+                
                 if (currentView === 'ontime') {
                     logs = logs.filter(r => {
                         if (!r.created_at) return false;
                         const d = new Date(r.created_at);
                         return (d.getHours() * 60 + d.getMinutes()) <= (7 * 60 + 30);
                     });
-                } else {
+                } else if (currentView === 'late') {
                     logs = logs.filter(r => {
                         if (!r.created_at) return false;
                         const d = new Date(r.created_at);
@@ -280,13 +417,16 @@
                 logs.forEach(record => {
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                     const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                    
                     let statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time</span>';
                     if (record.created_at) {
                         const checkInDate = new Date(record.created_at);
-                        if ((checkInDate.getHours() * 60 + checkInDate.getMinutes()) > (7 * 60 + 30)) {
+                        const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                        if (totalMinutes > (7 * 60 + 30)) {
                             statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late</span>';
                         }
                     }
+
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
@@ -298,6 +438,7 @@
                     `;
                     tableBody.appendChild(row);
                 });
+
             } else if (currentView === 'checkouts') {
                 titleElem.textContent = "All Check-Out Logs";
                 subtitleElem.textContent = "Complete chronological history of staff check-out submissions";
@@ -308,11 +449,13 @@
                     <th class="py-3 px-4">Date</th>
                     <th class="py-3 px-4">Exact Time</th>
                 `;
+
                 const checkoutLogs = cachedAttendances.filter(r => r.status === 'check-out');
                 if (checkoutLogs.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-out records found.</td></tr>`;
                     return;
                 }
+
                 tableBody.innerHTML = '';
                 checkoutLogs.forEach(record => {
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
@@ -328,6 +471,7 @@
                     `;
                     tableBody.appendChild(row);
                 });
+
             } else if (currentView === 'dailylogs') {
                 titleElem.textContent = "Daily Logs By Weekday";
                 subtitleElem.textContent = "Grouped day-by-day logs with clear visual separation between different days";
@@ -338,22 +482,36 @@
                     <th class="py-3 px-4">Date / Weekday</th>
                     <th class="py-3 px-4">Status / Time</th>
                 `;
+
                 if (cachedAttendances.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No attendance logs available.</td></tr>`;
                     return;
                 }
+
                 tableBody.innerHTML = '';
+
+                // Group attendances by date string (e.g., '2026-06-05')
                 const groupedByDate = {};
                 cachedAttendances.forEach(record => {
                     const recordDateStr = record.date || (record.created_at ? record.created_at.split('T')[0] : 'Unknown Date');
-                    if (!groupedByDate[recordDateStr]) groupedByDate[recordDateStr] = [];
+                    if (!groupedByDate[recordDateStr]) {
+                        groupedByDate[recordDateStr] = [];
+                    }
                     groupedByDate[recordDateStr].push(record);
                 });
+
+                // Sort dates descending (newest day first)
                 const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
+
                 sortedDates.forEach((dateStr, index) => {
+                    // 1. Create a distinct section header row for each day
                     const dateObj = new Date(dateStr + 'T00:00:00');
-                    const weekdayName = !isNaN(dateObj) ? dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) : dateStr;
+                    const weekdayName = !isNaN(dateObj) 
+                        ? dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) 
+                        : dateStr;
+
                     const separatorRow = document.createElement('tr');
+                    // Add top spacing/border if it's not the first day block to create visual separation
                     const topMarginClass = index > 0 ? 'border-t-4 border-slate-200' : '';
                     separatorRow.className = `bg-slate-100 font-bold text-slate-900 ${topMarginClass}`;
                     separatorRow.innerHTML = `
@@ -363,14 +521,19 @@
                         </td>
                     `;
                     tableBody.appendChild(separatorRow);
+
+                    // 2. Render records belonging to this specific date
                     groupedByDate[dateStr].forEach(record => {
                         const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                         const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                        
                         let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-700 border border-slate-200">-</span>';
+                        
                         if (record.status === 'check-in') {
                             if (record.created_at) {
                                 const checkInDate = new Date(record.created_at);
-                                if ((checkInDate.getHours() * 60 + checkInDate.getMinutes()) > (7 * 60 + 30)) {
+                                const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                                if (totalMinutes > (7 * 60 + 30)) {
                                     badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${timeFormatted})</span>`;
                                 } else {
                                     badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${timeFormatted})</span>`;
@@ -383,6 +546,7 @@
                         } else {
                             badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">${record.status || 'Unknown'} (${timeFormatted})</span>`;
                         }
+
                         const row = document.createElement('tr');
                         row.className = 'hover:bg-slate-50/80 transition duration-150';
                         row.innerHTML = `
@@ -398,12 +562,15 @@
             }
         }
 
+        // Action: Export Attendance to PDF
         function exportAttendancePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
             doc.text("GS GIKAGATI - OFFICIAL ATTENDANCE REPORT", 14, 20);
+            
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
@@ -411,6 +578,7 @@
 
             let tableData = [];
             const todayString = new Date().toISOString().split('T')[0];
+
             const todayMap = {};
             cachedAttendances.forEach(r => {
                 if (r.date === todayString && r.sdms_id) {
@@ -422,18 +590,21 @@
                 const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                 const record = todayMap[staff.sdms_id];
                 let statusText = "Pending / Absent";
+                
                 if (record) {
                     if (record.status === 'check-out') {
                         statusText = "Checked Out";
                     } else if (record.status === 'check-in' && record.created_at) {
                         const checkInDate = new Date(record.created_at);
-                        if ((checkInDate.getHours() * 60 + checkInDate.getMinutes()) > (7 * 60 + 30)) {
+                        const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                        if (totalMinutes > (7 * 60 + 30)) {
                             statusText = `Late (${checkInDate.toLocaleTimeString()})`;
                         } else {
                             statusText = `On Time (${checkInDate.toLocaleTimeString()})`;
                         }
                     }
                 }
+
                 tableData.push([
                     staff.sdms_id || '-',
                     fullName,
@@ -451,12 +622,18 @@
                 headStyles: { fillColor: [15, 23, 42] },
                 styles: { fontSize: 9 }
             });
+
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
 
+        // Action: Official Report Transmission via Gmail Web Direct Compose (Reliable & Browser-Friendly)
         function sendOfficialReport() {
             const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
-            if (govEmail === null) return;
+            
+            if (govEmail === null) {
+                return; // User clicked Cancel
+            }
+
             if (!govEmail.trim() || !govEmail.includes("@") || !govEmail.includes(".")) {
                 alert("Operation cancelled or invalid email format provided.");
                 return;
@@ -478,6 +655,7 @@
             });
 
             const absentCount = cachedStaff.length - presentCount;
+
             const subject = `Official Daily Attendance Report - GS Gikagati (${todayString})`;
             const body = 
                 `OFFICIAL DAILY ATTENDANCE REPORT\n` +
@@ -495,10 +673,12 @@
                 `Submitted via GS Gikagati Master Control Portal\n` +
                 `Authorized by Head Teacher: Ladislas`;
 
+            // Opens Gmail web compose tab directly with prefilled parameters
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.open(gmailUrl, '_blank');
         }
 
+        // Initialize dashboard sync on load
         window.onload = function() {
             loadDashboardData();
         };
