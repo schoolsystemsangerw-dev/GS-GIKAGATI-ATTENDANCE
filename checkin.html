@@ -60,6 +60,10 @@
                     <input type="date" id="leaveDate" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-sky-400">
                 </div>
                 <div>
+                    <label for="leaveEmail" class="block text-xs font-medium text-slate-400 uppercase mb-2">Email to Receive Notification</label>
+                    <input type="email" id="leaveEmail" placeholder="staff.name@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-sky-400">
+                </div>
+                <div>
                     <label for="leaveReason" class="block text-xs font-medium text-slate-400 uppercase mb-2">Reason for Permission</label>
                     <textarea id="leaveReason" rows="3" placeholder="Provide details for your absence request..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-sky-400"></textarea>
                 </div>
@@ -115,6 +119,7 @@
         const permissionFields = document.getElementById('permissionFields');
         const cameraContainer = document.getElementById('cameraContainer');
         const leaveDateInput = document.getElementById('leaveDate');
+        const leaveEmailInput = document.getElementById('leaveEmail');
         const leaveReasonInput = document.getElementById('leaveReason');
 
         function setActiveButton(selected) {
@@ -218,16 +223,18 @@
 
                 if (actionType === 'permission') {
                     const leaveDate = leaveDateInput.value;
+                    const email = leaveEmailInput.value.trim();
                     const reason = leaveReasonInput.value.trim();
 
-                    if (!leaveDate || !reason) {
-                        throw new Error("Please fill in both the target date and reason for leave.");
+                    if (!leaveDate || !email || !reason) {
+                        throw new Error("Please fill in the target date, notification email, and reason for leave.");
                     }
 
                     const { error: leaveError } = await supabaseClient
                         .from('leave_requests')
                         .insert([{
                             sdms_id: selectedSdms,
+                            email: email,
                             leave_date: leaveDate,
                             reason: reason,
                             status: 'pending'
