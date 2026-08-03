@@ -287,20 +287,19 @@
                 if (attError) throw attError;
                 cachedAttendances = attData || [];
 
-                // 3. Fetch leave requests (table name assumption: 'leaves' or 'leave_requests')
-                // We'll safely check or try 'leaves' table. If table has not been created yet in Supabase, we fallback gracefully.
+                // 3. Fetch leave requests from 'leave_requests' table (matching your Supabase schema screenshot)
                 try {
                     const { data: leaveData, error: leaveError } = await supabaseClient
-                        .from('leaves')
+                        .from('leave_requests')
                         .select('*')
-                        .order('created_at', { ascending: false });
+                        .order('leave_date', { ascending: false });
                     
                     if (!leaveError) {
                         cachedLeaves = leaveData || [];
                     } else {
-                        // Try alternative name 'leave_requests'
+                        // Fallback to 'leaves' if needed
                         const { data: leaveDataAlt, error: leaveErrorAlt } = await supabaseClient
-                            .from('leave_requests')
+                            .from('leaves')
                             .select('*')
                             .order('created_at', { ascending: false });
                         if (!leaveErrorAlt) {
@@ -642,36 +641,38 @@
                 });
 
             } else if (currentView === 'leaves') {
-                titleElem.textContent = "Staff Leave & Permission Requests";
-                subtitleElem.textContent = "Review permission requests submitted by staff members and grant or reject them";
+                titleElem.textContent = "Staff Leave Requests (Supabase leave_requests)";
+                subtitleElem.textContent = "Review leave requests submitted by staff members and approve or reject them directly";
                 headerRow.innerHTML = `
+                    <th class="py-3 px-4">Request ID</th>
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
-                    <th class="py-3 px-4">Date Needed Off</th>
-                    <th class="py-3 px-4">Reason / Details</th>
-                    <th class="py-3 px-4">Status & Decision Action</th>
+                    <th class="py-3 px-4">Leave Date</th>
+                    <th class="py-3 px-4">Reason</th>
+                    <th class="py-3 px-4">Current Status & Action</th>
                 `;
 
                 if (cachedLeaves.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No leave permission requests found in the database. (Note: Ensure table 'leaves' exists in Supabase)</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No leave requests found in 'leave_requests' table.</td></tr>`;
                     return;
                 }
 
                 tableBody.innerHTML = '';
                 cachedLeaves.forEach(req => {
-                    const name = staffLookup[req.sdms_id] || req.staff_name || 'Unknown Staff';
-                    const status = req.status || 'pending';
+                    const name = staffLookup[req.sdms_id] || 'Unknown Staff';
+                    const status = (req.status || 'pending').toLowerCase();
+                    const shortId = req.id ? req.id.substring(0, 8) + '...' : '-';
                     
                     let actionHtml = '';
-                    if (status === 'granted') {
-                        actionHtml = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Granted</span>';
+                    if (status === 'approved' || status === 'granted') {
+                        actionHtml = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Approved</span>';
                     } else if (status === 'rejected') {
                         actionHtml = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Rejected</span>';
                     } else {
                         actionHtml = `
                             <div class="flex items-center space-x-2">
-                                <button onclick="updateLeaveStatus('${req.id}', 'granted')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] shadow transition">Grant</button>
-                                <button onclick="updateLeaveStatus('${req.id}', 'rejected')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded text-[10px] shadow transition">Reject</button>
+                                <button onclick="updateLeaveRequestStatus('${req.id}', 'approved')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] shadow transition">Approve</button>
+                                <button onclick="updateLeaveRequestStatus('${req.id}', 'rejected')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded text-[10px] shadow transition">Reject</button>
                             </div>
                         `;
                     }
@@ -679,9 +680,10 @@
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
+                        <td class="py-3 px-4 font-mono text-slate-400" title="${req.id || ''}">${shortId}</td>
                         <td class="py-3 px-4 font-mono font-bold text-slate-800">${req.sdms_id || '-'}</td>
                         <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
-                        <td class="py-3 px-4 text-slate-600 font-mono">${req.date_needed || req.date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${req.leave_date || '-'}</td>
                         <td class="py-3 px-4 text-slate-700 max-w-xs truncate" title="${req.reason || ''}">${req.reason || '-'}</td>
                         <td class="py-3 px-4">${actionHtml}</td>
                     `;
@@ -690,24 +692,15 @@
             }
         }
 
-        // Handle Grant / Reject Leave Action
-        async function updateLeaveStatus(requestId, newStatus) {
+        // Handle Approve / Reject Action on leave_requests table
+        async function updateLeaveRequestStatus(requestId, newStatus) {
             try {
-                // Try updating 'leaves' table first
-                let { error } = await supabaseClient
-                    .from('leaves')
+                const { error } = await supabaseClient
+                    .from('leave_requests')
                     .update({ status: newStatus })
                     .eq('id', requestId);
 
-                if (error) {
-                    // Try alternative 'leave_requests' table
-                    let { error: errorAlt } = await supabaseClient
-                        .from('leave_requests')
-                        .update({ status: newStatus })
-                        .eq('id', requestId);
-                    
-                    if (errorAlt) throw errorAlt;
-                }
+                if (error) throw error;
 
                 alert(`Leave request successfully ${newStatus}!`);
                 loadDashboardData();
@@ -781,12 +774,12 @@
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
 
-        // Action: Official Report Transmission via Gmail Web Direct Compose (Reliable & Browser-Friendly)
+        // Action: Official Report Transmission via Gmail Web Direct Compose
         function sendOfficialReport() {
             const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
             
             if (govEmail === null) {
-                return; // User clicked Cancel
+                return;
             }
 
             if (!govEmail.trim() || !govEmail.includes("@") || !govEmail.includes(".")) {
@@ -828,7 +821,6 @@
                 `Submitted via GS Gikagati Master Control Portal\n` +
                 `Authorized by Head Teacher: Ladislas`;
 
-            // Opens Gmail web compose tab directly with prefilled parameters
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.open(gmailUrl, '_blank');
         }
@@ -883,8 +875,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            // Document Header Box
-            doc.setFillColor(15, 23, 42); // Slate 950
+            doc.setFillColor(15, 23, 42);
             doc.rect(14, 15, 182, 25, 'F');
             
             doc.setTextColor(255, 255, 255);
@@ -896,7 +887,6 @@
             doc.setFont("helvetica", "normal");
             doc.text("Republic of Rwanda | East Province | Nyagatare District | Karama Sector", 20, 33);
 
-            // Permit Content
             doc.setTextColor(30, 41, 59);
             doc.setFontSize(11);
             doc.setFont("helvetica", "bold");
@@ -946,7 +936,6 @@
             closeLeavePermitModal();
         }
 
-        // Initialize dashboard sync on load
         window.onload = function() {
             loadDashboardData();
         };
