@@ -101,6 +101,13 @@
                     </span>
                     <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarDailyLogsCount">-</span>
                 </button>
+                <button onclick="switchView('leaves')" id="btnLeavesView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                        <span>Leave Requests</span>
+                    </span>
+                    <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarLeaveCount">-</span>
+                </button>
 
                 <div class="h-px bg-slate-200 my-2"></div>
 
@@ -116,7 +123,7 @@
                 </button>
                 <button onclick="openLeavePermitModal()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition flex items-center space-x-2 group">
                     <svg class="w-4 h-4 text-amber-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4"></path></svg>
-                    <span>Leave Permit</span>
+                    <span>Issue Leave Permit</span>
                 </button>
             </aside>
 
@@ -174,7 +181,7 @@
         </div>
     </div>
 
-    <!-- Leave Permit Modal -->
+    <!-- Leave Permit Modal (Direct Generation) -->
     <div id="leaveModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden flex flex-col">
             <div class="bg-blue-950 text-white p-5 flex justify-between items-center border-b-2 border-amber-500">
@@ -216,7 +223,7 @@
 
             <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end space-x-3">
                 <button onclick="closeLeavePermitModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition">Cancel</button>
-                <button onclick="generateLeavePermitPDF()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition shadow">Generate Permit PDF</button>
+                <button onclick="generateLeavePermitPDFDirect()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition shadow">Generate Permit PDF</button>
             </div>
         </div>
     </div>
@@ -246,6 +253,7 @@
         let currentView = 'staff'; 
         let cachedStaff = [];
         let cachedAttendances = [];
+        let cachedLeaves = [];
 
         async function loadDashboardData() {
             const tableBody = document.getElementById('masterTableBody');
@@ -259,6 +267,7 @@
             const sidebarOnTime = document.getElementById('sidebarOnTimeCount');
             const sidebarLate = document.getElementById('sidebarLateCount');
             const sidebarDailyLogs = document.getElementById('sidebarDailyLogsCount');
+            const sidebarLeave = document.getElementById('sidebarLeaveCount');
 
             try {
                 // 1. Fetch staff members
@@ -277,6 +286,30 @@
 
                 if (attError) throw attError;
                 cachedAttendances = attData || [];
+
+                // 3. Fetch leave requests (table name assumption: 'leaves' or 'leave_requests')
+                // We'll safely check or try 'leaves' table. If table has not been created yet in Supabase, we fallback gracefully.
+                try {
+                    const { data: leaveData, error: leaveError } = await supabaseClient
+                        .from('leaves')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    
+                    if (!leaveError) {
+                        cachedLeaves = leaveData || [];
+                    } else {
+                        // Try alternative name 'leave_requests'
+                        const { data: leaveDataAlt, error: leaveErrorAlt } = await supabaseClient
+                            .from('leave_requests')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+                        if (!leaveErrorAlt) {
+                            cachedLeaves = leaveDataAlt || [];
+                        }
+                    }
+                } catch(e) {
+                    cachedLeaves = [];
+                }
 
                 const todayString = new Date().toISOString().split('T')[0];
                 
@@ -327,6 +360,7 @@
                 sidebarOnTime.textContent = onTimeCountToday;
                 sidebarLate.textContent = lateCountToday;
                 sidebarDailyLogs.textContent = cachedAttendances.length;
+                sidebarLeave.textContent = cachedLeaves.filter(l => !l.status || l.status === 'pending').length;
 
                 renderView();
 
@@ -339,7 +373,7 @@
         function switchView(viewName) {
             currentView = viewName;
             
-            const views = ['staff', 'checkins', 'checkouts', 'ontime', 'late', 'dailylogs'];
+            const views = ['staff', 'checkins', 'checkouts', 'ontime', 'late', 'dailylogs', 'leaves'];
             views.forEach(v => {
                 const btn = document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}View`);
                 if (btn) {
@@ -606,6 +640,80 @@
                         tableBody.appendChild(row);
                     });
                 });
+
+            } else if (currentView === 'leaves') {
+                titleElem.textContent = "Staff Leave & Permission Requests";
+                subtitleElem.textContent = "Review permission requests submitted by staff members and grant or reject them";
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Date Needed Off</th>
+                    <th class="py-3 px-4">Reason / Details</th>
+                    <th class="py-3 px-4">Status & Decision Action</th>
+                `;
+
+                if (cachedLeaves.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No leave permission requests found in the database. (Note: Ensure table 'leaves' exists in Supabase)</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                cachedLeaves.forEach(req => {
+                    const name = staffLookup[req.sdms_id] || req.staff_name || 'Unknown Staff';
+                    const status = req.status || 'pending';
+                    
+                    let actionHtml = '';
+                    if (status === 'granted') {
+                        actionHtml = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Granted</span>';
+                    } else if (status === 'rejected') {
+                        actionHtml = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Rejected</span>';
+                    } else {
+                        actionHtml = `
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateLeaveStatus('${req.id}', 'granted')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] shadow transition">Grant</button>
+                                <button onclick="updateLeaveStatus('${req.id}', 'rejected')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded text-[10px] shadow transition">Reject</button>
+                            </div>
+                        `;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${req.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${req.date_needed || req.date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-700 max-w-xs truncate" title="${req.reason || ''}">${req.reason || '-'}</td>
+                        <td class="py-3 px-4">${actionHtml}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        // Handle Grant / Reject Leave Action
+        async function updateLeaveStatus(requestId, newStatus) {
+            try {
+                // Try updating 'leaves' table first
+                let { error } = await supabaseClient
+                    .from('leaves')
+                    .update({ status: newStatus })
+                    .eq('id', requestId);
+
+                if (error) {
+                    // Try alternative 'leave_requests' table
+                    let { error: errorAlt } = await supabaseClient
+                        .from('leave_requests')
+                        .update({ status: newStatus })
+                        .eq('id', requestId);
+                    
+                    if (errorAlt) throw errorAlt;
+                }
+
+                alert(`Leave request successfully ${newStatus}!`);
+                loadDashboardData();
+            } catch (err) {
+                alert(`Error updating leave request status: ${err.message}`);
+                console.error(err);
             }
         }
 
@@ -749,7 +857,7 @@
             document.getElementById('leaveModal').classList.add('hidden');
         }
 
-        function generateLeavePermitPDF() {
+        function generateLeavePermitPDFDirect() {
             const staffId = document.getElementById('leaveStaffSelect').value;
             const startDate = document.getElementById('leaveStartDate').value;
             const endDate = document.getElementById('leaveEndDate').value;
