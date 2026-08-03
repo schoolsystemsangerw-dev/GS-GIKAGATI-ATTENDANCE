@@ -114,6 +114,10 @@
                     <svg class="w-4 h-4 text-emerald-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                     <span>Send Report to Gov</span>
                 </button>
+                <button onclick="openLeavePermitModal()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-amber-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4"></path></svg>
+                    <span>Leave Permit</span>
+                </button>
             </aside>
 
             <!-- Main Display Area -->
@@ -167,6 +171,53 @@
                     </div>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <!-- Leave Permit Modal -->
+    <div id="leaveModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden flex flex-col">
+            <div class="bg-blue-950 text-white p-5 flex justify-between items-center border-b-2 border-amber-500">
+                <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                    <h3 class="font-black text-sm uppercase tracking-wider">Issue Official Staff Leave Permit</h3>
+                </div>
+                <button onclick="closeLeavePermitModal()" class="text-slate-300 hover:text-white font-bold text-lg px-2">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Select Staff Member:</label>
+                    <select id="leaveStaffSelect" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-800 focus:outline-blue-950">
+                        <option value="">-- Choose Staff Member --</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Start Date:</label>
+                        <input type="date" id="leaveStartDate" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-800 focus:outline-blue-950">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">End Date:</label>
+                        <input type="date" id="leaveEndDate" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-800 focus:outline-blue-950">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Reason for Leave / Permit Type:</label>
+                    <textarea id="leaveReason" rows="3" placeholder="e.g. Annual Leave, Medical Leave, Official Mission..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-800 focus:outline-blue-950"></textarea>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-amber-900 text-[11px] font-medium">
+                    ⚠️ Generating this permit will download an official authorized PDF document signed by Head Teacher Ladislas for GS Gikagati.
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end space-x-3">
+                <button onclick="closeLeavePermitModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition">Cancel</button>
+                <button onclick="generateLeavePermitPDF()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition shadow">Generate Permit PDF</button>
+            </div>
         </div>
     </div>
 
@@ -672,6 +723,119 @@
             // Opens Gmail web compose tab directly with prefilled parameters
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.open(gmailUrl, '_blank');
+        }
+
+        // Leave Permit Modal Controls & PDF Generator
+        function openLeavePermitModal() {
+            const selectElem = document.getElementById('leaveStaffSelect');
+            selectElem.innerHTML = '<option value="">-- Choose Staff Member --</option>';
+            
+            cachedStaff.forEach(staff => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || 'Unknown';
+                const opt = document.createElement('option');
+                opt.value = staff.sdms_id;
+                opt.textContent = `${fullName} (SDMS: ${staff.sdms_id})`;
+                selectElem.appendChild(opt);
+            });
+
+            document.getElementById('leaveStartDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('leaveEndDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('leaveReason').value = '';
+
+            document.getElementById('leaveModal').classList.remove('hidden');
+        }
+
+        function closeLeavePermitModal() {
+            document.getElementById('leaveModal').classList.add('hidden');
+        }
+
+        function generateLeavePermitPDF() {
+            const staffId = document.getElementById('leaveStaffSelect').value;
+            const startDate = document.getElementById('leaveStartDate').value;
+            const endDate = document.getElementById('leaveEndDate').value;
+            const reason = document.getElementById('leaveReason').value.trim();
+
+            if (!staffId) {
+                alert("Please select a staff member for the leave permit.");
+                return;
+            }
+            if (!startDate || !endDate) {
+                alert("Please specify both start and end dates.");
+                return;
+            }
+            if (!reason) {
+                alert("Please provide a reason or permit type.");
+                return;
+            }
+
+            const staffObj = cachedStaff.find(s => s.sdms_id === staffId);
+            const staffName = staffObj ? `${staffObj.first_name || ''} ${staffObj.last_name || ''}`.trim() : 'Staff Member';
+            const staffPosition = staffObj ? (staffObj.position_name || 'Staff') : 'Staff';
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Document Header Box
+            doc.setFillColor(15, 23, 42); // Slate 950
+            doc.rect(14, 15, 182, 25, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("GS GIKAGATI - OFFICIAL LEAVE PERMIT", 20, 25);
+            
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text("Republic of Rwanda | East Province | Nyagatare District | Karama Sector", 20, 33);
+
+            // Permit Content
+            doc.setTextColor(30, 41, 59);
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "bold");
+            doc.text(`CERTIFICATE OF AUTHORIZED LEAVE`, 14, 52);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            let y = 62;
+            
+            const details = [
+                `Staff Name: ${staffName}`,
+                `SDMS ID: ${staffId}`,
+                `Position / Title: ${staffPosition}`,
+                `Period of Leave: From ${startDate} To ${endDate}`,
+                `Reason / Permit Category: ${reason}`,
+                `Date of Issuance: ${new Date().toLocaleDateString()}`
+            ];
+
+            details.forEach(line => {
+                doc.text(line, 14, y);
+                y += 8;
+            });
+
+            y += 10;
+            doc.setDrawColor(200, 200, 200);
+            doc.line(14, y, 196, y);
+
+            y += 15;
+            doc.setFont("helvetica", "bold");
+            doc.text("AUTHORIZATION & APPROVAL:", 14, y);
+            
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            doc.text("This official leave permit has been duly granted and authorized by the Head Teacher.", 14, y);
+
+            y += 25;
+            doc.text("____________________________________________", 14, y);
+            y += 6;
+            doc.setFont("helvetica", "bold");
+            doc.text("Ladislas", 14, y);
+            y += 5;
+            doc.setFont("helvetica", "normal");
+            doc.text("Head Teacher, GS Gikagati", 14, y);
+            doc.text("Phone: 0788754668", 14, y + 5);
+
+            doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
+            closeLeavePermitModal();
         }
 
         // Initialize dashboard sync on load
