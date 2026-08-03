@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Attendance Check-In | GS Gikagati</title>
+    <title>Staff Portal | GS Gikagati</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase UMD CDN -->
@@ -19,7 +19,7 @@
     <header class="bg-slate-800 border-b border-slate-700 py-6 px-4 shadow-md">
         <div class="max-w-xl mx-auto text-center">
             <h1 class="text-2xl font-bold tracking-wide text-amber-400 uppercase">GS Gikagati</h1>
-            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Staff Attendance Portal</p>
+            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Staff Attendance & Permission Portal</p>
         </div>
     </header>
 
@@ -27,14 +27,15 @@
     <main class="max-w-xl w-full mx-auto p-4 flex-grow flex flex-col justify-center">
         <div class="bg-slate-800/85 backdrop-blur border border-slate-700 rounded-xl p-6 shadow-xl">
             
-            <h2 class="text-lg font-semibold text-center text-slate-200 mb-6">Daily Verification & Sign-In</h2>
+            <h2 id="formTitle" class="text-lg font-semibold text-center text-slate-200 mb-6">Daily Verification & Sign-In</h2>
 
             <!-- Action Type Selection -->
             <div class="mb-4">
                 <label class="block text-xs font-medium text-slate-400 uppercase mb-2">Select Action</label>
-                <div class="grid grid-cols-2 gap-4">
-                    <button type="button" id="btnCheckIn" class="py-2.5 px-4 rounded-lg font-semibold text-sm border border-emerald-500 bg-emerald-500/20 text-emerald-400 transition">Check In</button>
-                    <button type="button" id="btnCheckOut" class="py-2.5 px-4 rounded-lg font-semibold text-sm border border-slate-600 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition">Check Out</button>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" id="btnCheckIn" class="py-2.5 px-2 rounded-lg font-semibold text-xs border border-emerald-500 bg-emerald-500/20 text-emerald-400 transition text-center">Check In</button>
+                    <button type="button" id="btnCheckOut" class="py-2.5 px-2 rounded-lg font-semibold text-xs border border-slate-600 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition text-center">Check Out</button>
+                    <button type="button" id="btnPermission" class="py-2.5 px-2 rounded-lg font-semibold text-xs border border-slate-600 text-slate-400 hover:border-sky-500 hover:text-sky-400 transition text-center">Request Leave</button>
                 </div>
             </div>
 
@@ -52,8 +53,20 @@
                 <input type="password" id="sdmsPassword" placeholder="Enter your secret SDMS ID" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-amber-400">
             </div>
 
-            <!-- Live Photo Verification -->
-            <div class="mb-6">
+            <!-- Permission-Specific Fields (Hidden by default) -->
+            <div id="permissionFields" class="hidden space-y-4 mb-4">
+                <div>
+                    <label for="leaveDate" class="block text-xs font-medium text-slate-400 uppercase mb-2">Date Needed Off</label>
+                    <input type="date" id="leaveDate" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-sky-400">
+                </div>
+                <div>
+                    <label for="leaveReason" class="block text-xs font-medium text-slate-400 uppercase mb-2">Reason for Permission</label>
+                    <textarea id="leaveReason" rows="3" placeholder="Provide details for your absence request..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-sky-400"></textarea>
+                </div>
+            </div>
+
+            <!-- Live Photo Verification (Hidden during permission requests) -->
+            <div id="cameraContainer" class="mb-6">
                 <label class="block text-xs font-medium text-slate-400 uppercase mb-2">Live Photo Verification</label>
                 <div class="relative bg-slate-900 border border-slate-700 rounded-lg overflow-hidden flex flex-col items-center justify-center p-2">
                     <video id="videoElement" autoplay playsinline class="w-full h-48 object-cover rounded-lg bg-black"></video>
@@ -85,28 +98,61 @@
         const { createClient } = window.supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let actionType = 'check-in'; // Updated to standard format
+        let actionType = 'check-in'; // 'check-in', 'check-out', or 'permission'
 
         const btnCheckIn = document.getElementById('btnCheckIn');
         const btnCheckOut = document.getElementById('btnCheckOut');
+        const btnPermission = document.getElementById('btnPermission');
+        
         const staffSelect = document.getElementById('staffSelect');
         const sdmsPassword = document.getElementById('sdmsPassword');
         const videoElement = document.getElementById('videoElement');
         const canvasElement = document.getElementById('canvasElement');
         const submitBtn = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMsg');
+        
+        const formTitle = document.getElementById('formTitle');
+        const permissionFields = document.getElementById('permissionFields');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const leaveDateInput = document.getElementById('leaveDate');
+        const leaveReasonInput = document.getElementById('leaveReason');
 
-        btnCheckIn.addEventListener('click', () => {
-            actionType = 'check-in';
-            btnCheckIn.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-emerald-500 bg-emerald-500/20 text-emerald-400 transition';
-            btnCheckOut.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-slate-600 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition';
-        });
+        function setActiveButton(selected) {
+            actionType = selected;
+            
+            // Reset styles
+            btnCheckIn.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-slate-600 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 transition text-center';
+            btnCheckOut.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-slate-600 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition text-center';
+            btnPermission.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-slate-600 text-slate-400 hover:border-sky-500 hover:text-sky-400 transition text-center';
 
-        btnCheckOut.addEventListener('click', () => {
-            actionType = 'check-out';
-            btnCheckOut.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-amber-500 bg-amber-500/20 text-amber-400 transition';
-            btnCheckIn.className = 'py-2.5 px-4 rounded-lg font-semibold text-sm border border-slate-600 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 transition';
-        });
+            if (selected === 'check-in') {
+                btnCheckIn.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-emerald-500 bg-emerald-500/20 text-emerald-400 transition text-center';
+                formTitle.textContent = 'Daily Verification & Sign-In';
+                submitBtn.textContent = 'Submit Attendance Record';
+                submitBtn.className = 'w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-lg transition';
+                permissionFields.classList.add('hidden');
+                cameraContainer.classList.remove('hidden');
+            } else if (selected === 'check-out') {
+                btnCheckOut.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-amber-500 bg-amber-500/20 text-amber-400 transition text-center';
+                formTitle.textContent = 'Daily Verification & Sign-Out';
+                submitBtn.textContent = 'Submit Check-Out Record';
+                submitBtn.className = 'w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg shadow-lg transition';
+                permissionFields.classList.add('hidden');
+                cameraContainer.classList.remove('hidden');
+            } else if (selected === 'permission') {
+                btnPermission.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-sky-500 bg-sky-500/20 text-sky-400 transition text-center';
+                formTitle.textContent = 'Request Permission / Leave';
+                submitBtn.textContent = 'Submit Permission Request';
+                submitBtn.className = 'w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-lg shadow-lg transition';
+                permissionFields.classList.remove('hidden');
+                cameraContainer.classList.add('hidden');
+            }
+            statusMsg.textContent = '';
+        }
+
+        btnCheckIn.addEventListener('click', () => setActiveButton('check-in'));
+        btnCheckOut.addEventListener('click', () => setActiveButton('check-out'));
+        btnPermission.addEventListener('click', () => setActiveButton('permission'));
 
         async function loadStaff() {
             try {
@@ -140,7 +186,7 @@
                 videoElement.srcObject = stream;
             } catch (err) {
                 console.error("Camera access denied:", err);
-                statusMsg.textContent = "Warning: Camera access is required for verification.";
+                statusMsg.textContent = "Warning: Camera access is required for attendance verification.";
                 statusMsg.className = "mt-4 text-center text-xs font-semibold text-amber-400";
             }
         }
@@ -165,29 +211,54 @@
             }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = "Verifying & Recording...";
+            submitBtn.textContent = "Processing Request...";
 
             try {
-                const context = canvasElement.getContext('2d');
-                canvasElement.width = videoElement.videoWidth || 320;
-                canvasElement.height = videoElement.videoHeight || 240;
-                context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-
                 const todayDate = new Date().toISOString().split('T')[0];
 
-                const { error: insertError } = await supabaseClient
-                    .from('attendances')
-                    .insert([{
-                        sdms_id: selectedSdms,
-                        status: actionType,
-                        date: todayDate,
-                        created_at: new Date().toISOString()
-                    }]);
+                if (actionType === 'permission') {
+                    const leaveDate = leaveDateInput.value;
+                    const reason = leaveReasonInput.value.trim();
 
-                if (insertError) throw insertError;
+                    if (!leaveDate || !reason) {
+                        throw new Error("Please fill in both the target date and reason for leave.");
+                    }
 
-                statusMsg.className = 'mt-4 text-center text-xs font-semibold text-emerald-400';
-                statusMsg.textContent = `Success! Attendance recorded successfully.`;
+                    const { error: leaveError } = await supabaseClient
+                        .from('leave_requests')
+                        .insert([{
+                            sdms_id: selectedSdms,
+                            leave_date: leaveDate,
+                            reason: reason,
+                            status: 'pending'
+                        }]);
+
+                    if (leaveError) throw leaveError;
+
+                    statusMsg.className = 'mt-4 text-center text-xs font-semibold text-sky-400';
+                    statusMsg.textContent = `Success! Permission request submitted for approval.`;
+
+                } else {
+                    // Check-in or Check-out flow
+                    const context = canvasElement.getContext('2d');
+                    canvasElement.width = videoElement.videoWidth || 320;
+                    canvasElement.height = videoElement.videoHeight || 240;
+                    context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+                    const { error: insertError } = await supabaseClient
+                        .from('attendances')
+                        .insert([{
+                            sdms_id: selectedSdms,
+                            status: actionType,
+                            date: todayDate,
+                            created_at: new Date().toISOString()
+                        }]);
+
+                    if (insertError) throw insertError;
+
+                    statusMsg.className = 'mt-4 text-center text-xs font-semibold text-emerald-400';
+                    statusMsg.textContent = `Success! Attendance record saved.`;
+                }
 
                 setTimeout(() => { location.reload(); }, 3000);
 
@@ -195,7 +266,7 @@
                 statusMsg.className = 'mt-4 text-center text-xs font-semibold text-rose-400';
                 statusMsg.textContent = `Error: ${err.message}`;
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Attendance Record';
+                setActiveButton(actionType); // reset button text
             }
         });
     </script>
