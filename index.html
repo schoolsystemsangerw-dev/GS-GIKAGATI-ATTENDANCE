@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Official Master Control | GS Gikagati</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Include jsPDF for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -80,7 +80,7 @@
                 
                 <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Attendance Filters</h3>
                 
-                <button onclick="switchView('ontime')" id="btnOnTimeView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                <button onclick="switchView('ontime')" id="btnOntimeView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
                     <span class="flex items-center space-x-2">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                         <span>On Time Today</span>
@@ -97,7 +97,7 @@
                 <button onclick="switchView('dailylogs')" id="btnDailylogsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
                     <span class="flex items-center space-x-2">
                         <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                        <span>daily logs by weekday</span>
+                        <span>Daily Logs by Weekday</span>
                     </span>
                     <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarDailyLogsCount">-</span>
                 </button>
@@ -351,11 +351,12 @@
                             const checkInDate = new Date(record.created_at);
                             const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
                             const cutoffMinutes = 7 * 60 + 30; // 7:30 AM limit
-
+                            const timeFormatted = checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            
                             if (totalMinutes > cutoffMinutes) {
-                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${timeFormatted})</span>`;
                             } else {
-                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${timeFormatted})</span>`;
                             }
                         }
                     }
@@ -490,7 +491,6 @@
 
                 tableBody.innerHTML = '';
 
-                // Group attendances by date string (e.g., '2026-06-05')
                 const groupedByDate = {};
                 cachedAttendances.forEach(record => {
                     const recordDateStr = record.date || (record.created_at ? record.created_at.split('T')[0] : 'Unknown Date');
@@ -500,18 +500,15 @@
                     groupedByDate[recordDateStr].push(record);
                 });
 
-                // Sort dates descending (newest day first)
                 const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
 
                 sortedDates.forEach((dateStr, index) => {
-                    // 1. Create a distinct section header row for each day
                     const dateObj = new Date(dateStr + 'T00:00:00');
                     const weekdayName = !isNaN(dateObj) 
                         ? dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) 
                         : dateStr;
 
                     const separatorRow = document.createElement('tr');
-                    // Add top spacing/border if it's not the first day block to create visual separation
                     const topMarginClass = index > 0 ? 'border-t-4 border-slate-200' : '';
                     separatorRow.className = `bg-slate-100 font-bold text-slate-900 ${topMarginClass}`;
                     separatorRow.innerHTML = `
@@ -522,7 +519,6 @@
                     `;
                     tableBody.appendChild(separatorRow);
 
-                    // 2. Render records belonging to this specific date
                     groupedByDate[dateStr].forEach(record => {
                         const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                         const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
