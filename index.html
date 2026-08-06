@@ -160,7 +160,6 @@
 
         async function fetchSupabaseData() {
             try {
-                // Fetch staff table
                 const { data: staffData, error: staffError } = await supabaseClient
                     .from('staff')
                     .select('*')
@@ -169,7 +168,6 @@
                 if (staffError) throw staffError;
                 cachedStaff = staffData || [];
 
-                // Fetch today's attendance logs
                 const { data: attendanceData, error: attError } = await supabaseClient
                     .from('attendance')
                     .select('*')
@@ -257,7 +255,6 @@
                 if (r.sdms_id) todayMap[r.sdms_id] = r;
             });
 
-            // Helper function to render staff photo or initials fallback
             const getPhotoHtml = (staff) => {
                 const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                 const photoSrc = staff.photo_url || staff.avatar_url;
