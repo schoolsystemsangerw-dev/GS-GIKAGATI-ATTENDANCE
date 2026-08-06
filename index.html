@@ -257,6 +257,17 @@
                 if (r.sdms_id) todayMap[r.sdms_id] = r;
             });
 
+            // Helper function to render staff photo or initials fallback
+            const getPhotoHtml = (staff) => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
+                const photoSrc = staff.photo_url || staff.avatar_url;
+                if (photoSrc) {
+                    return `<img src="${photoSrc}" alt="${fullName}" class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm">`;
+                }
+                const initials = `${staff.first_name?.[0] || ''}${staff.last_name?.[0] || ''}`.toUpperCase() || 'ST';
+                return `<div class="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-300 shadow-sm">${initials}</div>`;
+            };
+
             if (currentView === 'staff') {
                 titleElem.textContent = currentFilter === 'ontime' ? "Filtered Staff: On Time Today" : "Master Staff Attendance Overview";
                 subtitleElem.textContent = "Real-time institutional roster status synced from Supabase";
@@ -290,11 +301,7 @@
                 filteredList.forEach(staff => {
                     const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                     const record = todayMap[staff.sdms_id];
-                    
-                    const photoSrc = staff.photo_url || staff.avatar_url;
-                    let photoHtml = photoSrc 
-                        ? `<img src="${photoSrc}" alt="${fullName}" class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm">`
-                        : `<div class="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-300 shadow-sm">${(staff.first_name?.[0]||'') + (staff.last_name?.[0]||'')}</div>`;
+                    const photoHtml = getPhotoHtml(staff);
                     
                     let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
                     
@@ -333,6 +340,7 @@
                 subtitleElem.textContent = `Showing recorded timestamp logs for ${todayString}`;
                 
                 headerRow.innerHTML = `
+                    <th class="py-3 px-4">Photo</th>
                     <th class="py-3 px-4">Log ID</th>
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
@@ -344,7 +352,7 @@
                 const logs = cachedAttendances.filter(r => r.status === targetStatus);
 
                 if (logs.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium">No ${targetStatus} logs recorded for today.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400 font-medium">No ${targetStatus} logs recorded for today.</td></tr>`;
                     return;
                 }
 
@@ -356,10 +364,12 @@
                     const staff = staffMap[log.sdms_id] || {};
                     const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || 'Unknown Staff';
                     const timeFormatted = log.created_at ? new Date(log.created_at).toLocaleTimeString() : '-';
+                    const photoHtml = getPhotoHtml(staff);
 
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
+                        <td class="py-3 px-4">${photoHtml}</td>
                         <td class="py-3 px-4 font-mono text-slate-500 text-xs">${log.id || '-'}</td>
                         <td class="py-3 px-4 font-mono font-bold text-slate-800">${log.sdms_id || '-'}</td>
                         <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
