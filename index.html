@@ -19,10 +19,10 @@
             <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-xl text-white">GS</div>
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-white">GS Gikagati Master Control Portal</h1>
-                <p class="text-xs text-slate-400">East Province | Nyagatare District | Karama Sector</p>
+                <p class="text-xs text-slate-400">Republic of Rwanda | East Province | Nyagatare District | Karama Sector</p>
             </div>
         </div>
-        <div class="mt-4 md:mt-0 flex items-center space-x-3">
+        <div class="mt-4 md:mt-0 flex items-center space-x-3 flex-wrap gap-2">
             <button onclick="exportAttendancePDF()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs shadow transition flex items-center space-x-2">
                 <span>Export PDF</span>
             </button>
@@ -39,12 +39,12 @@
     <main class="flex-1 p-6 max-w-7xl mx-auto w-full">
         <!-- View Selector / Tabs -->
         <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-700 pb-4">
-            <button onclick="switchView('checkins')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">All Check-Ins</button>
-            <button onclick="switchView('ontime')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">On Time</button>
-            <button onclick="switchView('late')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Late Arrivals</button>
-            <button onclick="switchView('checkouts')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Check-Outs</button>
-            <button onclick="switchView('dailylogs')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Daily Logs</button>
-            <button onclick="switchView('leaves')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Leave Requests</button>
+            <button onclick="switchView('checkins')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700">All Check-Ins</button>
+            <button onclick="switchView('ontime')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700">On Time</button>
+            <button onclick="switchView('late')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700">Late Arrivals</button>
+            <button onclick="switchView('checkouts')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700">Check-Outs</button>
+            <button onclick="switchView('dailylogs')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700">Daily Logs</button>
+            <button onclick="switchView('leaves')" class="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700">Leave Requests</button>
         </div>
 
         <!-- Content Card -->
@@ -59,11 +59,11 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr id="headerRow" class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700">
-                            <!-- Headers dynamically inserted -->
+                            <!-- Dynamic Headers -->
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-slate-700 text-sm text-slate-200">
-                        <!-- Rows dynamically inserted -->
+                        <!-- Dynamic Rows -->
                     </tbody>
                 </table>
             </div>
@@ -107,7 +107,7 @@
     <!-- JavaScript Application Logic -->
     <script>
         const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
         
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -119,7 +119,7 @@
 
         async function loadDashboardData() {
             try {
-                const { data: staffData, error: staffError } = await supabaseClient.from('staff').select('*');
+                const { data: staffData, error: staffError } = await supabaseClient.from('staffs').select('*');
                 if (staffError) throw staffError;
                 cachedStaff = staffData || [];
                 
@@ -128,7 +128,7 @@
                     staffLookup[s.sdms_id] = `${s.first_name || ''} ${s.last_name || ''}`.trim();
                 });
 
-                const { data: attData, error: attError } = await supabaseClient.from('attendance').select('*').order('created_at', { ascending: false });
+                const { data: attData, error: attError } = await supabaseClient.from('attendances').select('*').order('created_at', { ascending: false });
                 if (attError) throw attError;
                 cachedAttendances = attData || [];
 
@@ -160,7 +160,7 @@
             if (currentView === 'checkins' || currentView === 'ontime' || currentView === 'late') {
                 if (currentView === 'checkins') {
                     titleElem.textContent = "All Check-In Logs";
-                    subtitleElem.textContent = "Complete chronological history of staff check-in submissions";
+                    subtitleElem.textContent = "Complete chronological history of staff check-in submissions with verification photos";
                 } else if (currentView === 'ontime') {
                     titleElem.textContent = "On-Time Staff Arrivals Today";
                     subtitleElem.textContent = "Staff members who completed check-in on or before 7:30 AM";
@@ -170,6 +170,7 @@
                 }
 
                 headerRow.innerHTML = `
+                    <th class="py-3 px-4">Photo</th>
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
                     <th class="py-3 px-4">Arrival Status</th>
@@ -194,7 +195,7 @@
                 }
 
                 if (logs.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-in entries found matching this criterion.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No check-in entries found matching this criterion.</td></tr>`;
                     return;
                 }
 
@@ -203,18 +204,26 @@
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                     const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
                     
-                    let statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time</span>';
+                    let statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">On Time</span>';
                     if (record.created_at) {
                         const checkInDate = new Date(record.created_at);
                         const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
                         if (totalMinutes > (7 * 60 + 30)) {
-                            statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late</span>';
+                            statusBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30">Late (${timeFormatted})</span>`;
+                        } else {
+                            statusBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">On Time (${timeFormatted})</span>`;
                         }
+                    }
+
+                    let photoHtml = '<span class="text-xs text-slate-500 italic">No Photo</span>';
+                    if (record.photo_url) {
+                        photoHtml = `<a href="${record.photo_url}" target="_blank" title="Click to view full image"><img src="${record.photo_url}" class="w-10 h-10 object-cover rounded-md border border-slate-600 hover:border-amber-400 transition shadow" /></a>`;
                     }
 
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-700/50 transition duration-150';
                     row.innerHTML = `
+                        <td class="py-3 px-4">${photoHtml}</td>
                         <td class="py-3 px-4 font-mono font-bold text-slate-200">${record.sdms_id || '-'}</td>
                         <td class="py-3 px-4 font-semibold text-white">${name}</td>
                         <td class="py-3 px-4">${statusBadge}</td>
@@ -226,8 +235,9 @@
 
             } else if (currentView === 'checkouts') {
                 titleElem.textContent = "All Check-Out Logs";
-                subtitleElem.textContent = "Complete chronological history of staff check-out submissions";
+                subtitleElem.textContent = "Complete chronological history of staff check-out submissions with verification photos";
                 headerRow.innerHTML = `
+                    <th class="py-3 px-4">Photo</th>
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
                     <th class="py-3 px-4">Status Action</th>
@@ -237,7 +247,7 @@
 
                 const checkoutLogs = cachedAttendances.filter(r => r.status === 'check-out');
                 if (checkoutLogs.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-out records found.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No check-out records found.</td></tr>`;
                     return;
                 }
 
@@ -245,12 +255,19 @@
                 checkoutLogs.forEach(record => {
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                     const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                    
+                    let photoHtml = '<span class="text-xs text-slate-500 italic">No Photo</span>';
+                    if (record.photo_url) {
+                        photoHtml = `<a href="${record.photo_url}" target="_blank" title="Click to view full image"><img src="${record.photo_url}" class="w-10 h-10 object-cover rounded-md border border-slate-600 hover:border-amber-400 transition shadow" /></a>`;
+                    }
+
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-700/50 transition duration-150';
                     row.innerHTML = `
+                        <td class="py-3 px-4">${photoHtml}</td>
                         <td class="py-3 px-4 font-mono font-bold text-slate-200">${record.sdms_id || '-'}</td>
                         <td class="py-3 px-4 font-semibold text-white">${name}</td>
-                        <td class="py-3 px-4"><span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">Check-Out</span></td>
+                        <td class="py-3 px-4"><span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">Check-Out (${timeFormatted})</span></td>
                         <td class="py-3 px-4 text-slate-400 font-mono">${record.date || '-'}</td>
                         <td class="py-3 px-4 text-slate-400 font-mono">${timeFormatted}</td>
                     `;
@@ -259,8 +276,9 @@
 
             } else if (currentView === 'dailylogs') {
                 titleElem.textContent = "Daily Logs By Weekday";
-                subtitleElem.textContent = "Grouped day-by-day logs with clear visual separation between different days";
+                subtitleElem.textContent = "Grouped day-by-day logs with verification snapshots and clear visual separation";
                 headerRow.innerHTML = `
+                    <th class="py-3 px-4">Photo</th>
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
                     <th class="py-3 px-4">Action Type</th>
@@ -269,7 +287,7 @@
                 `;
 
                 if (cachedAttendances.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No attendance logs available.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No attendance logs available.</td></tr>`;
                     return;
                 }
 
@@ -294,9 +312,8 @@
                     const topMarginClass = index > 0 ? 'border-t-4 border-slate-700' : '';
                     separatorRow.className = `bg-slate-700/80 font-bold text-white ${topMarginClass}`;
                     separatorRow.innerHTML = `
-                        <td colspan="5" class="py-3 px-4 text-xs uppercase tracking-wider flex items-center space-x-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-                            <span>📅 Date Group: ${weekdayName} (${dateStr})</span>
+                        <td colspan="6" class="py-3 px-4 text-xs uppercase tracking-wider">
+                            📅 Date Group: ${weekdayName} (${dateStr})
                         </td>
                     `;
                     tableBody.appendChild(separatorRow);
@@ -305,6 +322,11 @@
                         const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                         const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
                         
+                        let photoHtml = '<span class="text-xs text-slate-500 italic">No Photo</span>';
+                        if (record.photo_url) {
+                            photoHtml = `<a href="${record.photo_url}" target="_blank" title="Click to view full image"><img src="${record.photo_url}" class="w-10 h-10 object-cover rounded-md border border-slate-600 hover:border-amber-400 transition shadow" /></a>`;
+                        }
+
                         let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-700 text-slate-300 border border-slate-600">-</span>';
                         if (record.status === 'check-in') {
                             if (record.created_at) {
@@ -325,6 +347,7 @@
                         const row = document.createElement('tr');
                         row.className = 'hover:bg-slate-700/50 transition duration-150';
                         row.innerHTML = `
+                            <td class="py-3 px-4">${photoHtml}</td>
                             <td class="py-3 px-4 font-mono font-bold text-slate-200">${record.sdms_id || '-'}</td>
                             <td class="py-3 px-4 font-semibold text-white">${name}</td>
                             <td class="py-3 px-4 uppercase text-[11px] font-bold text-slate-300">${record.status || '-'}</td>
