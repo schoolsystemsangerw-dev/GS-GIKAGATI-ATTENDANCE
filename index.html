@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GS Gikagati - Staff Attendance Management System</title>
+    <title>GS Gikagati - Official Master Control Panel</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS SDK -->
@@ -14,75 +14,139 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-slate-900 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-3">
-                <div class="bg-emerald-600 text-white p-2.5 rounded-xl font-bold tracking-wider text-sm shadow">
-                    GSG
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold tracking-tight">GS Gikagati Attendance System</h1>
-                    <p class="text-xs text-slate-400">Karama Sector, Nyagatare District, East Province</p>
-                </div>
+    <!-- Top Banner Header -->
+    <header class="bg-slate-900 text-white shadow-md border-b-4 border-amber-500">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                <span>GS GIKAGATI OFFICIAL ADMINISTRATIVE PORTAL</span> &bull; <span class="text-slate-300">SEEK THE TRUTH</span> &bull; <span class="text-slate-300">STAFF ATTENDANCE & SYSTEM CONTROL</span>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="switchView('staff')" id="navStaffBtn" class="px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white transition shadow-sm">
-                    Staff Roster
-                </button>
-                <button onclick="exportAttendancePDF()" class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Export PDF
-                </button>
+            <div class="flex items-center gap-4 text-xs font-medium text-slate-300">
+                <span>Authorized User: <strong class="text-white">Ladislas</strong></span>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
+    <!-- Main Wrapper with Sidebar and Content -->
+    <div class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        <!-- Dashboard Header Info -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <h2 id="viewTitle" class="text-xl font-bold text-slate-900">Master Staff Attendance Overview</h2>
-                <p id="viewSubtitle" class="text-sm text-slate-500 mt-0.5">Real-time institutional roster status synced from Supabase</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> Live Supabase Sync
-                </span>
-            </div>
-        </div>
+        <!-- Left Sidebar Navigation -->
+        <aside class="lg:col-span-1 space-y-6">
+            <!-- School ID Card Header in Sidebar -->
+            <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-sm border border-slate-800">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="bg-amber-500 text-slate-950 p-2 rounded-xl font-black text-sm shadow">
+                        GSG
+                    </div>
+                    <div>
+                        <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+                            GS GIKAGATI 
+                            <span class="bg-amber-500/20 text-amber-400 text-[10px] px-1.5 py-0.5 rounded border border-amber-500/30">OFFICIAL PORTAL</span>
+                        </h1>
+                        <p class="text-[11px] text-slate-400">Head Teacher Master Control Panel</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-800/60 p-3 rounded-xl border border-slate-700/50 mb-4">
+                    <div><span class="text-slate-400">Province:</span> <strong class="text-slate-200">East</strong></div>
+                    <div><span class="text-slate-400">District:</span> <strong class="text-slate-200">Nyagatare</strong></div>
+                    <div><span class="text-slate-400">Sector:</span> <strong class="text-slate-200">Karama</strong></div>
+                    <div><span class="text-slate-400">Cell:</span> <strong class="text-slate-200">Gikagati</strong></div>
+                    <div class="col-span-2"><span class="text-slate-400">Village:</span> <strong class="text-slate-200">Rutegamawi</strong></div>
+                    <div class="col-span-2"><span class="text-slate-400">Phone:</span> <strong class="text-slate-200">0788754668</strong></div>
+                </div>
 
-        <!-- Data Table Card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr id="tableHeaderRow" class="bg-slate-50 text-slate-600 font-semibold uppercase text-xs tracking-wider border-b border-slate-200">
-                            <!-- Injected dynamically via JS -->
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-100">
-                        <!-- Loaded Dynamically -->
-                        <tr>
-                            <td colspan="6" class="py-12 text-center text-slate-400 font-medium">Connecting to Supabase and loading records...</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <button onclick="handleSignOut()" class="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-sm">
+                    Sign Out
+                </button>
             </div>
-        </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-        &copy; 2026 GS Gikagati &bull; Teacher Attendance Management Module
-    </footer>
+            <!-- Control Views Menu -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 pb-1">Control Views</h3>
+                <button onclick="switchView('staff')" id="btnStaffOverview" class="w-full flex justify-between items-center px-3 py-2.5 rounded-xl text-sm font-semibold bg-slate-900 text-white transition shadow-sm">
+                    <span>Staff Overview</span>
+                    <span id="countStaff" class="bg-slate-800 text-slate-200 px-2 py-0.5 rounded-full text-xs">0</span>
+                </button>
+                <button onclick="switchView('checkins')" id="btnCheckIns" class="w-full flex justify-between items-center px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                    <span>Check-In Logs</span>
+                    <span id="countCheckIns" class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs font-medium">0</span>
+                </button>
+                <button onclick="switchView('checkouts')" id="btnCheckOuts" class="w-full flex justify-between items-center px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                    <span>Check-Out Logs</span>
+                    <span id="countCheckOuts" class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs font-medium">0</span>
+                </button>
+            </div>
+
+            <!-- Attendance Filters -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 pb-1">Attendance Filters</h3>
+                <button onclick="filterStatus('ontime')" class="w-full flex justify-between items-center px-3 py-2 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition border border-emerald-200">
+                    <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> On Time Today</span>
+                    <span id="countOnTime" class="bg-emerald-200/60 px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Roster Area -->
+        <main class="lg:col-span-3 space-y-6">
+            
+            <!-- Summary Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 border-l-4 border-l-slate-900">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Staff Registered</p>
+                    <p id="metricTotalStaff" class="text-3xl font-black text-slate-900 mt-2">0</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Present Today</p>
+                    <p id="metricPresent" class="text-3xl font-black text-emerald-600 mt-2">0</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 border-l-4 border-l-rose-500">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Absent / Pending Today</p>
+                    <p id="metricPending" class="text-3xl font-black text-rose-600 mt-2">0</p>
+                </div>
+            </div>
+
+            <!-- Table Card Header & Controls -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 id="viewTitle" class="text-lg font-bold text-slate-900">Master Staff Attendance Overview</h2>
+                    <p id="viewSubtitle" class="text-xs text-slate-500 mt-0.5">Real-time institutional roster status synced from Supabase</p>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <button onclick="fetchSupabaseData()" class="flex-1 sm:flex-none px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition shadow-sm flex items-center justify-center gap-2">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Refresh Records
+                    </button>
+                    <button onclick="exportAttendancePDF()" class="flex-1 sm:flex-none px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm flex items-center justify-center gap-2">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Export PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Table Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr id="tableHeaderRow" class="bg-slate-50 text-slate-600 font-semibold uppercase text-xs tracking-wider border-b border-slate-200">
+                                <!-- Injected dynamically -->
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="7" class="py-12 text-center text-slate-400 font-medium">Connecting to Supabase and loading records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Application Script Logic -->
     <script>
         // --- SUPABASE CONFIGURATION ---
-        // Replace with your actual Supabase URL and Public Anon Key
         const SUPABASE_URL = 'YOUR_SUPABASE_URL';
         const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
         
@@ -91,11 +155,12 @@
         let cachedStaff = [];
         let cachedAttendances = [];
         let currentView = 'staff';
+        let currentFilter = 'all';
         const todayString = new Date().toISOString().split('T')[0];
 
         async function fetchSupabaseData() {
             try {
-                // Fetch staff table (Excluding student tracking as per institutional spec)
+                // Fetch staff table
                 const { data: staffData, error: staffError } = await supabaseClient
                     .from('staff')
                     .select('*')
@@ -113,15 +178,71 @@
                 if (attError) throw attError;
                 cachedAttendances = attendanceData || [];
 
+                updateMetrics();
                 renderView();
             } catch (err) {
                 console.error('Error fetching Supabase data:', err.message);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan="6" class="py-12 text-center text-rose-500 font-medium">Failed to load data: ${err.message}</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="7" class="py-12 text-center text-rose-500 font-medium">Failed to load data: ${err.message}</td></tr>`;
             }
+        }
+
+        function updateMetrics() {
+            const total = cachedStaff.length;
+            const todayMap = {};
+            cachedAttendances.forEach(r => {
+                if (r.sdms_id) todayMap[r.sdms_id] = r;
+            });
+
+            let presentCount = 0;
+            let onTimeCount = 0;
+
+            cachedStaff.forEach(staff => {
+                const rec = todayMap[staff.sdms_id];
+                if (rec && rec.status === 'check-in') {
+                    presentCount++;
+                    const checkInDate = new Date(rec.created_at);
+                    const totalMins = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                    if (totalMins <= (7 * 60 + 30)) {
+                        onTimeCount++;
+                    }
+                }
+            });
+
+            const pendingCount = total - presentCount;
+
+            document.getElementById('metricTotalStaff').textContent = total;
+            document.getElementById('metricPresent').textContent = presentCount;
+            document.getElementById('metricPending').textContent = pendingCount;
+
+            document.getElementById('countStaff').textContent = total;
+            document.getElementById('countCheckIns').textContent = cachedAttendances.filter(r => r.status === 'check-in').length;
+            document.getElementById('countCheckOuts').textContent = cachedAttendances.filter(r => r.status === 'check-out').length;
+            document.getElementById('countOnTime').textContent = onTimeCount;
         }
 
         function switchView(viewName) {
             currentView = viewName;
+            currentFilter = 'all';
+            
+            ['btnStaffOverview', 'btnCheckIns', 'btnCheckOuts'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = 'w-full flex justify-between items-center px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition';
+            });
+
+            if (viewName === 'staff') {
+                document.getElementById('btnStaffOverview').className = 'w-full flex justify-between items-center px-3 py-2.5 rounded-xl text-sm font-semibold bg-slate-900 text-white transition shadow-sm';
+            } else if (viewName === 'checkins') {
+                document.getElementById('btnCheckIns').className = 'w-full flex justify-between items-center px-3 py-2.5 rounded-xl text-sm font-semibold bg-slate-900 text-white transition shadow-sm';
+            } else if (viewName === 'checkouts') {
+                document.getElementById('btnCheckOuts').className = 'w-full flex justify-between items-center px-3 py-2.5 rounded-xl text-sm font-semibold bg-slate-900 text-white transition shadow-sm';
+            }
+
+            renderView();
+        }
+
+        function filterStatus(filterType) {
+            currentFilter = filterType;
+            currentView = 'staff';
             renderView();
         }
 
@@ -131,8 +252,13 @@
             const headerRow = document.getElementById('tableHeaderRow');
             const tableBody = document.getElementById('tableBody');
 
+            const todayMap = {};
+            cachedAttendances.forEach(r => {
+                if (r.sdms_id) todayMap[r.sdms_id] = r;
+            });
+
             if (currentView === 'staff') {
-                titleElem.textContent = "Master Staff Attendance Overview";
+                titleElem.textContent = currentFilter === 'ontime' ? "Filtered Staff: On Time Today" : "Master Staff Attendance Overview";
                 subtitleElem.textContent = "Real-time institutional roster status synced from Supabase";
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">Photo</th>
@@ -143,33 +269,32 @@
                     <th class="py-3 px-4">Today's Status</th>
                 `;
 
-                if (cachedStaff.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
+                let filteredList = cachedStaff;
+                if (currentFilter === 'ontime') {
+                    filteredList = cachedStaff.filter(staff => {
+                        const rec = todayMap[staff.sdms_id];
+                        if (rec && rec.status === 'check-in') {
+                            const d = new Date(rec.created_at);
+                            return (d.getHours() * 60 + d.getMinutes()) <= (7 * 60 + 30);
+                        }
+                        return false;
+                    });
+                }
+
+                if (filteredList.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400 font-medium">No matching staff records found.</td></tr>`;
                     return;
                 }
 
-                const todayMap = {};
-                cachedAttendances.forEach(r => {
-                    if (r.date === todayString && r.sdms_id) {
-                        todayMap[r.sdms_id] = r;
-                    }
-                });
-
                 tableBody.innerHTML = '';
-                cachedStaff.forEach(staff => {
+                filteredList.forEach(staff => {
                     const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                     const record = todayMap[staff.sdms_id];
                     
-                    // Retrieve photo URL from Supabase record (supports photo_url or avatar_url)
                     const photoSrc = staff.photo_url || staff.avatar_url;
-                    let photoHtml = '';
-                    if (photoSrc) {
-                        photoHtml = `<img src="${photoSrc}" alt="${fullName}" class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm">`;
-                    } else {
-                        // Fallback badge with initials if no photo URL is available
-                        const initials = `${staff.first_name?.[0] || ''}${staff.last_name?.[0] || ''}`.toUpperCase() || 'ST';
-                        photoHtml = `<div class="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-300 shadow-sm">${initials}</div>`;
-                    }
+                    let photoHtml = photoSrc 
+                        ? `<img src="${photoSrc}" alt="${fullName}" class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm">`
+                        : `<div class="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-300 shadow-sm">${(staff.first_name?.[0]||'') + (staff.last_name?.[0]||'')}</div>`;
                     
                     let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
                     
@@ -179,10 +304,9 @@
                         } else if (record.status === 'check-in' && record.created_at) {
                             const checkInDate = new Date(record.created_at);
                             const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
-                            const cutoffMinutes = 7 * 60 + 30; // 7:30 AM limit
                             const timeFormatted = checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                             
-                            if (totalMinutes > cutoffMinutes) {
+                            if (totalMinutes > (7 * 60 + 30)) {
                                 badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${timeFormatted})</span>`;
                             } else {
                                 badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${timeFormatted})</span>`;
@@ -199,6 +323,48 @@
                         <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
                         <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium border border-slate-200">${staff.system_role || '-'}</span></td>
                         <td class="py-3 px-4">${badge}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } else {
+                const isCheckIns = currentView === 'checkins';
+                titleElem.textContent = isCheckIns ? "Real-time Check-In Activity Logs" : "Real-time Check-Out Activity Logs";
+                subtitleElem.textContent = `Showing recorded timestamp logs for ${todayString}`;
+                
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">Log ID</th>
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Action Status</th>
+                    <th class="py-3 px-4">Timestamp</th>
+                `;
+
+                const targetStatus = isCheckIns ? 'check-in' : 'check-out';
+                const logs = cachedAttendances.filter(r => r.status === targetStatus);
+
+                if (logs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium">No ${targetStatus} logs recorded for today.</td></tr>`;
+                    return;
+                }
+
+                const staffMap = {};
+                cachedStaff.forEach(s => staffMap[s.sdms_id] = s);
+
+                tableBody.innerHTML = '';
+                logs.forEach(log => {
+                    const staff = staffMap[log.sdms_id] || {};
+                    const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || 'Unknown Staff';
+                    const timeFormatted = log.created_at ? new Date(log.created_at).toLocaleTimeString() : '-';
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono text-slate-500 text-xs">${log.id || '-'}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${log.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
+                        <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">${log.status}</span></td>
+                        <td class="py-3 px-4 text-slate-600 font-medium">${timeFormatted}</td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -221,9 +387,7 @@
             let tableData = [];
             const todayMap = {};
             cachedAttendances.forEach(r => {
-                if (r.date === todayString && r.sdms_id) {
-                    todayMap[r.sdms_id] = r;
-                }
+                if (r.sdms_id) todayMap[r.sdms_id] = r;
             });
 
             cachedStaff.forEach(staff => {
@@ -267,7 +431,10 @@
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
 
-        // Initialize on window load
+        function handleSignOut() {
+            alert('Signed out successfully.');
+        }
+
         window.onload = () => {
             fetchSupabaseData();
         };
