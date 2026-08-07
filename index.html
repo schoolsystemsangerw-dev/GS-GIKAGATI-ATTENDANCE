@@ -43,7 +43,7 @@
                     <div><span class="text-amber-400 font-semibold">District:</span> Nyagatare</div>
                     <div><span class="text-amber-400 font-semibold">Sector:</span> Karama</div>
                     <div><span class="text-amber-400 font-semibold">Cell:</span> Gikagati</div>
-                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamawi</div>
+                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamatwi</div>
                     <div><span class="text-amber-400 font-semibold">Phone:</span> 0788754668</div>
                 </div>
 
@@ -162,6 +162,7 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr id="tableHeaderRow" class="border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/70">
+                                   <th class="py-3 px-4">Photo</th>
                                     <th class="py-3 px-4">SDMS ID</th>
                                     <th class="py-3 px-4">Staff Name</th>
                                     <th class="py-3 px-4">Position</th>
@@ -401,16 +402,17 @@
             if (currentView === 'staff') {
                 titleElem.textContent = "Master Staff Attendance Overview";
                 subtitleElem.textContent = "Real-time institutional roster status synced from Supabase";
-                headerRow.innerHTML = `
-                    <th class="py-3 px-4">SDMS ID</th>
-                    <th class="py-3 px-4">Staff Name</th>
-                    <th class="py-3 px-4">Position</th>
-                    <th class="py-3 px-4">Role</th>
-                    <th class="py-3 px-4">Today's Status</th>
-                `;
+               headerRow.innerHTML = `
+    <th class="py-3 px-4">Photo</th>
+    <th class="py-3 px-4">SDMS ID</th>
+    <th class="py-3 px-4">Staff Name</th>
+    <th class="py-3 px-4">Position</th>
+    <th class="py-3 px-4">Role</th>
+    <th class="py-3 px-4">Today's Status</th>
+`;
 
                 if (cachedStaff.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
                     return;
                 }
 
@@ -448,7 +450,10 @@
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
-                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
+                       <td class="py-3 px-4">
+            <img src="${staff.photo_url || 'https://via.placeholder.com/40'}" alt="" class="w-8 h-8 rounded-full object-cover">
+        </td>
+        <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
                         <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
                         <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
                         <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium border border-slate-200">${staff.system_role || '-'}</span></td>
