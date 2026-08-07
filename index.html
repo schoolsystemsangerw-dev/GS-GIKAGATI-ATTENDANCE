@@ -272,7 +272,7 @@
 
             try {
                 // 1. Fetch staff members
-               async function loadDashboardData() {
+    async function loadDashboardData() {
     const tableBody = document.getElementById('masterTableBody');
     const totalCountElem = document.getElementById('totalCount');
     const presentCountElem = document.getElementById('presentCount');
@@ -303,7 +303,6 @@
         tableBody.innerHTML = '';
 
         staffs.forEach(staff => {
-            // Find today's record for this staff member
             const record = attendances.find(a => a.sdms_id === staff.sdms_id);
             const isPresent = !!record;
             if (isPresent) presentCount++;
