@@ -43,7 +43,7 @@
                     <div><span class="text-amber-400 font-semibold">District:</span> Nyagatare</div>
                     <div><span class="text-amber-400 font-semibold">Sector:</span> Karama</div>
                     <div><span class="text-amber-400 font-semibold">Cell:</span> Gikagati</div>
-                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamatwi</div>
+                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamawi</div>
                     <div><span class="text-amber-400 font-semibold">Phone:</span> 0788754668</div>
                 </div>
 
@@ -162,7 +162,6 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr id="tableHeaderRow" class="border-b border-slate-200 text-[11px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/70">
-                                   <th class="py-3 px-4">Photo</th>
                                     <th class="py-3 px-4">SDMS ID</th>
                                     <th class="py-3 px-4">Staff Name</th>
                                     <th class="py-3 px-4">Position</th>
@@ -272,64 +271,74 @@
 
             try {
                 // 1. Fetch staff members
- async function loadDashboardData() {
-    const tableBody = document.getElementById('masterTableBody');
-    const totalCountElem = document.getElementById('totalCount');
-    const presentCountElem = document.getElementById('presentCount');
-    const absentCountElem = document.getElementById('absentCount');
+                const { data: staffData, error: staffError } = await supabaseClient
+                    .from('staffs')
+                    .select('*');
 
-    try {
-        const today = new Date().toISOString().split('T')[0];
+                if (staffError) throw staffError;
+                cachedStaff = staffData || [];
 
-        const { data: staffData, error: staffError } = await supabaseClient
-            .from('staffs')
-            .select('*');
-        if (staffError) throw staffError;
+                // 2. Fetch attendances
+                const { data: attData, error: attError } = await supabaseClient
+                    .from('attendances')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-        const { data: attendanceData, error: attError } = await supabaseClient
-            .from('attendances')
-            .select('*')
-            .eq('date', today);
-        if (attError) console.warn("Attendance fetch error:", attError);
+                if (attError) throw attError;
+                cachedAttendances = attData || [];
 
-        const staffs = staffData || [];
-        const attendances = attendanceData || [];
+                // 3. Fetch leave requests from 'leave_requests' table (matching your Supabase schema screenshot)
+                try {
+                    const { data: leaveData, error: leaveError } = await supabaseClient
+                        .from('leave_requests')
+                        .select('*')
+                        .order('leave_date', { ascending: false });
+                    
+                    if (!leaveError) {
+                        cachedLeaves = leaveData || [];
+                    } else {
+                        // Fallback to 'leaves' if needed
+                        const { data: leaveDataAlt, error: leaveErrorAlt } = await supabaseClient
+                            .from('leaves')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+                        if (!leaveErrorAlt) {
+                            cachedLeaves = leaveDataAlt || [];
+                        }
+                    }
+                } catch(e) {
+                    cachedLeaves = [];
+                }
 
-        let presentCount = 0;
-        tableBody.innerHTML = '';
+                const todayString = new Date().toISOString().split('T')[0];
+                
+                const todayAttendanceMap = {};
+                let checkinCountToday = 0;
+                let checkoutCountToday = 0;
+                let onTimeCountToday = 0;
+                let lateCountToday = 0;
 
-        staffs.forEach(staff => {
-            const record = attendances.find(a => a.sdms_id === staff.sdms_id);
-            const isPresent = !!record;
-            if (isPresent) presentCount++;
+                cachedAttendances.forEach(record => {
+                    const recordDate = record.date || '';
+                    if (recordDate === todayString && record.sdms_id) {
+                        todayAttendanceMap[record.sdms_id] = record;
+                    }
+                    if (record.status === 'check-in') {
+                        checkinCountToday++;
+                        if (record.created_at) {
+                            const checkInDate = new Date(record.created_at);
+                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                            if (totalMinutes > (7 * 60 + 30)) {
+                                lateCountToday++;
+                            } else {
+                                onTimeCountToday++;
+                            }
+                        }
+                    } else if (record.status === 'check-out') {
+                        checkoutCountToday++;
+                    }
+                });
 
-            const photoSrc = record && record.photo_url ? record.photo_url : 'https://via.placeholder.com/40';
-            const statusText = isPresent ? `<span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] font-semibold uppercase">${record.status}</span>` : `<span class="px-2 py-1 bg-rose-500/20 text-rose-400 rounded text-[10px] font-semibold uppercase">Absent</span>`;
-
-            const row = document.createElement('tr');
-            row.className = 'border-b border-slate-100 hover:bg-slate-50 transition';
-            row.innerHTML = `
-                <td class="py-3 px-4">
-                    <img src="${photoSrc}" alt="Photo" class="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-sm">
-                </td>
-                <td class="py-3 px-4 font-mono text-slate-600">${staff.sdms_id || ''}</td>
-                <td class="py-3 px-4 font-semibold text-slate-800">${staff.first_name || ''} ${staff.last_name || ''}</td>
-                <td class="py-3 px-4 text-slate-600">${staff.position || ''}</td>
-                <td class="py-3 px-4 text-slate-600">${staff.role || ''}</td>
-                <td class="py-3 px-4">${statusText}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-
-        totalCountElem.textContent = staffs.length;
-        presentCountElem.textContent = presentCount;
-        absentCountElem.textContent = staffs.length - presentCount;
-
-    } catch (err) {
-        console.error("Dashboard error:", err);
-        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-rose-500">Error loading data: ${err.message}</td></tr>`;
-    }
-}
                 let presentCount = 0;
                 cachedStaff.forEach(staff => {
                     if (todayAttendanceMap[staff.sdms_id]) {
@@ -392,17 +401,16 @@
             if (currentView === 'staff') {
                 titleElem.textContent = "Master Staff Attendance Overview";
                 subtitleElem.textContent = "Real-time institutional roster status synced from Supabase";
-               headerRow.innerHTML = `
-    <th class="py-3 px-4">Photo</th>
-    <th class="py-3 px-4">SDMS ID</th>
-    <th class="py-3 px-4">Staff Name</th>
-    <th class="py-3 px-4">Position</th>
-    <th class="py-3 px-4">Role</th>
-    <th class="py-3 px-4">Today's Status</th>
-`;
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Position</th>
+                    <th class="py-3 px-4">Role</th>
+                    <th class="py-3 px-4">Today's Status</th>
+                `;
 
                 if (cachedStaff.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
                     return;
                 }
 
@@ -440,10 +448,7 @@
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
-                       <td class="py-3 px-4">
-            <img src="${staff.photo_url || 'https://via.placeholder.com/40'}" alt="" class="w-8 h-8 rounded-full object-cover">
-        </td>
-        <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
                         <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
                         <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
                         <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium border border-slate-200">${staff.system_role || '-'}</span></td>
