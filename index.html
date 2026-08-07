@@ -272,7 +272,7 @@
 
             try {
                 // 1. Fetch staff members
-    async function loadDashboardData() {
+ async function loadDashboardData() {
     const tableBody = document.getElementById('masterTableBody');
     const totalCountElem = document.getElementById('totalCount');
     const presentCountElem = document.getElementById('presentCount');
@@ -281,25 +281,21 @@
     try {
         const today = new Date().toISOString().split('T')[0];
 
-        // 1. Fetch staff members
         const { data: staffData, error: staffError } = await supabaseClient
             .from('staffs')
             .select('*');
         if (staffError) throw staffError;
 
-        // 2. Fetch today's attendance logs (containing the photo_url)
         const { data: attendanceData, error: attError } = await supabaseClient
             .from('attendances')
             .select('*')
             .eq('date', today);
         if (attError) console.warn("Attendance fetch error:", attError);
 
-        // 3. Map records
         const staffs = staffData || [];
         const attendances = attendanceData || [];
 
         let presentCount = 0;
-        
         tableBody.innerHTML = '';
 
         staffs.forEach(staff => {
@@ -334,18 +330,6 @@
         tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-rose-500">Error loading data: ${err.message}</td></tr>`;
     }
 }
-                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
-                            if (totalMinutes > (7 * 60 + 30)) {
-                                lateCountToday++;
-                            } else {
-                                onTimeCountToday++;
-                            }
-                        }
-                    } else if (record.status === 'check-out') {
-                        checkoutCountToday++;
-                    }
-                });
-
                 let presentCount = 0;
                 cachedStaff.forEach(staff => {
                     if (todayAttendanceMap[staff.sdms_id]) {
