@@ -219,7 +219,17 @@
             submitBtn.textContent = "Processing Request...";
 
             try {
-                const todayDate = new Date().toISOString().split('T')[0];
+                // Generate accurate local date and time string (Rwanda Local Time)
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                
+                const localDate = `${year}-${month}-${day}`;
+                const localDateTimeISO = `${localDate}T${hours}:${minutes}:${seconds}+02:00`;
 
                 if (actionType === 'permission') {
                     const leaveDate = leaveDateInput.value;
@@ -282,9 +292,9 @@
                         .insert([{
                             sdms_id: selectedSdms,
                             status: actionType,
-                            date: todayDate,
+                            date: localDate,
                             photo_url: photoUrl,
-                            created_at: new Date().toISOString()
+                            created_at: localDateTimeISO
                         }]);
 
                     if (insertError) throw insertError;
