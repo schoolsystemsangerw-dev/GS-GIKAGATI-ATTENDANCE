@@ -129,7 +129,6 @@
                 if (staffRes.error) throw staffRes.error;
                 if (attRes.error) throw attRes.error;
                 if (leaveRes.error) {
-                    console.warn("Could not fetch leave_requests:", leaveRes.error.message);
                     cachedLeaves = [];
                 } else {
                     cachedLeaves = leaveRes.data || [];
@@ -159,13 +158,13 @@
 
             if (currentView === 'overview') {
                 titleElem.textContent = "Dashboard Overview";
-                subtitleElem.textContent = "Summary of registered staff and real-time status";
+                subtitleElem.textContent = "Summary of registered staff and real-time check-in/out status";
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
                     <th class="py-3 px-4">Position</th>
                     <th class="py-3 px-4">System Role</th>
-                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4">Today's Activity & Time</th>
                 `;
 
                 if (cachedStaff.length === 0) {
@@ -176,8 +175,10 @@
                 tableBody.innerHTML = '';
                 const todayString = new Date().toISOString().split('T')[0];
                 const todayMap = {};
+                
+                // Map the latest attendance record for each staff member for today
                 cachedAttendances.forEach(r => {
-                    if (r.date === todayString && r.sdms_id) {
+                    if (r.date === todayString && r.sdms_id && !todayMap[r.sdms_id]) {
                         todayMap[r.sdms_id] = r;
                     }
                 });
@@ -188,15 +189,16 @@
                     let statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-600 border border-slate-200">Pending</span>';
 
                     if (record) {
+                        const exactTime = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '';
                         if (record.status === 'check-out') {
-                            statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>';
+                            statusBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out @ ${exactTime}</span>`;
                         } else if (record.status === 'check-in' && record.created_at) {
                             const checkInDate = new Date(record.created_at);
                             const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
                             if (totalMinutes > (7 * 60 + 30)) {
-                                statusBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                                statusBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late @ ${exactTime}</span>`;
                             } else {
-                                statusBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
+                                statusBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time @ ${exactTime}</span>`;
                             }
                         }
                     }
@@ -462,15 +464,16 @@
                 let statusText = "Pending / Absent";
                 
                 if (record) {
+                    const t = record.created_at ? new Date(record.created_at).toLocaleTimeString() : '';
                     if (record.status === 'check-out') {
-                        statusText = "Checked Out";
+                        statusText = `Checked Out @ ${t}`;
                     } else if (record.status === 'check-in' && record.created_at) {
                         const checkInDate = new Date(record.created_at);
                         const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
                         if (totalMinutes > (7 * 60 + 30)) {
-                            statusText = `Late (${checkInDate.toLocaleTimeString()})`;
+                            statusText = `Late @ ${t}`;
                         } else {
-                            statusText = `On Time (${checkInDate.toLocaleTimeString()})`;
+                            statusText = `On Time @ ${t}`;
                         }
                     }
                 }
