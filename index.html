@@ -10,54 +10,6 @@
     <meta name="google-site-verification" content="5Zd0gd92yfUIA1QutcZoAN_OF4vGRP2SVsRi1-7Gro8" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <style>
-  #auth-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: #ffffff;
-    z-index: 999999;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
-  }
-</style>
-<div id="auth-overlay">
-  <h2>GS Gikagati Attendance Portal</h2>
-  <p>Secured Area. Please authenticate...</p>
-</div>
-
-<script>
-  window.addEventListener('DOMContentLoaded', async () => {
-    const enteredPassword = prompt("Enter Administrator Password:");
-    const overlay = document.getElementById('auth-overlay');
-    
-    if (!enteredPassword) {
-      window.location.href = "https://www.google.com";
-      return;
-    }
-
-    const supabaseUrl = 'https://qjlqjvppfhsszvsuhvzo.supabase.co';
-    const supabaseKey = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
-
-    try {
-      const response = await fetch(`${supabaseUrl}/rest/v1/portal_settings?name=eq.admin&select=password`, {
-        headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
-      });
-      
-      const data = await response.json();
-      if (data.length > 0 && data[0].password === enteredPassword) {
-        overlay.remove();
-      } else {
-        alert("Incorrect password!");
-        window.location.href = "https://www.google.com";
-      }
-    } catch (err) {
-      overlay.remove();
-    }
-  });
-</script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen selection:bg-blue-900 selection:text-white">
     <div class="flex-1 flex flex-col">
