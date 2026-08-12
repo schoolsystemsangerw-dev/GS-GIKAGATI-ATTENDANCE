@@ -10,8 +10,58 @@
     <meta name="google-site-verification" content="5Zd0gd92yfUIA1QutcZoAN_OF4vGRP2SVsRi1-7Gro8" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+      #auth-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: #ffffff;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+      }
+    </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen selection:bg-blue-900 selection:text-white">
+    <!-- Security Overlay & Authentication Script -->
+    <div id="auth-overlay">
+      <h2>GS Gikagati Attendance Portal</h2>
+      <p>Secured Area. Please authenticate...</p>
+    </div>
+
+    <script>
+      (async function() {
+        const enteredPassword = prompt("Enter Administrator Password:");
+        const overlay = document.getElementById('auth-overlay');
+        
+        if (!enteredPassword) {
+          window.location.href = "https://www.google.com";
+          return;
+        }
+
+        const supabaseUrl = 'https://qjlqjvppfhsszvsuhvzo.supabase.co';
+        const supabaseKey = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
+
+        try {
+          const response = await fetch(`${supabaseUrl}/rest/v1/portal_settings?name=eq.admin&select=password`, {
+            headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+          });
+          
+          const data = await response.json();
+          if (data.length > 0 && data[0].password === enteredPassword) {
+            if (overlay) overlay.remove();
+          } else {
+            alert("Incorrect password!");
+            window.location.href = "https://www.google.com";
+          }
+        } catch (err) {
+          if (overlay) overlay.remove();
+        }
+      })();
+    </script>
+
     <div class="flex-1 flex flex-col">
         
         <!-- Official Top Header & Moving Marquee -->
@@ -25,17 +75,15 @@
 
             <!-- Main Header Content -->
             <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col lg:flex-row justify-between items-center gap-6">
-                <!-- School Logo & Title -->
                 <div class="flex items-center space-x-5">
-                    <div class="w-20 h-20 bg-white rounded-xl p-1.5 shadow border-2 border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
-                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-950 font-black text-xs\'>GSG</span>';">
+                    <!-- School Logo -->
+                    <div class="w-20 h-20 bg-white rounded-xl p-1.5 shadow border-2 border-amber-400 flex items-center justify-center overflow-hidden">
+                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain">
                     </div>
+                    <!-- Title -->
                     <div>
-                        <div class="flex items-center space-x-3 mb-1">
-                            <h1 class="text-2xl lg:text-3xl font-black tracking-tight text-white">GS GIKAGATI</h1>
-                            <span class="bg-blue-900 border border-blue-700 text-amber-400 text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider">Official Portal</span>
-                        </div>
-                        <p class="text-xs text-slate-300 font-medium">Head Teacher Master Control Panel &bull; Authorized User: <span class="text-amber-300 font-bold">Ladislas</span></p>
+                        <h2 class="text-xl md:text-2xl font-black tracking-wide text-white">GS GIKAGATI</h2>
+                        <p class="text-xs text-amber-400 font-bold uppercase tracking-wider">Head Teacher Master Control Panel</p>
                     </div>
                 </div>
 
@@ -50,7 +98,7 @@
                         <p class="text-xs text-slate-300 font-mono">ladislasuwituze@gmail.com</p>
                     </div>
                 </div>
-            </div>
+
                 <!-- Administrative Location Info Card -->
                 <div class="bg-blue-900/60 border border-blue-800 rounded-xl p-3 text-[11px] text-slate-200 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1">
                     <div><span class="text-amber-400 font-semibold">Province:</span> East</div>
@@ -69,7 +117,6 @@
                 </div>
             </div>
         </header>
-
         <!-- Main Content Layout with Sidebar Navigation -->
         <div class="max-w-7xl w-full mx-auto p-6 flex flex-col md:flex-row gap-6 flex-1">
             
