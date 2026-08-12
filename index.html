@@ -935,8 +935,8 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            // Official Professional Header Background Banner
-            doc.setFillColor(15, 23, 42); // Deep navy theme
+            // Official Professional Header Banner
+            doc.setFillColor(15, 23, 42);
             doc.rect(10, 10, 190, 32, 'F');
             
             doc.setTextColor(255, 255, 255);
@@ -948,7 +948,7 @@
             doc.setFont("helvetica", "normal");
             doc.text("Republic of Rwanda | East Province | Nyagatare District | Karama Sector", 16, 31);
 
-            // Document Title Section with Accent Border Box
+            // Document Body Box
             doc.setDrawColor(203, 213, 225);
             doc.setFillColor(248, 250, 252);
             doc.roundedRect(10, 48, 190, 115, 3, 3, 'FD');
@@ -976,7 +976,7 @@
                 y += 9;
             });
 
-            // Divider Line inside box
+            // Divider Line
             doc.setDrawColor(226, 232, 240);
             doc.line(16, y + 2, 194, y + 2);
 
@@ -988,7 +988,6 @@
             doc.setFont("helvetica", "normal");
             doc.text("This official leave permit has been duly granted and authorized by the Head Teacher.", 16, y);
 
-            // Head Teacher Signature details & Image Integration
             y += 22;
             doc.setFont("helvetica", "bold");
             doc.text("Ladislas UWITUZE", 16, y);
@@ -998,21 +997,23 @@
             doc.text("Head Teacher, GS Gikagati", 16, y);
             doc.text("Phone: 0788754668", 16, y + 5);
 
-            // Load and Embed Combined Stamp & Signature Image from GitHub repository
+            // Force Image Loading with Direct Canvas Rendering
             const img = new Image();
             img.crossOrigin = 'Anonymous';
-            img.src = 'https://raw.githubusercontent.com/schoolsystemrangerw-dev/GS-GIKAGATI-ATTENDANCE/main/stamp%20gikagati.png';
+            img.src = 'https://raw.githubusercontent.com/schoolsystemrangerw-dev/GS-GIKAGATI-ATTENDANCE/main/stamp%20gikagati.png?' + new Date().getTime();
 
             img.onload = function() {
-                // Add combined stamp & signature image onto the official paper layout (X, Y, Width, Height)
-                doc.addImage(img, 'PNG', 120, 125, 72, 36);
-                
+                try {
+                    doc.addImage(img, 'PNG', 118, 122, 75, 38);
+                } catch (e) {
+                    console.error("Image render error:", e);
+                }
                 doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
                 closeLeavePermitModal();
             };
 
             img.onerror = function() {
-                // Fallback saving method if network blocks image loading
+                alert("Warning: Official stamp image could not be loaded from GitHub repository, downloading PDF without stamp.");
                 doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
                 closeLeavePermitModal();
             };
@@ -1024,4 +1025,3 @@
     </script>
 </body>
 </html>
-      
