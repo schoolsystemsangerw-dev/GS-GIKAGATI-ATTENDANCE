@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <style>
         @keyframes marquee {
             0% { transform: translateX(100%); }
@@ -18,10 +21,42 @@
             white-space: nowrap;
             animation: marquee 25s linear infinite;
         }
+        #auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen">
-    <div class="flex-1 flex flex-col">
+<body class="bg-slate-100 font-sans text-slate-800 flex flex-1 flex-col min-h-screen">
+    <!-- Security Authentication Overlay with Form -->
+    <div id="auth-overlay">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full border border-slate-700 text-center">
+            <h2 class="text-2xl font-black text-blue-950 mb-1">GS Gikagati Deputy Portal</h2>
+            <p class="text-xs text-slate-500 mb-6 font-medium">Secured Area. Please enter your authentication password.</p>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+                    <input type="password" id="passwordInput" required placeholder="Enter Deputy Password" 
+                        class="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-950 focus:outline-none">
+                </div>
+                <button type="submit" id="loginBtn" class="w-full py-3 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition shadow">
+                    Authenticate & Access
+                </button>
+            </form>
+            <p id="errorMsg" class="text-xs text-rose-600 font-bold mt-4 hidden"></p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container -->
+    <div id="main-dashboard" class="flex-1 flex flex-col" style="display: none;">
         <header class="bg-blue-950 text-white shadow-md border-b-2 border-amber-500">
             <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden uppercase shadow-inner">
                 <div class="animate-marquee">
@@ -128,6 +163,25 @@
         let currentView = 'staff';
         let cachedStaff = [];
         let cachedAttendances = [];
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const enteredPassword = document.getElementById('passwordInput').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            const overlay = document.getElementById('auth-overlay');
+            const dashboard = document.getElementById('main-dashboard');
+
+            errorMsg.classList.add('hidden');
+
+            if (enteredPassword === 'GSGikagatiDeputy2026!') {
+                overlay.remove();
+                dashboard.style.display = 'flex';
+                loadDashboardData();
+            } else {
+                errorMsg.textContent = 'Incorrect password. Please try again.';
+                errorMsg.classList.remove('hidden');
+            }
+        }
 
         async function loadDashboardData() {
             try {
@@ -336,8 +390,6 @@
             });
             doc.save(`Deputy_Report_${new Date().toISOString().split('T')[0]}.pdf`);
         }
-
-        window.onload = loadDashboardData;
     </script>
 </body>
 </html>
