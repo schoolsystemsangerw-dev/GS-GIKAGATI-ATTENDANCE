@@ -885,8 +885,7 @@
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.open(gmailUrl, '_blank');
         }
-
-        // Leave Permit Modal Controls & PDF Generator
+// Leave Permit Modal Controls & PDF Generator
         function openLeavePermitModal() {
             const selectElem = document.getElementById('leaveStaffSelect');
             selectElem.innerHTML = '<option value="">-- Choose Staff Member --</option>';
@@ -936,26 +935,32 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            doc.setFillColor(15, 23, 42);
-            doc.rect(14, 15, 182, 25, 'F');
+            // Official Professional Header Background Banner
+            doc.setFillColor(15, 23, 42); // Deep navy theme
+            doc.rect(10, 10, 190, 32, 'F');
             
             doc.setTextColor(255, 255, 255);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
-            doc.text("GS GIKAGATI - OFFICIAL LEAVE PERMIT", 20, 25);
+            doc.setFontSize(15);
+            doc.text("GS GIKAGATI - OFFICIAL LEAVE PERMIT", 16, 22);
             
             doc.setFontSize(9);
             doc.setFont("helvetica", "normal");
-            doc.text("Republic of Rwanda | East Province | Nyagatare District | Karama Sector", 20, 33);
+            doc.text("Republic of Rwanda | East Province | Nyagatare District | Karama Sector", 16, 31);
 
-            doc.setTextColor(30, 41, 59);
-            doc.setFontSize(11);
+            // Document Title Section with Accent Border Box
+            doc.setDrawColor(203, 213, 225);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(10, 48, 190, 115, 3, 3, 'FD');
+
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(12);
             doc.setFont("helvetica", "bold");
-            doc.text(`CERTIFICATE OF AUTHORIZED LEAVE`, 14, 52);
+            doc.text("CERTIFICATE OF AUTHORIZED LEAVE", 16, 58);
 
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
-            let y = 62;
+            let y = 70;
             
             const details = [
                 `Staff Name: ${staffName}`,
@@ -967,34 +972,50 @@
             ];
 
             details.forEach(line => {
-                doc.text(line, 14, y);
-                y += 8;
+                doc.text(line, 16, y);
+                y += 9;
             });
 
-            y += 10;
-            doc.setDrawColor(200, 200, 200);
-            doc.line(14, y, 196, y);
+            // Divider Line inside box
+            doc.setDrawColor(226, 232, 240);
+            doc.line(16, y + 2, 194, y + 2);
 
-            y += 15;
+            y += 12;
             doc.setFont("helvetica", "bold");
-            doc.text("AUTHORIZATION & APPROVAL:", 14, y);
+            doc.text("AUTHORIZATION & APPROVAL:", 16, y);
             
-            y += 8;
+            y += 7;
             doc.setFont("helvetica", "normal");
-            doc.text("This official leave permit has been duly granted and authorized by the Head Teacher.", 14, y);
+            doc.text("This official leave permit has been duly granted and authorized by the Head Teacher.", 16, y);
 
-            y += 25;
-            doc.text("____________________________________________", 14, y);
-            y += 6;
+            // Head Teacher Signature details & Image Integration
+            y += 22;
             doc.setFont("helvetica", "bold");
-            doc.text("Ladislas", 14, y);
+            doc.text("Ladislas UWITUZE", 16, y);
             y += 5;
             doc.setFont("helvetica", "normal");
-            doc.text("Head Teacher, GS Gikagati", 14, y);
-            doc.text("Phone: 0788754668", 14, y + 5);
+            doc.setFontSize(9);
+            doc.text("Head Teacher, GS Gikagati", 16, y);
+            doc.text("Phone: 0788754668", 16, y + 5);
 
-            doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
-            closeLeavePermitModal();
+            // Load and Embed Combined Stamp & Signature Image from GitHub repository
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.src = 'https://raw.githubusercontent.com/schoolsystemrangerw-dev/GS-GIKAGATI-ATTENDANCE/main/stamp%20gikagati.png';
+
+            img.onload = function() {
+                // Add combined stamp & signature image onto the official paper layout (X, Y, Width, Height)
+                doc.addImage(img, 'PNG', 120, 125, 72, 36);
+                
+                doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
+                closeLeavePermitModal();
+            };
+
+            img.onerror = function() {
+                // Fallback saving method if network blocks image loading
+                doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
+                closeLeavePermitModal();
+            };
         }
 
         window.onload = function() {
@@ -1003,3 +1024,4 @@
     </script>
 </body>
 </html>
+      
