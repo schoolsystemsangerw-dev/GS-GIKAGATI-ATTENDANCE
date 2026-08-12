@@ -886,7 +886,7 @@
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.open(gmailUrl, '_blank');
         }
-// Leave Permit Modal Controls & PDF Generator
+// Leave Permit Modal Controls & PDF Generator with Full-Content QR Code
         function openLeavePermitModal() {
             const selectElem = document.getElementById('leaveStaffSelect');
             selectElem.innerHTML = '<option value="">-- Choose Staff Member --</option>';
@@ -938,16 +938,27 @@
             qrContainer.style.display = 'none';
             document.body.appendChild(qrContainer);
 
-            // Secure verification payload data encoded into the QR code
-            const verificationData = `GS-GIKAGATI-VERIFIED | SDMS:${staffId} | Name:${staffName} | From:${startDate} To:${endDate} | Status:APPROVED`;
+            // Encode all certificate information into the QR code text payload
+            const verificationData = 
+                `=== GS GIKAGATI OFFICIAL LEAVE PERMIT ===\n` +
+                `Republic of Rwanda | East Province | Nyagatare District | Karama Sector\n` +
+                `CERTIFICATE OF AUTHORIZED LEAVE\n` +
+                `Staff Name: ${staffName}\n` +
+                `SDMS ID: ${staffId}\n` +
+                `Position / Title: ${staffPosition}\n` +
+                `Period of Leave: From ${startDate} To ${endDate}\n` +
+                `Reason / Permit Category: ${reason}\n` +
+                `Date of Issuance: ${new Date().toLocaleDateString()}\n` +
+                `Authorization: Approved & Signed by Ladislas UWITUZE (Head Teacher, GS Gikagati, Phone: 0788754668)\n` +
+                `Status: OFFICIAL & VERIFIED`;
 
             new QRCode(qrContainer, {
                 text: verificationData,
-                width: 128,
-                height: 128,
+                width: 150,
+                height: 150,
                 colorDark: "#0f172a",
                 colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.M
             });
 
             setTimeout(() => {
@@ -1063,13 +1074,13 @@
                     doc.text("Head Teacher, GS Gikagati", 16, y);
                     doc.text("Phone: 0788754668", 16, y + 5);
 
-                    // Add Secure QR Code on the left-bottom authorization section
+                    // Add Full-Content QR Code on the left-bottom authorization section
                     if (qrCode) {
                         try {
                             doc.addImage(qrCode, 'PNG', 16, y + 10, 28, 28);
                             doc.setFontSize(7.5);
                             doc.setTextColor(100, 116, 139);
-                            doc.text("Scan to Verify", 18, y + 40);
+                            doc.text("Scan to View Content", 17, y + 40);
                         } catch (e) {
                             console.error("QR Code error:", e);
                         }
