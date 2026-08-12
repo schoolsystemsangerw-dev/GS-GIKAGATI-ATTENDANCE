@@ -935,99 +935,128 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            // Official Professional Header Banner
-            doc.setFillColor(15, 23, 42);
-            doc.rect(10, 10, 190, 32, 'F');
-            
-            doc.setTextColor(255, 255, 255);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(15);
-            doc.text("GS GIKAGATI - OFFICIAL LEAVE PERMIT", 16, 22);
-            
-            doc.setFontSize(9);
-            doc.setFont("helvetica", "normal");
-            doc.text("Republic of Rwanda | East Province | Nyagatare District | Karama Sector", 16, 31);
+            // Load both logo and stamp securely
+            const logoImg = new Image();
+            logoImg.src = 'gikagati.png';
 
-            // Document Body Box
-            doc.setDrawColor(203, 213, 225);
-            doc.setFillColor(248, 250, 252);
-            doc.roundedRect(10, 48, 190, 115, 3, 3, 'FD');
+            logoImg.onload = function() {
+                const stampImg = new Image();
+                stampImg.src = 'stamp gikagati.png';
 
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.text("CERTIFICATE OF AUTHORIZED LEAVE", 16, 58);
+                stampImg.onload = function() {
+                    buildPDFWithImages(logoImg, stampImg);
+                };
+                stampImg.onerror = function() {
+                    buildPDFWithImages(logoImg, null);
+                };
+            };
+            logoImg.onerror = function() {
+                buildPDFWithImages(null, null);
+            };
 
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            let y = 70;
-            
-            const details = [
-                `Staff Name: ${staffName}`,
-                `SDMS ID: ${staffId}`,
-                `Position / Title: ${staffPosition}`,
-                `Period of Leave: From ${startDate} To ${endDate}`,
-                `Reason / Permit Category: ${reason}`,
-                `Date of Issuance: ${new Date().toLocaleDateString()}`
-            ];
+            function buildPDFWithImages(logo, stamp) {
+                // Outer decorative border
+                doc.setDrawColor(15, 23, 42);
+                doc.setLineWidth(0.8);
+                doc.rect(8, 8, 194, 281);
 
-            details.forEach(line => {
-                doc.text(line, 16, y);
-                y += 9;
-            });
+                doc.setDrawColor(203, 213, 225);
+                doc.setLineWidth(0.3);
+                doc.rect(11, 11, 188, 275);
 
-            // Divider Line
-            doc.setDrawColor(226, 232, 240);
-            doc.line(16, y + 2, 194, y + 2);
-
-            y += 12;
-            doc.setFont("helvetica", "bold");
-            doc.text("AUTHORIZATION & APPROVAL:", 16, y);
-            
-            y += 7;
-            doc.setFont("helvetica", "normal");
-            doc.text("This official leave permit has been duly granted and authorized by the Head Teacher.", 16, y);
-
-            y += 22;
-            doc.setFont("helvetica", "bold");
-            doc.text("Ladislas UWITUZE", 16, y);
-            y += 5;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9);
-            doc.text("Head Teacher, GS Gikagati", 16, y);
-            doc.text("Phone: 0788754668", 16, y + 5);
-
-            // Load Image via relative repository path or fallback element
-            // Since index.html and stamp gikagati.png are in the same folder on GitHub Pages:
-            const img = new Image();
-            img.src = 'stamp gikagati.png';
-
-            img.onload = function() {
-                try {
-                    doc.addImage(img, 'PNG', 118, 122, 75, 38);
-                } catch (e) {
-                    console.error("Image render error:", e);
+                // Header Banner Background
+                doc.setFillColor(15, 23, 42);
+                doc.rect(12, 12, 186, 32, 'F');
+                
+                // Add School Logo if loaded
+                if (logo) {
+                    try {
+                        doc.addImage(logo, 'PNG', 16, 15, 26, 26);
+                    } catch (e) {
+                        console.error("Logo error:", e);
+                    }
                 }
+
+                // Header Text
+                doc.setTextColor(255, 255, 255);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text("GS GIKAGATI - OFFICIAL LEAVE PERMIT", logo ? 46 : 18, 22);
+                
+                doc.setFontSize(8.5);
+                doc.setFont("helvetica", "normal");
+                doc.text("Republic of Rwanda | East Province | Nyagatare District | Karama Sector", logo ? 46 : 18, 30);
+
+                // Document Body Container Box
+                doc.setDrawColor(226, 232, 240);
+                doc.setFillColor(248, 250, 252);
+                doc.roundedRect(16, 50, 178, 125, 2, 2, 'FD');
+
+                doc.setTextColor(15, 23, 42);
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "bold");
+                doc.text("CERTIFICATE OF AUTHORIZED LEAVE", 22, 62);
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                let y = 74;
+                
+                const details = [
+                    `Staff Name: ${staffName}`,
+                    `SDMS ID: ${staffId}`,
+                    `Position / Title: ${staffPosition}`,
+                    `Period of Leave: From ${startDate} To ${endDate}`,
+                    `Reason / Permit Category: ${reason}`,
+                    `Date of Issuance: ${new Date().toLocaleDateString()}`
+                ];
+
+                details.forEach(line => {
+                    doc.text(line, 22, y);
+                    y += 10;
+                });
+
+                // Divider line inside box
+                doc.setDrawColor(203, 213, 225);
+                doc.line(22, y + 2, 188, y + 2);
+
+                // Authorization Section
+                y += 16;
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text("AUTHORIZATION & APPROVAL:", 16, y);
+                
+                y += 7;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9.5);
+                doc.text("This official leave permit has been duly granted and authorized by the Head Teacher.", 16, y);
+
+                // Head Teacher Details & Stamp Position
+                y += 18;
+                doc.setFont("helvetica", "bold");
+                doc.text("Ladislas UWITUZE", 16, y);
+                y += 5;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.text("Head Teacher, GS Gikagati", 16, y);
+                doc.text("Phone: 0788754668", 16, y + 5);
+
+                // Add Combined Stamp & Signature Image if loaded
+                if (stamp) {
+                    try {
+                        doc.addImage(stamp, 'PNG', 115, y - 10, 75, 38);
+                    } catch (e) {
+                        console.error("Stamp error:", e);
+                    }
+                }
+
+                // Footer Note
+                doc.setFontSize(8);
+                doc.setTextColor(100, 116, 139);
+                doc.text("This document is generated automatically by GS Gikagati Staff Attendance & Management System.", 105, 278, { align: 'center' });
+
                 doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
                 closeLeavePermitModal();
-            };
-
-            img.onerror = function() {
-                // Fallback to raw github link if relative path fails
-                const imgFallback = new Image();
-                imgFallback.crossOrigin = 'Anonymous';
-                imgFallback.src = 'https://raw.githubusercontent.com/schoolsystemrangerw-dev/GS-GIKAGATI-ATTENDANCE/main/stamp%20gikagati.png';
-                
-                imgFallback.onload = function() {
-                    doc.addImage(imgFallback, 'PNG', 118, 122, 75, 38);
-                    doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
-                    closeLeavePermitModal();
-                };
-                imgFallback.onerror = function() {
-                    doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
-                    closeLeavePermitModal();
-                };
-            };
+            }
         }
 
         window.onload = function() {
