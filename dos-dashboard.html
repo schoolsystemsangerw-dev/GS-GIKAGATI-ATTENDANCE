@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <!-- Anti-Caching Meta Tags to force fresh authentication check on every visit, including Google search referrals -->
+    <!-- Anti-Caching Meta Tags to force fresh authentication check on every visit -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -35,8 +35,15 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen">
-    <div class="flex-1 flex flex-col">
+<body class="bg-slate-100 font-sans text-slate-800 flex flex-1 flex-col min-h-screen">
+    <!-- Security Authentication Overlay -->
+    <div id="auth-overlay">
+        <h2 class="text-xl font-bold mb-2">GS Gikagati DOS Portal</h2>
+        <p class="text-sm text-slate-600">Secured Area. Please authenticate...</p>
+    </div>
+
+    <!-- Main Dashboard Container (Hidden until password is verified) -->
+    <div id="main-dashboard" class="flex-1 flex flex-col" style="display: none;">
         <header class="bg-blue-950 text-white shadow-md border-b-2 border-amber-500">
             <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden uppercase shadow-inner">
                 <div class="animate-marquee">
@@ -136,13 +143,44 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
+        const SUPABASE_URL = 'https://qjlqjvppfhsszvsuhvzo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentView = 'staff';
         let cachedStaff = [];
         let cachedAttendances = [];
+
+        // Security Authentication Script Execution on Load
+        (async function() {
+            const enteredPassword = prompt("Enter Administrator Password:");
+            const overlay = document.getElementById('auth-overlay');
+            const dashboard = document.getElementById('main-dashboard');
+            
+            if (!enteredPassword) {
+                window.location.href = "https://www.google.com";
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/portal_settings?name=eq.admin&select=password`, {
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+                
+                const data = await response.json();
+                if (data.length > 0 && data[0].password === enteredPassword) {
+                    if (overlay) overlay.remove();
+                    if (dashboard) dashboard.style.display = 'flex';
+                    loadDashboardData();
+                } else {
+                    alert("Incorrect password!");
+                    window.location.href = "https://www.google.com";
+                }
+            } catch (err) {
+                alert("Authentication error.");
+                window.location.href = "https://www.google.com";
+            }
+        })();
 
         async function loadDashboardData() {
             try {
@@ -351,8 +389,6 @@
             });
             doc.save(`DOS_Report_${new Date().toISOString().split('T')[0]}.pdf`);
         }
-
-        window.onload = loadDashboardData;
     </script>
 </body>
 </html>
