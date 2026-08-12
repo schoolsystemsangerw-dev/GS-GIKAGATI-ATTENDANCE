@@ -10,21 +10,32 @@
     <meta name="google-site-verification" content="5Zd0gd92yfUIA1QutcZoAN_OF4vGRP2SVsRi1-7Gro8" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script>
   async function verifyPortalAccess() {
     const enteredPassword = prompt("Enter Administrator Password:");
+    if (!enteredPassword) {
+      window.location.href = "https://www.google.com";
+      return;
+    }
+    
     const supabaseUrl = 'https://qjlqjvppfhsszvsuhvzo.supabase.co';
     const supabaseKey = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
 
-    const response = await fetch(`${supabaseUrl}/rest/v1/portal_settings?name=eq.admin&select=password`, {
-      headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
-    });
-    
-    const data = await response.json();
-    if (data.length > 0 && data[0].password === enteredPassword) {
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/portal_settings?name=eq.admin&select=password`, {
+        headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+      });
+      
+      const data = await response.json();
+      if (data.length > 0 && data[0].password === enteredPassword) {
+        document.body.style.display = "block";
+      } else {
+        alert("Incorrect password!");
+        window.location.href = "https://www.google.com";
+      }
+    } catch (err) {
+      // Safety fallback: if network fails, show page instead of blank screen
       document.body.style.display = "block";
-    } else {
-      alert("Incorrect password!");
-      window.location.href = "https://www.google.com";
     }
   }
   document.write('<style>body { display: none !important; }</style>');
