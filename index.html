@@ -997,10 +997,10 @@
             doc.text("Head Teacher, GS Gikagati", 16, y);
             doc.text("Phone: 0788754668", 16, y + 5);
 
-            // Force Image Loading with Direct Canvas Rendering
+            // Load Image via relative repository path or fallback element
+            // Since index.html and stamp gikagati.png are in the same folder on GitHub Pages:
             const img = new Image();
-            img.crossOrigin = 'Anonymous';
-            img.src = 'https://raw.githubusercontent.com/schoolsystemrangerw-dev/GS-GIKAGATI-ATTENDANCE/main/stamp%20gikagati.png?' + new Date().getTime();
+            img.src = 'stamp gikagati.png';
 
             img.onload = function() {
                 try {
@@ -1013,9 +1013,20 @@
             };
 
             img.onerror = function() {
-                alert("Warning: Official stamp image could not be loaded from GitHub repository, downloading PDF without stamp.");
-                doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
-                closeLeavePermitModal();
+                // Fallback to raw github link if relative path fails
+                const imgFallback = new Image();
+                imgFallback.crossOrigin = 'Anonymous';
+                imgFallback.src = 'https://raw.githubusercontent.com/schoolsystemrangerw-dev/GS-GIKAGATI-ATTENDANCE/main/stamp%20gikagati.png';
+                
+                imgFallback.onload = function() {
+                    doc.addImage(imgFallback, 'PNG', 118, 122, 75, 38);
+                    doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
+                    closeLeavePermitModal();
+                };
+                imgFallback.onerror = function() {
+                    doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
+                    closeLeavePermitModal();
+                };
             };
         }
 
