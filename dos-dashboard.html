@@ -44,7 +44,7 @@
             <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-left">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
-                    <input type="password" id="passwordInput" required placeholder="Enter DOS or Deputy Password" 
+                    <input type="password" id="passwordInput" required placeholder="Enter DOS Password" 
                         class="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-950 focus:outline-none">
                 </div>
                 <button type="submit" id="loginBtn" class="w-full py-3 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition shadow">
@@ -164,46 +164,22 @@
         let cachedStaff = [];
         let cachedAttendances = [];
 
-        async function handleLogin(event) {
+        function handleLogin(event) {
             event.preventDefault();
             const enteredPassword = document.getElementById('passwordInput').value.trim();
             const errorMsg = document.getElementById('errorMsg');
-            const loginBtn = document.getElementById('loginBtn');
             const overlay = document.getElementById('auth-overlay');
             const dashboard = document.getElementById('main-dashboard');
 
             errorMsg.classList.add('hidden');
-            loginBtn.textContent = 'Verifying...';
-            loginBtn.disabled = true;
 
-            try {
-                const { data: settings, error } = await supabaseClient
-                    .from('portal_settings')
-                    .select('name, password');
-                
-                if (error) throw error;
-
-                const authorized = settings.find(row => 
-                    ['dos', 'deputy', 'admin'].includes(row.name.trim().toLowerCase()) && 
-                    row.password.trim() === enteredPassword
-                );
-
-                if (authorized) {
-                    overlay.remove();
-                    dashboard.style.display = 'flex';
-                    loadDashboardData();
-                } else {
-                    errorMsg.textContent = 'Incorrect password. Please try again.';
-                    errorMsg.classList.remove('hidden');
-                    loginBtn.textContent = 'Authenticate & Access';
-                    loginBtn.disabled = false;
-                }
-            } catch (err) {
-                console.error(err);
-                errorMsg.textContent = 'Database connection error. Check your internet.';
+            if (enteredPassword === 'GSGikagatiDS2026!') {
+                overlay.remove();
+                dashboard.style.display = 'flex';
+                loadDashboardData();
+            } else {
+                errorMsg.textContent = 'Incorrect password. Please try again.';
                 errorMsg.classList.remove('hidden');
-                loginBtn.textContent = 'Authenticate & Access';
-                loginBtn.disabled = false;
             }
         }
 
