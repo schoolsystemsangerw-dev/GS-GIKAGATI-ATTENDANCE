@@ -835,57 +835,128 @@
 
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
+// Action: Official Report Transmission via Gmail Web Direct Compose (HTML Formatted with QR Verification)
+function sendOfficialReport() {
+    const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
+    
+    if (govEmail === null) {
+        return;
+    }
 
-        // Action: Official Report Transmission via Gmail Web Direct Compose
-        function sendOfficialReport() {
-            const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
-            
-            if (govEmail === null) {
-                return;
+    if (!govEmail.trim() || !govEmail.includes("@") || !govEmail.includes(".")) {
+        alert("Operation cancelled or invalid email format provided.");
+        return;
+    }
+
+    const todayString = new Date().toISOString().split('T')[0];
+    let presentCount = 0;
+    let lateCount = 0;
+
+    cachedStaff.forEach(staff => {
+        const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id && r.status === 'check-in');
+        if (record) {
+            presentCount++;
+            const checkInTime = new Date(record.created_at);
+            if ((checkInTime.getHours() * 60 + checkInTime.getMinutes()) > (7 * 60 + 30)) {
+                lateCount++;
             }
-
-            if (!govEmail.trim() || !govEmail.includes("@") || !govEmail.includes(".")) {
-                alert("Operation cancelled or invalid email format provided.");
-                return;
-            }
-
-            const todayString = new Date().toISOString().split('T')[0];
-            let presentCount = 0;
-            let lateCount = 0;
-
-            cachedStaff.forEach(staff => {
-                const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id && r.status === 'check-in');
-                if (record) {
-                    presentCount++;
-                    const checkInTime = new Date(record.created_at);
-                    if ((checkInTime.getHours() * 60 + checkInTime.getMinutes()) > (7 * 60 + 30)) {
-                        lateCount++;
-                    }
-                }
-            });
-
-            const absentCount = cachedStaff.length - presentCount;
-
-            const subject = `Official Daily Attendance Report - GS Gikagati (${todayString})`;
-            const body = 
-                `OFFICIAL DAILY ATTENDANCE REPORT\n` +
-                `----------------------------------------\n` +
-                `Institution: GS Gikagati\n` +
-                `Administrative Location: East Province | Nyagatare District | Karama Sector\n` +
-                `Date of Report: ${todayString}\n\n` +
-                `ATTENDANCE SUMMARY:\n` +
-                `- Total Registered Staff: ${cachedStaff.length}\n` +
-                `- Present On Time: ${presentCount - lateCount}\n` +
-                `- Late Arrivals (> 07:30 AM): ${lateCount}\n` +
-                `- Total Present: ${presentCount}\n` +
-                `- Absent / Pending: ${absentCount}\n\n` +
-                `----------------------------------------\n` +
-                `Submitted via GS Gikagati Master Control Portal\n` +
-                `Authorized by Head Teacher: Ladislas`;
-
-            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.open(gmailUrl, '_blank');
         }
+    });
+
+    const totalStaffCount = cachedStaff.length;
+    const onTimeCount = presentCount - lateCount;
+    const absentCount = totalStaffCount - presentCount;
+
+    const subject = `GS GIKAGATI OFFICIAL DAILY ATTENDANCE REPORT - (${todayString})`;
+    
+    // Generate QR Code URL pointing to verification data or portal
+    const verificationText = encodeURIComponent(`GS GIKAGATI OFFICIAL REPORT\nDate: ${todayString}\nPresent: ${presentCount}/${totalStaffCount}\nAbsent: ${absentCount}\nHead Teacher: Ladislas Uwituze`);
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${verificationText}`;
+
+    // Professional HTML Layout for the Email Body including QR Code
+    const htmlBody = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+    <!-- Header Banner -->
+    <div style="background-color: #0f172a; color: #f8fafc; padding: 24px; text-align: center;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #fbbf24;">GS GIKAGATI</h1>
+        <p style="margin: 4px 0 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8;">Republic of Rwanda | Ministry of Education</p>
+    </div>
+
+    <!-- Title Bar -->
+    <div style="background-color: #1e293b; color: #ffffff; padding: 12px 24px; text-align: center; border-bottom: 3px solid #fbbf24;">
+        <h2 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">OFFICIAL DAILY ATTENDANCE REPORT</h2>
+    </div>
+
+    <!-- Metadata Section -->
+    <div style="padding: 20px 24px; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 4px 0;"><strong>Institution:</strong> GS Gikagati</td>
+                <td style="padding: 4px 0; text-align: right;"><strong>Date:</strong> ${todayString}</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding: 4px 0;"><strong>Administrative Location:</strong> East Province | Nyagatare District | Karama Sector</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Metrics Table -->
+    <div style="padding: 24px;">
+        <p style="font-size: 13px; color: #475569; margin-top: 0;">Please find below the certified daily staff attendance summary records for institutional review:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px;">
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #334155;">Total Registered Staff</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #0f172a;">${totalStaffCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #15803d;">Present On Time</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #15803d;">${onTimeCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #b45309;">Late Arrivals (> 07:30 AM)</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #b45309;">${lateCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0; background-color: #f8fafc;">
+                <td style="padding: 10px; color: #0f172a; font-weight: bold;">Total Present</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #0f172a;">${presentCount}</td>
+            </tr>
+            <tr style="border-bottom: 2px solid #cbd5e1; background-color: #fef2f2;">
+                <td style="padding: 10px; color: #991b1b; font-weight: bold;">Total Absent / Pending Staff</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #991b1b;">${absentCount}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Digital Signature & QR Verification Block -->
+    <div style="padding: 20px 24px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #475569;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="vertical-align: top; width: 75%;">
+                    <p style="margin: 0; font-weight: bold; color: #0f172a;">AUTHENTICATED DIGITAL RECORD</p>
+                    <p style="margin: 2px 0 10px 0; color: #64748b;">Generated securely via GS Gikagati Master Control Portal</p>
+                    
+                    <p style="margin: 0; font-family: 'Brush Script MT', cursive; font-size: 20px; color: #1e3a8a;">Ladislas Uwituze</p>
+                    <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">Head Teacher, GS Gikagati</p>
+                </td>
+                <td style="vertical-align: top; text-align: right; width: 25%;">
+                    <img src="${qrCodeUrl}" alt="Official Verification QR Code" style="width: 90px; height: 90px; border: 1px solid #cbd5e1; padding: 4px; background: #ffffff; border-radius: 4px;" />
+                    <p style="margin: 4px 0 0 0; font-size: 9px; color: #64748b; text-transform: uppercase;">Scan to Verify</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Footer Note -->
+    <div style="background-color: #0f172a; color: #94a3b8; padding: 10px 24px; text-align: center; font-size: 10px;">
+        This is an official automated transmission. No signature required if transmitted through verified school administrative tools.
+    </div>
+</div>
+    `;
+    
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent("Please view the official report layout below:\n\n" + htmlBody)}`;
+    window.open(gmailUrl, '_blank');
+}
 // Leave Permit Modal Controls & PDF Generator with Full-Content QR Code
         function openLeavePermitModal() {
             const selectElem = document.getElementById('leaveStaffSelect');
