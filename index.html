@@ -835,7 +835,7 @@
 
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
-// Action: Official Report Transmission with Embedded Logo, Stamp & Signature Image, and QR Code
+// Action: Official Report Transmission with Reliable HTML Clipboard Injection
 function sendOfficialReport() {
     const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
     
@@ -875,7 +875,7 @@ function sendOfficialReport() {
     const verificationText = encodeURIComponent(`GS GIKAGATI OFFICIAL REPORT\nDate: ${todayString}\nPresent: ${presentCount}/${totalStaffCount}\nAbsent: ${absentCount}\nHead Teacher: Ladislas Uwituze`);
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${verificationText}`;
 
-    // Professional HTML Layout incorporating Logo, Combined Stamp & Signature, and QR Code
+    // Professional HTML Layout
     const htmlBody = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
     <!-- Header Banner with Logo -->
@@ -931,7 +931,7 @@ function sendOfficialReport() {
         </table>
     </div>
 
-    <!-- Digital Signature, Combined Stamp & Signature, and QR Verification Block -->
+    <!-- Digital Signature, Stamp, and QR Verification Block -->
     <div style="padding: 20px 24px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #475569;">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
@@ -962,16 +962,18 @@ function sendOfficialReport() {
 </div>
     `;
 
+    // Open Gmail with only recipient and subject correctly set
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}`;
-    const newWindow = window.open(gmailUrl, '_blank');
+    window.open(gmailUrl, '_blank');
 
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+    // Copy formatted HTML directly to clipboard so pasting works seamlessly
+    if (navigator.clipboard && navigator.clipboard.write) {
         const clipboardItem = new ClipboardItem({
             "text/html": new Blob([htmlBody], { type: "text/html" }),
             "text/plain": new Blob([htmlBody.replace(/<[^>]*>?/gm, '')], { type: "text/plain" })
         });
         navigator.clipboard.write([clipboardItem]).then(() => {
-            alert("Official report generated! The layout featuring your school logo, combined signature & stamp document, and QR code has been copied to your clipboard. Just press Ctrl+V inside your Gmail compose window to paste it.");
+            alert("Report generated! The official layout with your logo, stamp/signature, and QR code is copied. Click inside your open Gmail compose message body and press Ctrl+V to paste it.");
         }).catch(err => {
             console.error("Clipboard write failed", err);
         });
