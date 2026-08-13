@@ -835,7 +835,7 @@
 
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
-// Action: Official Report Transmission with In-Browser HTML Preview Box
+// Action: Official Report Transmission with Embedded Logo, Stamp & Signature Image, and QR Code
 function sendOfficialReport() {
     const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
     
@@ -866,30 +866,116 @@ function sendOfficialReport() {
     const absentCount = totalStaffCount - presentCount;
 
     const subject = `GS GIKAGATI OFFICIAL DAILY ATTENDANCE REPORT - (${todayString})`;
+    
+    // Direct raw URLs from your GitHub repository files
+    const logoUrl = "https://schoolsystemsangerw-dev.github.io/GS-GIKAGATI-ATTENDANCE/gikagati.png";
+    const stampAndSigUrl = "https://schoolsystemsangerw-dev.github.io/GS-GIKAGATI-ATTENDANCE/stamp%20gikagati.png";
+
+    // QR Code generation URL
     const verificationText = encodeURIComponent(`GS GIKAGATI OFFICIAL REPORT\nDate: ${todayString}\nPresent: ${presentCount}/${totalStaffCount}\nAbsent: ${absentCount}\nHead Teacher: Ladislas Uwituze`);
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${verificationText}`;
 
-    // Plain text layout guaranteed to load safely in Gmail compose window
-    const textBody = 
-        `OFFICIAL DAILY ATTENDANCE REPORT\n` +
-        `----------------------------------------\n` +
-        `Institution: GS Gikagati\n` +
-        `Administrative Location: East Province | Nyagatare District | Karama Sector\n` +
-        `Date of Report: ${todayString}\n\n` +
-        `ATTENDANCE SUMMARY:\n` +
-        `- Total Registered Staff: ${totalStaffCount}\n` +
-        `- Present On Time: ${onTimeCount}\n` +
-        `- Late Arrivals (> 07:30 AM): ${lateCount}\n` +
-        `- Total Present: ${presentCount}\n` +
-        `- Total Absent / Pending: ${absentCount}\n\n` +
-        `----------------------------------------\n` +
-        `AUTHENTICATED DIGITAL RECORD\n` +
-        `Head Teacher: Ladislas Uwituze\n` +
-        `Verification QR Code Link:\n${qrCodeUrl}\n\n` +
-        `Submitted via GS Gikagati Master Control Portal`;
+    // Professional HTML Layout incorporating Logo, Combined Stamp & Signature, and QR Code
+    const htmlBody = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+    <!-- Header Banner with Logo -->
+    <div style="background-color: #0f172a; color: #f8fafc; padding: 24px; text-align: center;">
+        <img src="${logoUrl}" alt="GS Gikagati Logo" style="width: 64px; height: 64px; object-fit: contain; margin-bottom: 8px; background: white; border-radius: 50%; padding: 4px;" />
+        <h1 style="margin: 0; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #fbbf24;">GS GIKAGATI</h1>
+        <p style="margin: 4px 0 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8;">Republic of Rwanda | Ministry of Education</p>
+    </div>
 
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(textBody)}`;
-    window.open(gmailUrl, '_blank');
+    <!-- Title Bar -->
+    <div style="background-color: #1e293b; color: #ffffff; padding: 12px 24px; text-align: center; border-bottom: 3px solid #fbbf24;">
+        <h2 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">OFFICIAL DAILY ATTENDANCE REPORT</h2>
+    </div>
+
+    <!-- Metadata Section -->
+    <div style="padding: 20px 24px; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 4px 0;"><strong>Institution:</strong> GS Gikagati</td>
+                <td style="padding: 4px 0; text-align: right;"><strong>Date:</strong> ${todayString}</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding: 4px 0;"><strong>Administrative Location:</strong> East Province | Nyagatare District | Karama Sector</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Metrics Table -->
+    <div style="padding: 24px;">
+        <p style="font-size: 13px; color: #475569; margin-top: 0;">Please find below the certified daily staff attendance summary records for institutional review:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px;">
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #334155;">Total Registered Staff</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #0f172a;">${totalStaffCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #15803d;">Present On Time</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #15803d;">${onTimeCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #b45309;">Late Arrivals (> 07:30 AM)</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #b45309;">${lateCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0; background-color: #f8fafc;">
+                <td style="padding: 10px; color: #0f172a; font-weight: bold;">Total Present</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #0f172a;">${presentCount}</td>
+            </tr>
+            <tr style="border-bottom: 2px solid #cbd5e1; background-color: #fef2f2;">
+                <td style="padding: 10px; color: #991b1b; font-weight: bold;">Total Absent / Pending Staff</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #991b1b;">${absentCount}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Digital Signature, Combined Stamp & Signature, and QR Verification Block -->
+    <div style="padding: 20px 24px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #475569;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="vertical-align: top; width: 55%;">
+                    <p style="margin: 0; font-weight: bold; color: #0f172a;">AUTHENTICATED DIGITAL RECORD</p>
+                    <p style="margin: 2px 0 10px 0; color: #64748b;">Generated securely via GS Gikagati Master Control Portal</p>
+                    
+                    <!-- Combined Stamp & Signature Image -->
+                    <div style="margin-bottom: 4px;">
+                        <img src="${stampAndSigUrl}" alt="Official Stamp & Signature" style="max-height: 90px; object-fit: contain;" />
+                    </div>
+                    <p style="margin: 0; font-weight: bold; color: #0f172a;">Ladislas Uwituze</p>
+                    <p style="margin: 2px 0 0 0; color: #64748b;">Head Teacher, GS Gikagati</p>
+                </td>
+                <td style="vertical-align: top; text-align: right; width: 45%;">
+                    <!-- QR Verification Code -->
+                    <img src="${qrCodeUrl}" alt="Official Verification QR Code" style="width: 85px; height: 85px; border: 1px solid #cbd5e1; padding: 4px; background: #ffffff; border-radius: 4px;" />
+                    <p style="margin: 4px 0 0 0; font-size: 9px; color: #64748b; text-transform: uppercase;">Scan to Verify</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Footer Note -->
+    <div style="background-color: #0f172a; color: #94a3b8; padding: 10px 24px; text-align: center; font-size: 10px;">
+        This is an official automated transmission. No signature required if transmitted through verified school administrative tools.
+    </div>
+</div>
+    `;
+
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}`;
+    const newWindow = window.open(gmailUrl, '_blank');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        const clipboardItem = new ClipboardItem({
+            "text/html": new Blob([htmlBody], { type: "text/html" }),
+            "text/plain": new Blob([htmlBody.replace(/<[^>]*>?/gm, '')], { type: "text/plain" })
+        });
+        navigator.clipboard.write([clipboardItem]).then(() => {
+            alert("Official report generated! The layout featuring your school logo, combined signature & stamp document, and QR code has been copied to your clipboard. Just press Ctrl+V inside your Gmail compose window to paste it.");
+        }).catch(err => {
+            console.error("Clipboard write failed", err);
+        });
+    }
 }
 // Leave Permit Modal Controls & PDF Generator with Full-Content QR Code
         function openLeavePermitModal() {
