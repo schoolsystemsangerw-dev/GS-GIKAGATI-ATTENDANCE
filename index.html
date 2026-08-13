@@ -835,7 +835,7 @@
 
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
         }
-// Action: Official Report Transmission via Gmail Web Direct Compose (HTML Formatted with QR Verification)
+// Action: Official Report Transmission via Gmail Web Direct Compose (Direct DOM Injection)
 function sendOfficialReport() {
     const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
     
@@ -869,11 +869,11 @@ function sendOfficialReport() {
 
     const subject = `GS GIKAGATI OFFICIAL DAILY ATTENDANCE REPORT - (${todayString})`;
     
-    // Generate QR Code URL pointing to verification data or portal
+    // QR Code generation URL
     const verificationText = encodeURIComponent(`GS GIKAGATI OFFICIAL REPORT\nDate: ${todayString}\nPresent: ${presentCount}/${totalStaffCount}\nAbsent: ${absentCount}\nHead Teacher: Ladislas Uwituze`);
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${verificationText}`;
 
-    // Professional HTML Layout for the Email Body including QR Code
+    // Professional HTML Layout for the Email Body
     const htmlBody = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
     <!-- Header Banner -->
@@ -953,9 +953,24 @@ function sendOfficialReport() {
     </div>
 </div>
     `;
-    
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent("Please view the official report layout below:\n\n" + htmlBody)}`;
-    window.open(gmailUrl, '_blank');
+
+    // Open clean Gmail compose page first with only recipient and subject
+    const basicGmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}`;
+    const newWindow = window.open(basicGmailUrl, '_blank');
+
+    // Automatically copy the rich HTML body to clipboard so you can just paste it directly into the email window
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        // Create a temporary element to copy formatted HTML content
+        const clipboardItem = new ClipboardItem({
+            "text/html": new Blob([htmlBody], { type: "text/html" }),
+            "text/plain": new Blob([htmlBody.replace(/<[^>]*>?/gm, '')], { type: "text/plain" })
+        });
+        navigator.clipboard.write([clipboardItem]).then(() => {
+            alert("Official report generated successfully! The formatted report with QR code and digital signature has been copied to your clipboard. Just press Ctrl+V inside your Gmail compose window to paste it.");
+        }).catch(err => {
+            console.error("Clipboard write failed", err);
+        });
+    }
 }
 // Leave Permit Modal Controls & PDF Generator with Full-Content QR Code
         function openLeavePermitModal() {
