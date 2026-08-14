@@ -772,24 +772,46 @@
             }
         }
 
-        // Action: Export Attendance to PDF
-        function exportAttendancePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(16);
-            doc.text("GS GIKAGATI - OFFICIAL ATTENDANCE REPORT", 14, 20);
-            
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
-            doc.text("Location: East Province | Nyagatare District | Karama Sector", 14, 34);
+    // Action: Export Formal Professional Attendance PDF with School Logo & Digital Stamp/Signature
+function exportAttendancePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    const todayString = new Date().toISOString().split('T')[0];
+    const generatedTime = new Date().toLocaleString();
 
-            let tableData = [];
-            const todayString = new Date().toISOString().split('T')[0];
+    // Direct raw image URLs from your GitHub repository
+    const logoUrl = "https://schoolsystemsangerw-dev.github.io/GS-GIKAGATI-ATTENDANCE/gikagati.png";
+    const stampAndSigUrl = "https://schoolsystemsangerw-dev.github.io/GS-GIKAGATI-ATTENDANCE/stamp%20gikagati.png";
 
+    // Helper function to convert image URL to Base64 so jsPDF can embed it reliably
+    function addImageToPdf(url, callback) {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            callback(canvas.toDataURL('image/png'));
+        };
+        img.onerror = function() {
+            console.warn("Could not load image: " + url);
+            callback(null);
+        };
+        img.src = url;
+    }
+
+    // Fetch both images concurrently, then build and save the PDF
+    addImageToPdf(logoUrl, function(logoBase64) {
+        addImageToPdf(stampAndSigUrl, function(stampBase64) {
+
+            // 1. Calculate Summary Metrics
+            let presentCount = 0;
+            let lateCount = 0;
             const todayMap = {};
+            
             cachedAttendances.forEach(r => {
                 if (r.date === todayString && r.sdms_id) {
                     todayMap[r.sdms_id] = r;
@@ -797,7 +819,99 @@
             });
 
             cachedStaff.forEach(staff => {
-                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
+                const record = todayMap[staff.sdms_id];
+                if (record && record.status !== 'check-out') {
+                    presentCount++;
+                    if (record.status === 'check-in' && record.created_at) {
+                        const checkInDate = new Date(record.created_at);
+                        if ((checkInDate.getHours() * 60 + checkInDate.getMinutes()) > (7 * 60 + 30)) {
+                            lateCount++;
+                        }
+                    }
+                }
+            });
+
+            const totalStaffCount = cachedStaff.length;
+            const onTimeCount = presentCount - lateCount;
+            const absentCount = totalStaffCount - presentCount;
+
+            // 2. Official Header Block
+            doc.setFillColor(15, 23, 42); // Dark slate blue
+            doc.rect(14, 12, 182, 20, 'F');
+            
+            // Insert School Logo if loaded successfully
+            if (logoBase64) {
+                doc.addImage(logoBase64, 'PNG', 17, 14, 16, 16);
+            }
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10.5);
+            doc.text("REPUBLIC OF RWANDA | MINISTRY OF EDUCATION", 108, 19, { align: "center" });
+            
+            doc.setFontSize(8.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(203, 213, 225);
+            doc.text("EAST PROVINCE | NYAGATARE DISTRICT | KARAMA SECTOR", 108, 25, { align: "center" });
+
+            // Document Title
+            doc.setTextColor(15, 23, 42);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(13);
+            doc.text("GS GIKAGATI - OFFICIAL DAILY STAFF ATTENDANCE REPORT", 14, 40);
+
+            // 3. Metadata Box
+            doc.setDrawColor(203, 213, 225);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(14, 44, 182, 16, 1, 1, 'FD');
+
+            doc.setFontSize(8.5);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(51, 65, 85);
+            doc.text("Institution:", 18, 50);
+            doc.text("Date:", 120, 50);
+            doc.text("Generated:", 120, 56);
+
+            doc.setFont("helvetica", "normal");
+            doc.text("Groupes Scolaire Gikagati", 40, 50);
+            doc.text(todayString, 142, 50);
+            doc.text(generatedTime, 142, 56);
+            doc.text("System: GS Gikagati Master Control Portal", 18, 56);
+
+            // 4. Metrics Summary Blocks
+            const cardWidth = 43;
+            const cardHeight = 12;
+            const cardY = 64;
+            const startX = 14;
+            const gap = 3.3;
+
+            const metrics = [
+                { label: "Total Registered", val: totalStaffCount, color: [15, 23, 42] },
+                { label: "On Time", val: onTimeCount, color: [21, 128, 61] },
+                { label: "Late Arrivals", val: lateCount, color: [180, 83, 9] },
+                { label: "Absent / Pending", val: absentCount, color: [153, 27, 27] }
+            ];
+
+            metrics.forEach((m, idx) => {
+                const x = startX + idx * (cardWidth + gap);
+                doc.setFillColor(241, 245, 249);
+                doc.setDrawColor(203, 213, 225);
+                doc.roundedRect(x, cardY, cardWidth, cardHeight, 1, 1, 'FD');
+
+                doc.setFontSize(7.5);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(100, 116, 139);
+                doc.text(m.label.toUpperCase(), x + (cardWidth / 2), cardY + 4.5, { align: "center" });
+
+                doc.setFontSize(10);
+                doc.setTextColor(m.color[0], m.color[1], m.color[2]);
+                doc.text(String(m.val), x + (cardWidth / 2), cardY + 10, { align: "center" });
+            });
+
+            // 5. Build Staff Table Rows
+            let tableData = [];
+            cachedStaff.forEach((staff, index) => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || staff.staff_name || '-';
                 const record = todayMap[staff.sdms_id];
                 let statusText = "Pending / Absent";
                 
@@ -808,33 +922,106 @@
                         const checkInDate = new Date(record.created_at);
                         const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
                         if (totalMinutes > (7 * 60 + 30)) {
-                            statusText = `Late (${checkInDate.toLocaleTimeString()})`;
+                            statusText = `Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
                         } else {
-                            statusText = `On Time (${checkInDate.toLocaleTimeString()})`;
+                            statusText = `On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
                         }
                     }
                 }
 
                 tableData.push([
+                    index + 1,
                     staff.sdms_id || '-',
                     fullName,
-                    staff.position_name || '-',
-                    staff.system_role || '-',
+                    staff.position_name || staff.position || '-',
+                    staff.system_role || staff.role || 'Staff',
                     statusText
                 ]);
             });
 
+            // 6. Generate AutoTable with Professional Styling & Footer Callbacks
             doc.autoTable({
-                startY: 42,
-                head: [['SDMS ID', 'Staff Name', 'Position', 'Role', "Today's Status"]],
+                startY: 80,
+                head: [['#', 'SDMS ID', 'Staff Name', 'Position', 'Role', "Today's Status"]],
                 body: tableData,
                 theme: 'grid',
-                headStyles: { fillColor: [15, 23, 42] },
-                styles: { fontSize: 9 }
+                headStyles: { 
+                    fillColor: [15, 23, 42], 
+                    textColor: [255, 255, 255], 
+                    fontStyle: 'bold',
+                    fontSize: 8.5,
+                    cellPadding: 4
+                },
+                bodyStyles: { 
+                    fontSize: 8, 
+                    textColor: [51, 65, 85],
+                    cellPadding: 3.5
+                },
+                alternateRowStyles: { 
+                    fillColor: [248, 250, 252] 
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' },
+                    1: { cellWidth: 26 },
+                    2: { cellWidth: 46, fontStyle: 'bold' },
+                    3: { cellWidth: 46 },
+                    4: { cellWidth: 22 },
+                    5: { cellWidth: 32, halign: 'center' }
+                },
+                didDrawPage: function (data) {
+                    const pageCount = doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(148, 163, 184);
+                    doc.text(
+                        `GS Gikagati Official Administrative Record  |  Page ${data.pageNumber} of ${pageCount}`, 
+                        105, 
+                        290, 
+                        { align: "center" }
+                    );
+                },
+                margin: { top: 80, bottom: 25, left: 14, right: 14 }
             });
 
+            // 7. Signature and Stamp Section
+            const finalY = doc.lastAutoTable.finalY + 10;
+            
+            // If table ends too low on the page, move signature section to a new page
+            if (finalY > 235) {
+                doc.addPage();
+            }
+
+            const sigY = finalY > 235 ? 20 : finalY;
+
+            doc.setDrawColor(203, 213, 225);
+            doc.line(14, sigY, 196, sigY);
+
+            doc.setFontSize(8.5);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(15, 23, 42);
+            doc.text("AUTHENTICATED DIGITAL RECORD & INSTITUTIONAL APPROVAL", 14, sigY + 6);
+
+            // Insert Stamp and Signature Image if loaded successfully
+            if (stampBase64) {
+                // Placing the stamp & signature image cleanly above the signer's name
+                doc.addImage(stampBase64, 'PNG', 14, sigY + 9, 45, 22);
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42);
+            doc.text("Ladislas UWITUZE", 14, sigY + 36);
+            
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(100, 116, 139);
+            doc.text("Head Teacher, GS Gikagati", 14, sigY + 41);
+
+            // Save the PDF file
             doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
-        }
+        });
+    });
+}   
 // Action: Official Report Transmission with Embedded Logo, Stamp & Signature Image, and QR Code
 function sendOfficialReport() {
     const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
