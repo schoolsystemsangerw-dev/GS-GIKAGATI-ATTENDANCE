@@ -272,6 +272,47 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
         }
 
+        // PWA Service Worker Registration & Offline Sync Handlers
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+
+        window.addEventListener('online', async () => {
+            console.log('Back online! Checking for pending offline records...');
+            await syncOfflineQueue();
+        });
+
+        async function queueOfflineRecord(table, recordData) {
+            let queue = JSON.parse(localStorage.getItem('offline_attendance_queue') || '[]');
+            queue.push({ table, data: recordData });
+            localStorage.setItem('offline_attendance_queue', JSON.stringify(queue));
+            statusMsg.className = 'mt-4 text-center text-xs font-semibold text-amber-400';
+            statusMsg.textContent = 'Network offline. Record saved locally; will auto-sync when online.';
+        }
+
+        async function syncOfflineQueue() {
+            let queue = JSON.parse(localStorage.getItem('offline_attendance_queue') || '[]');
+            if (queue.length === 0) return;
+
+            let remainingQueue = [];
+            for (let item of queue) {
+                try {
+                    const { error } = await supabaseClient.from(item.table).insert([item.data]);
+                    if (error) remainingQueue.push(item);
+                } catch (e) {
+                    remainingQueue.push(item);
+                }
+            }
+            localStorage.setItem('offline_attendance_queue', JSON.stringify(remainingQueue));
+            if (remainingQueue.length === 0) {
+                console.log('All offline queue items successfully synced!');
+            }
+        }
+
         submitBtn.addEventListener('click', async () => {
             const selectedSdms = staffSelect.value;
             const passwordInput = sdmsPassword.value.trim();
@@ -338,20 +379,26 @@
                         throw new Error("Please fill in the target date, notification email, and reason for leave.");
                     }
 
-                    const { error: leaveError } = await supabaseClient
-                        .from('leave_requests')
-                        .insert([{
-                            sdms_id: selectedSdms,
-                            email: email,
-                            leave_date: leaveDate,
-                            reason: reason,
-                            status: 'pending'
-                        }]);
+                    const payload = {
+                        sdms_id: selectedSdms,
+                        email: email,
+                        leave_date: leaveDate,
+                        reason: reason,
+                        status: 'pending'
+                    };
 
-                    if (leaveError) throw leaveError;
+                    if (!navigator.onLine) {
+                        await queueOfflineRecord('leave_requests', payload);
+                    } else {
+                        const { error: leaveError } = await supabaseClient
+                            .from('leave_requests')
+                            .insert([payload]);
 
-                    statusMsg.className = 'mt-4 text-center text-xs font-semibold text-sky-400';
-                    statusMsg.textContent = `Success! Permission request submitted for approval.`;
+                        if (leaveError) throw leaveError;
+
+                        statusMsg.className = 'mt-4 text-center text-xs font-semibold text-sky-400';
+                        statusMsg.textContent = `Success! Permission request submitted for approval.`;
+                    }
 
                 } else {
                     const context = canvasElement.getContext('2d');
@@ -362,7 +409,7 @@
                     const blob = await new Promise(resolve => canvasElement.toBlob(resolve, 'image/jpeg', 0.85));
                     
                     let photoUrl = null;
-                    if (blob) {
+                    if (blob && navigator.onLine) {
                         const fileName = `${selectedSdms}_${Date.now()}.jpg`;
                         const filePath = `checkins/${fileName}`;
 
@@ -373,31 +420,35 @@
                                 upsert: false
                             });
 
-                        if (storageError) {
-                            console.warn("Storage upload warning:", storageError.message);
-                        } else {
+                        if (!storageError) {
                             const { data: publicUrlData } = supabaseClient.storage
                                 .from('attendance-photos')
                                 .getPublicUrl(filePath);
-                            
+                        
                             photoUrl = publicUrlData ? publicUrlData.publicUrl : null;
                         }
                     }
 
-                    const { error: insertError } = await supabaseClient
-                        .from('attendances')
-                        .insert([{
-                            sdms_id: selectedSdms,
-                            status: actionType,
-                            date: localDate,
-                            photo_url: photoUrl,
-                            created_at: localDateTimeISO
-                        }]);
+                    const payload = {
+                        sdms_id: selectedSdms,
+                        status: actionType,
+                        date: localDate,
+                        photo_url: photoUrl,
+                        created_at: localDateTimeISO
+                    };
 
-                    if (insertError) throw insertError;
+                    if (!navigator.onLine) {
+                        await queueOfflineRecord('attendances', payload);
+                    } else {
+                        const { error: insertError } = await supabaseClient
+                            .from('attendances')
+                            .insert([payload]);
 
-                    statusMsg.className = 'mt-4 text-center text-xs font-semibold text-emerald-400';
-                    statusMsg.textContent = `Success! Attendance record and verification photo saved.`;
+                        if (insertError) throw insertError;
+
+                        statusMsg.className = 'mt-4 text-center text-xs font-semibold text-emerald-400';
+                        statusMsg.textContent = `Success! Attendance record and verification photo saved.`;
+                    }
                 }
 
                 setTimeout(() => { location.reload(); }, 3000);
