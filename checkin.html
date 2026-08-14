@@ -129,6 +129,11 @@
         // Set your portal unlock password here:
         const PORTAL_PASSWORD = "GikagatiStaff2026";
 
+        // GS Gikagati Geofencing Configurations
+        const SCHOOL_LATITUDE = -1.379532;  
+        const SCHOOL_LONGITUDE = 30.181438; 
+        const MAX_ALLOWED_DISTANCE_METERS = 150; 
+
         document.getElementById('unlockBtn').addEventListener('click', () => {
             const pass = document.getElementById('portalPassword').value.trim();
             if (pass === PORTAL_PASSWORD) {
@@ -247,6 +252,21 @@
         loadStaff();
         initCamera();
 
+        // Haversine formula for distance computation in meters
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Earth radius in meters
+            const phi1 = (lat1 * Math.PI) / 180;
+            const phi2 = (lat2 * Math.PI) / 180;
+            const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
+            const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
+
+            const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+                      Math.cos(phi1) * Math.cos(phi2) *
+                      Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+            
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+        }
+
         submitBtn.addEventListener('click', async () => {
             const selectedSdms = staffSelect.value;
             const passwordInput = sdmsPassword.value.trim();
@@ -267,6 +287,32 @@
             submitBtn.textContent = "Processing Request...";
 
             try {
+                // If action is check-in or check-out, enforce GPS Geofencing verification
+                if (actionType !== 'permission') {
+                    if (!navigator.geolocation) {
+                        throw new Error("Geolocation is not supported by your browser.");
+                    }
+
+                    statusMsg.className = 'mt-4 text-center text-xs font-semibold text-amber-400';
+                    statusMsg.textContent = "Acquiring GPS location to verify school grounds...";
+
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        });
+                    });
+
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+                    const distance = calculateDistance(userLat, userLon, SCHOOL_LATITUDE, SCHOOL_LONGITUDE);
+
+                    if (distance > MAX_ALLOWED_DISTANCE_METERS) {
+                        throw new Error(`Access Denied: You are too far from school grounds to ${actionType === 'check-in' ? 'Check In' : 'Check Out'}. Current distance: ${Math.round(distance)}m (Allowed: ${MAX_ALLOWED_DISTANCE_METERS}m).`);
+                    }
+                }
+
                 const now = new Date();
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
