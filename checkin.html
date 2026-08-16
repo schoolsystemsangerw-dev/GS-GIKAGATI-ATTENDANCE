@@ -131,10 +131,8 @@
 
     <!-- Script Logic -->
     <script>
-        // Set your portal unlock password here:
         const PORTAL_PASSWORD = "GikagatiStaff2026";
 
-        // GS Gikagati Geofencing Configurations
         const SCHOOL_LATITUDE = -1.379532;  
         const SCHOOL_LONGITUDE = 30.181438; 
         const MAX_ALLOWED_DISTANCE_METERS = 150; 
@@ -160,7 +158,7 @@
         const { createClient } = window.supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let actionType = 'check-in'; // 'check-in', 'check-out', or 'permission'
+        let actionType = 'check-in';
 
         const btnCheckIn = document.getElementById('btnCheckIn');
         const btnCheckOut = document.getElementById('btnCheckOut');
@@ -183,7 +181,6 @@
         function setActiveButton(selected) {
             actionType = selected;
             
-            // Reset styles
             btnCheckIn.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-slate-600 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 transition text-center';
             btnCheckOut.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-slate-600 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition text-center';
             btnPermission.className = 'py-2.5 px-2 rounded-lg font-semibold text-xs border border-slate-600 text-slate-400 hover:border-sky-500 hover:text-sky-400 transition text-center';
@@ -257,9 +254,8 @@
         loadStaff();
         initCamera();
 
-        // Haversine formula for distance computation in meters
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Earth radius in meters
+            const R = 6371e3;
             const phi1 = (lat1 * Math.PI) / 180;
             const phi2 = (lat2 * Math.PI) / 180;
             const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
@@ -270,15 +266,6 @@
                       Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
             
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-        }
-
-        // PWA Service Worker Registration & Offline Sync Handlers
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('Service Worker registered successfully:', reg.scope))
-                    .catch(err => console.log('Service Worker registration failed:', err));
-            });
         }
 
         window.addEventListener('online', async () => {
@@ -333,7 +320,6 @@
             submitBtn.textContent = "Processing Request...";
 
             try {
-                // If action is check-in or check-out, enforce GPS Geofencing verification
                 if (actionType !== 'permission') {
                     if (!navigator.geolocation) {
                         throw new Error("Geolocation is not supported by your browser.");
@@ -424,7 +410,7 @@
                             const { data: publicUrlData } = supabaseClient.storage
                                 .from('attendance-photos')
                                 .getPublicUrl(filePath);
-                        
+                    
                             photoUrl = publicUrlData ? publicUrlData.publicUrl : null;
                         }
                     }
