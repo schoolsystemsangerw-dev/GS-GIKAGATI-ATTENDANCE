@@ -233,15 +233,7 @@
                     <span>Issue Leave Permit</span>
                 </button>
             </aside>
-<!-- Teachers on Leave Hub Filter Control -->
-    <div class="flex items-center gap-2 px-1">
-        <button onclick="filterStaffByStatus('all')" id="filterBtnAll" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-all shadow-sm">
-            All Staff
-        </button>
-        <button onclick="filterStaffByStatus('on-leave')" id="filterBtnLeave" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
-            🏖️ Teachers on Leave Hub
-        </button>
-    </div>
+
             <!-- Main Display Area -->
             <main class="flex-1 flex flex-col gap-6">
                 <!-- Statistics Summary Cards -->
@@ -1493,33 +1485,6 @@ function closeCalendarModal() {
         modal.classList.remove('flex');
         modal.classList.add('hidden');
     }
-}
-        // --- TEACHERS ON LEAVE HUB FILTER LOGIC ---
-function filterStaffByStatus(status) {
-    const allBtn = document.getElementById('filterBtnAll');
-    const leaveBtn = document.getElementById('filterBtnLeave');
-    
-    if (status === 'on-leave') {
-        leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white transition-all shadow-sm";
-        allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
-    } else {
-        allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-all shadow-sm";
-        leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
-    }
-
-    const staffRows = document.querySelectorAll('.staff-row-item'); 
-    staffRows.forEach(row => {
-        const staffStatus = row.getAttribute('data-status'); 
-        if (status === 'all') {
-            row.style.display = '';
-        } else {
-            if (staffStatus === 'on-leave') {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        }
-    });
 }
 </script>
     </script>
