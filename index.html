@@ -1467,8 +1467,26 @@ function sendOfficialReport() {
         }
 
         window.onload = function() {
-            loadDashboardData();
-        };
+           loadDashboardData();
+};
+
+// --- SCHOOL CALENDAR & HOLIDAYS MODAL LOGIC ---
+function openCalendarModal() {
+    const modal = document.getElementById('calendarModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+
+function closeCalendarModal() {
+    const modal = document.getElementById('calendarModal');
+    if (modal) {
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+}
+</script>
     </script>
     <!-- School Calendar & Holidays Modal -->
 <div id="calendarModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
