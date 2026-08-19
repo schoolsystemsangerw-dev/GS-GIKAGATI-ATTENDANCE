@@ -489,13 +489,14 @@ function handleAcademicPeriodChange() {
                         presentCount++;
                     }
                 });
-                let absentCount = cachedStaff.length - presentCount;
+// Exclude approved leave staff from unexcused absent/pending totals
+    let onLeaveCount = cachedStaff.filter(staff => staff.status === 'on-leave').length;
+    let absentCount = cachedStaff.length - presentCount - onLeaveCount;
 
-                // Update Metric Cards
-                totalCountElem.textContent = cachedStaff.length;
-                presentCountElem.textContent = presentCount;
-                absentCountElem.textContent = absentCount;
-
+    // Update Metric Cards
+    totalCountElem.textContent = cachedStaff.length;
+    presentCountElem.textContent = presentCount;
+    absentCountElem.textContent = absentCount;
                 // Update Sidebar Badges
                 sidebarTotal.textContent = cachedStaff.length;
                 sidebarCheckin.textContent = cachedAttendances.filter(r => r.status === 'check-in').length;
