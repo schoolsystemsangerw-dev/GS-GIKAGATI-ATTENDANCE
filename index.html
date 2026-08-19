@@ -392,11 +392,10 @@ function handleAcademicPeriodChange() {
     const selectedTerm = document.getElementById('termSelector').value;
     console.log(`Active Academic Period Updated -> Year: ${selectedYear}, Term: ${selectedTerm}`);
 }
+        const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
 
-const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IAM7_quyh3yfQ-A_aACGNTfq';
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentView = 'staff'; 
         let cachedStaff = [];
