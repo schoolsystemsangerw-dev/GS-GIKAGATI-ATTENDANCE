@@ -1595,6 +1595,39 @@ function closeCalendarModal() {
     </div>
     // --- TEACHERS ON LEAVE HUB & REMAINING DAYS LOGIC ---
     <script>
+function filterStaffByStatus(status) {
+    const allBtn = document.getElementById('filterBtnAll');
+    const leaveBtn = document.getElementById('filterBtnLeave');
+
+    // Safe button styling
+    if (leaveBtn && allBtn) {
+        if (status === 'on-leave') {
+            leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white shadow-sm";
+            allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600";
+        } else {
+            allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-sm";
+            leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-emerald-600 text-emerald-700 bg-emerald-50";
+        }
+    }
+
+    // Filter staff & handle auto-expiration using your exact Supabase schema
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    const processedStaff = cachedStaff.map(staff => {
+        if ((staff.status === 'on-leave' || staff.status === 'approved') && staff.leave_date && staff.leave_date < todayStr) {
+            return { ...staff, status: 'absent', leave_expired: true };
+        }
+        return staff;
+    });
+
+    const filtered = status === 'on-leave' 
+        ? processedStaff.filter(staff => staff.status === 'on-leave' || staff.status === 'approved' || staff.leave_date)
+        : processedStaff;
+    
+    renderStaffTable(filtered, status);
+}
+
+// Custom table renderer matching your exact Supabase columns (leave_date, reason)
 function renderStaffTable(staffList, currentFilter = 'all') {
     const tbody = document.getElementById('tableBody') || document.querySelector('table tbody');
     if (!tbody) return;
@@ -1607,8 +1640,7 @@ function renderStaffTable(staffList, currentFilter = 'all') {
         tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
 
         let statusBadge = '';
-        // Check if staff has leave metadata or status
-        if (staff.status === 'on-leave' || staff.leave_date) {
+        if (staff.status === 'on-leave' || staff.status === 'approved' || staff.leave_date) {
             const leaveDateVal = staff.leave_date || staff.leave_start_date;
             const leaveTypeVal = staff.reason || staff.leave_type || 'Authorized Leave';
             
