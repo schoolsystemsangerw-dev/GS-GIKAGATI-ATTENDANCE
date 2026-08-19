@@ -1598,67 +1598,76 @@ function closeCalendarModal() {
 function filterStaffByStatus(status) {
     const allBtn = document.getElementById('filterBtnAll');
     const leaveBtn = document.getElementById('filterBtnLeave');
-    
-    // Switch active button styles smoothly
-    if (status === 'on-leave') {
-        leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white transition-all shadow-sm";
-        allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
-    } else {
-        allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-all shadow-sm";
-        leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+
+    // Switch active button styles safely
+    if (leaveBtn && allBtn) {
+        if (status === 'on-leave') {
+            leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white transition-all shadow-sm";
+            if (allBtn) allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+        } else {
+            if (allBtn) allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-all shadow-sm";
+            leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold border-2 border-emerald-600 text-emerald-700 bg-emerald-50 shadow-md hover:bg-emerald-100 transition-all ml-2 flex items-center gap-1.5 ring-2 ring-emerald-200 ring-offset-1";
+        }
     }
 
-    // Filter staff rows and dynamically compute remaining days for those on leave
-    const staffRows = document.querySelectorAll('.staff-row-item'); 
-    staffRows.forEach(row => {
-        const staffStatus = row.getAttribute('data-status'); // Expects 'active', 'absent', or 'on-leave'
-        
-        // If row is in leave hub, compute remaining days countdown badge
-        if (staffStatus === 'on-leave') {
-            const endDateStr = row.getAttribute('data-leave-end'); // Expected format: 'YYYY-MM-DD'
-            if (endDateStr) {
-                const endDate = new Date(endDateStr);
-                const today = new Date();
-                // Clear time part for accurate day calculation
-                today.setHours(0,0,0,0);
-                endDate.setHours(0,0,0,0);
-                
-                const diffTime = endDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                // Find or create a badge element inside the row to show remaining days
-                let badgeContainer = row.querySelector('.leave-countdown-badge');
-                if (!badgeContainer) {
-                    badgeContainer = document.createElement('div');
-                    badgeContainer.className = "leave-countdown-badge mt-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block border border-amber-200";
-                    // Append badge into the status cell or name cell
-                    const targetCell = row.querySelector('.staff-status-cell') || row.lastElementChild;
-                    targetCell.appendChild(badgeContainer);
-                }
-                
-                if (diffDays > 0) {
-                    badgeContainer.innerText = `⏳ ${diffDays} day(s) remaining until leave finishes`;
-                    badgeContainer.className = "leave-countdown-badge mt-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block border border-amber-200";
-                } else if (diffDays === 0) {
-                    badgeContainer.innerText = `⚠️ Leave finishes today! Due back tomorrow.`;
-                    badgeContainer.className = "leave-countdown-badge mt-1 text-[11px] font-medium text-red-700 bg-red-50 px-2 py-0.5 rounded-md inline-block border border-red-200";
-                } else {
-                    badgeContainer.innerText = `🔴 Leave expired ${Math.abs(diffDays)} day(s) ago`;
-                    badgeContainer.className = "leave-countdown-badge mt-1 text-[11px] font-medium text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md inline-block border border-rose-200";
-                }
-            }
+    // Filter staff & handle auto-expiration (if leave end date has passed, treat as absent)
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    const processedStaff = cachedStaff.map(staff => {
+        if (staff.status === 'on-leave' && staff.leave_end_date && staff.leave_end_date < todayStr) {
+            return { ...staff, status: 'absent', leave_expired: true };
+        }
+        return staff;
+    });
+
+    const filtered = status === 'on-leave' 
+        ? processedStaff.filter(staff => staff.status === 'on-leave')
+        : processedStaff;
+    
+    renderStaffTable(filtered, status);
+}
+
+// Custom table renderer to display Leave Type, Start Date, End Date, and Countdown badge
+function renderStaffTable(staffList, currentFilter = 'all') {
+    const tbody = document.getElementById('tableBody') || document.querySelector('table tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    const today = new Date();
+
+    staffList.forEach(staff => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
+
+        let statusBadge = '';
+        if (staff.status === 'on-leave') {
+            const endDate = new Date(staff.leave_end_date);
+            const diffTime = endDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            const countdownText = diffDays > 0 ? `${diffDays} days left` : `Ending today`;
+            
+            statusBadge = `
+                <div class="flex flex-col gap-1">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 w-fit">On Leave (${staff.leave_type || 'Authorized'})</span>
+                    <span class="text-[10px] text-slate-500">Start: ${staff.leave_start_date || 'N/A'} | End: ${staff.leave_end_date || 'N/A'}</span>
+                    <span class="text-[10px] font-semibold text-emerald-600">⏳ ${countdownText}</span>
+                </div>
+            `;
+        } else if (staff.status === 'present') {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Present</span>`;
+        } else {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Absent / Unexcused</span>`;
         }
 
-        // Display toggle logic for the filter tabs
-        if (status === 'all') {
-            row.style.display = '';
-        } else {
-            if (staffStatus === 'on-leave') {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        }
+        tr.innerHTML = `
+            <td class="py-3 px-4 text-xs font-mono text-slate-600">${staff.sdms_id || staff.id}</td>
+            <td class="py-3 px-4 text-xs font-semibold text-slate-900">${staff.name || staff.staff_name}</td>
+            <td class="py-3 px-4 text-xs text-slate-600">${staff.position || 'Teacher'}</td>
+            <td class="py-3 px-4 text-xs text-slate-600">${staff.role || 'Staff'}</td>
+            <td class="py-3 px-4 text-xs">${statusBadge}</td>
+        `;
+        tbody.appendChild(tr);
     });
 }
 </script>
