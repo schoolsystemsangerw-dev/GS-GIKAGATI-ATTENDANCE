@@ -1602,8 +1602,8 @@ async function filterStaffByStatus(statusType) {
     const tableHeaderRow = document.getElementById('tableHeaderRow');
     
     tableTitle.textContent = "Teachers on Leave & Status Tracking";
-    tableSubtitle.textContent = "Fetching approved leave records from database...";
-    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Loading leave records...</td></tr>`;
+    tableSubtitle.textContent = "Fetching approved leave records and staff details...";
+    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Loading records...</td></tr>`;
 
     if (tableHeaderRow) {
         tableHeaderRow.innerHTML = `
@@ -1617,13 +1617,16 @@ async function filterStaffByStatus(statusType) {
     }
 
     try {
-        // Use the exact supabaseClient variable initialized in your script
-        const { data: leaveData, error } = await supabaseClient
-            .from('leave_requests')
-            .select('*')
-            .eq('status', 'approved');
+        const [leaveRes, staffRes] = await Promise.all([
+            supabaseClient.from('leave_requests').select('*').eq('status', 'approved'),
+            supabaseClient.from('staffs').select('*')
+        ]);
 
-        if (error) throw error;
+        if (leaveRes.error) throw leaveRes.error;
+        if (staffRes.error) throw staffRes.error;
+
+        const leaveData = leaveRes.data;
+        const staffList = staffRes.data || [];
 
         if (!leaveData || leaveData.length === 0) {
             tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No approved leave records found in the database.</td></tr>`;
@@ -1638,7 +1641,13 @@ async function filterStaffByStatus(statusType) {
         let countFound = 0;
 
         leaveData.forEach(leave => {
-            const staff = cachedStaff.find(s => String(s.sdms_id).trim() === String(leave.sdms_id).trim()) || {};
+            // Find staff matching the SDMS ID
+            const staff = staffList.find(s => String(s.sdms_id).trim() === String(leave.sdms_id).trim()) || {};
+            
+            // Combine first_name and last_name from your staffs table structure
+            const firstName = staff.first_name || '';
+            const lastName = staff.last_name || '';
+            const staffName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : 'Unknown Staff';
             
             const startDateStr = leave.start_date || leave.leave_date || '-';
             const endDateStr = leave.end_date || startDateStr; 
@@ -1668,7 +1677,7 @@ async function filterStaffByStatus(statusType) {
             tableBody.innerHTML += `
                 <tr class="hover:bg-slate-50">
                     <td class="py-3 px-4 font-mono font-bold text-slate-700">${leave.sdms_id || '-'}</td>
-                    <td class="py-3 px-4 font-bold text-slate-900">${staff.staff_name || staff.name || 'Unknown Staff'}</td>
+                    <td class="py-3 px-4 font-bold text-slate-900">${staffName}</td>
                     <td class="py-3 px-4 text-slate-600">${reason}</td>
                     <td class="py-3 px-4 text-slate-600">${startDateStr}</td>
                     <td class="py-3 px-4 text-slate-600">${endDateStr}</td>
@@ -1680,7 +1689,7 @@ async function filterStaffByStatus(statusType) {
         tableSubtitle.textContent = `Showing ${countFound} approved leave record(s) synced from database`;
 
     } catch (err) {
-        console.error('Error fetching leave requests:', err);
+        console.error('Error fetching leave records:', err);
         tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500 font-medium">Error loading leave records: ${err.message}</td></tr>`;
     }
 }
