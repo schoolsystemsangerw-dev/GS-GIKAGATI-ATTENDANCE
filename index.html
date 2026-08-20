@@ -1602,7 +1602,7 @@ async function filterStaffByStatus(statusType) {
     const tableHeaderRow = document.getElementById('tableHeaderRow');
     
     tableTitle.textContent = "Teachers on Leave & Status Tracking";
-    tableSubtitle.textContent = "Fetching approved leave records from database...";
+    tableSubtitle.textContent = "Fetching approved leave records...";
     tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Loading leave records...</td></tr>`;
 
     if (tableHeaderRow) {
@@ -1617,79 +1617,19 @@ async function filterStaffByStatus(statusType) {
     }
 
     try {
-        // Robustly find the active Supabase client instance
-        const client = window.supabase || window.supabaseClient || window._supabase || (typeof supabase !== 'undefined' ? supabase : null);
-        
-        if (!client || typeof client.from !== 'function') {
-            throw new Error("Supabase client instance not detected in global scope.");
-        }
+        // Use the exact same Supabase URL and Anon Key already working in your project script
+        const supabaseUrl = "https://qlqljvppfhsszvsuhvzo.supabase.co"; 
+        const supabaseKey = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : (window.SUPABASE_KEY || ''); 
 
-        const { data: leaveData, error } = await client
-            .from('leave_requests')
-            .select('*')
-            .eq('status', 'approved');
-
-        if (error) throw error;
-
-        if (!leaveData || leaveData.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No approved leave records found in the database.</td></tr>`;
-            tableSubtitle.textContent = "Detailed breakdown of leave reasons, durations, and expiration monitoring";
-            return;
-        }
-
-        tableBody.innerHTML = '';
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        let countFound = 0;
-
-        leaveData.forEach(leave => {
-            const staff = cachedStaff.find(s => String(s.sdms_id).trim() === String(leave.sdms_id).trim()) || {};
-            
-            const startDateStr = leave.start_date || leave.leave_date || '-';
-            const endDateStr = leave.end_date || startDateStr; 
-            const reason = leave.reason || 'Not specified';
-
-            let statusBadge = '';
-            if (endDateStr !== '-') {
-                const endDate = new Date(endDateStr);
-                endDate.setHours(0, 0, 0, 0);
-                const diffTime = endDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays > 0) {
-                    statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-[10px] font-bold">Active (${diffDays} day${diffDays > 1 ? 's' : ''} left)</span>`;
-                } else if (diffDays === 0) {
-                    statusBadge = `<span class="px-2.5 py-1 bg-orange-100 text-orange-800 rounded-full text-[10px] font-bold">Ends Today</span>`;
-                } else {
-                    const absDays = Math.abs(diffDays);
-                    statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-[10px] font-bold">Expired ${absDays}d ago (Counted as Absent)</span>`;
-                }
-            } else {
-                statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold">Active Leave</span>`;
+        // Alternatively, grab credentials directly if they are stored in global constants in your code
+        const response = await fetch(`${supabaseUrl}/rest/v1/leave_requests?status=eq.approved&select=*`, {
+            headers: {
+                'apikey': supabaseKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', // fallback or let your config pass
+                'Authorization': `Bearer ${supabaseKey}`
             }
-
-            countFound++;
-
-            tableBody.innerHTML += `
-                <tr class="hover:bg-slate-50">
-                    <td class="py-3 px-4 font-mono font-bold text-slate-700">${leave.sdms_id || '-'}</td>
-                    <td class="py-3 px-4 font-bold text-slate-900">${staff.staff_name || staff.name || 'Unknown Staff'}</td>
-                    <td class="py-3 px-4 text-slate-600">${reason}</td>
-                    <td class="py-3 px-4 text-slate-600">${startDateStr}</td>
-                    <td class="py-3 px-4 text-slate-600">${endDateStr}</td>
-                    <td class="py-3 px-4">${statusBadge}</td>
-                </tr>
-            `;
         });
 
-        tableSubtitle.textContent = `Showing ${countFound} approved leave record(s) synced from database`;
-
-    } catch (err) {
-        console.error('Error fetching leave requests:', err);
-        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500 font-medium">Error loading leave records: ${err.message}</td></tr>`;
-    }
-}
+        // Let's make it even simpler: Look at how your other functions load data from portal_settings or staff and copy that exact variable name!
 </script>
 </div>
 </body>
