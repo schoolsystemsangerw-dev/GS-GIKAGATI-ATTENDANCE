@@ -497,20 +497,22 @@ function handleAcademicPeriodChange() {
 const todayStr = new Date().toISOString().split('T')[0];
 
 // Find staff IDs currently on an active, approved leave today
-// Find all staff IDs whose leave covers today (checking start/end ranges OR single leave_date)
+// Find all staff IDs whose leaves are currently running/active today
 const activeLeaveIds = [...new Set(
     cachedLeaves
         .filter(leave => {
-            const status = leave.status ? leave.status.trim().toLowerCase() : 'approved';
-            const isApproved = status === 'approved' || status === 'active';
+            const status = leave.status ? leave.status.trim().toLowerCase() : '';
+            // Match approved status or rows that are actively tracked
+            const isApproved = status === 'approved' || status === 'active' || status === '';
             
-            // Check if today matches either a single leave_date OR falls between start_date and end_date
-            const isSingleDayMatch = leave.leave_date && leave.leave_date === todayStr;
-            const isRangeMatch = leave.start_date && leave.end_date && todayStr >= leave.start_date && todayStr <= leave.end_date;
+            // Check if today falls into start/end range, matches leave_date, or if status implies active
+            const matchesToday = (leave.leave_date && leave.leave_date === todayStr) ||
+                                 (leave.start_date && leave.end_date && todayStr >= leave.start_date && todayStr <= leave.end_date);
             
-            return isApproved && (isSingleDayMatch || isRangeMatch);
+            return isApproved && matchesToday;
         })
         .map(leave => leave.sdms_id)
+)];
 )];
 let onLeaveCount = activeLeaveIds.length;
 
