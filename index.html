@@ -1250,7 +1250,31 @@ function sendOfficialReport() {
         });
     }
 }
-async function generateLeavePermitDirect() {
+// Leave Permit Modal Controls & PDF Generator with Full-Content QR Code
+        function openLeavePermitModal() {
+            const selectElem = document.getElementById('leaveStaffSelect');
+            selectElem.innerHTML = '<option value="">-- Choose Staff Member --</option>';
+            
+            cachedStaff.forEach(staff => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || 'Unknown';
+                const opt = document.createElement('option');
+                opt.value = staff.sdms_id;
+                opt.textContent = `${fullName} (SDMS: ${staff.sdms_id})`;
+                selectElem.appendChild(opt);
+            });
+
+            document.getElementById('leaveStartDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('leaveEndDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('leaveReason').value = '';
+
+            document.getElementById('leaveModal').classList.remove('hidden');
+        }
+
+        function closeLeavePermitModal() {
+            document.getElementById('leaveModal').classList.add('hidden');
+        }
+
+        function generateLeavePermitPDFDirect() {
             const staffId = document.getElementById('leaveStaffSelect').value;
             const startDate = document.getElementById('leaveStartDate').value;
             const endDate = document.getElementById('leaveEndDate').value;
@@ -1272,28 +1296,6 @@ async function generateLeavePermitDirect() {
             const staffObj = cachedStaff.find(s => s.sdms_id === staffId);
             const staffName = staffObj ? `${staffObj.first_name || ''} ${staffObj.last_name || ''}`.trim() : 'Staff Member';
             const staffPosition = staffObj ? (staffObj.position_name || 'Staff') : 'Staff';
-
-            // 1. Save the permit directly to Supabase leave_requests table
-            try {
-                const { error: insertError } = await supabaseClient
-                    .from('leave_requests')
-                    .insert([
-                        {
-                            sdms_id: staffId,
-                            start_date: startDate,
-                            end_date: endDate,
-                            reason: reason,
-                            status: 'approved'
-                        }
-                    ]);
-
-                if (insertError) {
-                    console.error("Error saving permit to database:", insertError);
-                    alert("Warning: PDF will generate, but saving to database failed: " + insertError.message);
-                }
-            } catch (dbErr) {
-                console.error("Database exception:", dbErr);
-            }
 
             // Create temporary container for QR code generation
             const qrContainer = document.createElement('div');
@@ -1467,6 +1469,11 @@ async function generateLeavePermitDirect() {
                 }
             }, 100);
         }
+
+        window.onload = function() {
+           loadDashboardData();
+};
+
 // --- SCHOOL CALENDAR & HOLIDAYS MODAL LOGIC ---
 function openCalendarModal() {
     const modal = document.getElementById('calendarModal');
@@ -1595,7 +1602,7 @@ async function filterStaffByStatus(statusType) {
     const tableHeaderRow = document.getElementById('tableHeaderRow');
     
     tableTitle.textContent = "Teachers on Leave & Status Tracking";
-    tableSubtitle.textContent = "Fetching all leave records and permits from database...";
+    tableSubtitle.textContent = "Fetching approved leave records and staff details...";
     tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Loading records...</td></tr>`;
 
     if (tableHeaderRow) {
@@ -1610,9 +1617,8 @@ async function filterStaffByStatus(statusType) {
     }
 
     try {
-        // Fetch all leave requests and staff members without restricting by status
         const [leaveRes, staffRes] = await Promise.all([
-            supabaseClient.from('leave_requests').select('*'),
+            supabaseClient.from('leave_requests').select('*').eq('status', 'approved'),
             supabaseClient.from('staffs').select('*')
         ]);
 
@@ -1623,7 +1629,7 @@ async function filterStaffByStatus(statusType) {
         const staffList = staffRes.data || [];
 
         if (!leaveData || leaveData.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No leave records or permits found in the database.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No approved leave records found in the database.</td></tr>`;
             tableSubtitle.textContent = "Detailed breakdown of leave reasons, durations, and expiration monitoring";
             return;
         }
@@ -1635,15 +1641,17 @@ async function filterStaffByStatus(statusType) {
         let countFound = 0;
 
         leaveData.forEach(leave => {
+            // Find staff matching the SDMS ID
             const staff = staffList.find(s => String(s.sdms_id).trim() === String(leave.sdms_id).trim()) || {};
             
+            // Combine first_name and last_name from your staffs table structure
             const firstName = staff.first_name || '';
             const lastName = staff.last_name || '';
             const staffName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : 'Unknown Staff';
             
             const startDateStr = leave.start_date || leave.leave_date || '-';
             const endDateStr = leave.end_date || startDateStr; 
-            const reason = leave.reason || leave.permit_type || 'Official Permit';
+            const reason = leave.reason || 'Not specified';
 
             let statusBadge = '';
             if (endDateStr !== '-') {
@@ -1678,7 +1686,7 @@ async function filterStaffByStatus(statusType) {
             `;
         });
 
-        tableSubtitle.textContent = `Showing ${countFound} total leave record(s) and permits synced from database`;
+        tableSubtitle.textContent = `Showing ${countFound} approved leave record(s) synced from database`;
 
     } catch (err) {
         console.error('Error fetching leave records:', err);
