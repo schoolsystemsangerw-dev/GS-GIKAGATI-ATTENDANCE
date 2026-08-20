@@ -493,8 +493,18 @@ function handleAcademicPeriodChange() {
                     }
                 });
 // Exclude approved leave staff from unexcused absent/pending totals
-    let onLeaveCount = cachedStaff.filter(staff => staff.status === 'on-leave').length;
-    let absentCount = cachedStaff.length - presentCount - onLeaveCount;
+   // Get today's date in YYYY-MM-DD format
+const todayStr = new Date().toISOString().split('T')[0];
+
+// Find staff IDs currently on an active, approved leave today
+const activeLeaveIds = cachedLeaves
+    .filter(leave => (!leave.status || leave.status === 'approved') && todayStr >= leave.start_date && todayStr <= leave.end_date)
+    .map(leave => leave.sdms_id);
+
+let onLeaveCount = activeLeaveIds.length;
+
+// Absent = Total staff minus present minus those on active leave (ensuring no negative counts)
+let absentCount = Math.max(0, cachedStaff.length - presentCount - activeLeaveIds.length);
 
     // Update Metric Cards
     totalCountElem.textContent = cachedStaff.length;
