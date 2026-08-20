@@ -1595,17 +1595,16 @@ function closeCalendarModal() {
     </div>
     // --- TEACHERS ON LEAVE HUB & REMAINING DAYS LOGIC ---
     <script>
-function filterStaffByStatus(statusType) {
+async function filterStaffByStatus(statusType) {
     const tableBody = document.getElementById('masterTableBody');
     const tableTitle = document.getElementById('tableTitle');
     const tableSubtitle = document.getElementById('tableSubtitle');
     const tableHeaderRow = document.getElementById('tableHeaderRow');
     
     tableTitle.textContent = "Teachers on Leave & Status Tracking";
-    tableSubtitle.textContent = "Detailed breakdown of leave reasons, durations, and expiration monitoring";
-    tableBody.innerHTML = '';
+    tableSubtitle.textContent = "Fetching approved leave records from database...";
+    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Loading leave records...</td></tr>`;
 
-    // Update the table headers dynamically to include leave details
     if (tableHeaderRow) {
         tableHeaderRow.innerHTML = `
             <th class="py-3 px-4">SDMS ID</th>
@@ -1617,52 +1616,74 @@ function filterStaffByStatus(statusType) {
         `;
     }
 
-    const leaveStaff = cachedStaff.filter(staff => staff.status === statusType);
+    try {
+        const client = window._supabase || window.supabase;
+        const { data: leaveData, error } = await client
+            .from('leave_requests')
+            .select('*')
+            .eq('status', 'approved');
 
-    if (leaveStaff.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No teachers currently on leave.</td></tr>`;
-        return;
-    }
+        if (error) throw error;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    leaveStaff.forEach(staff => {
-        const startDateStr = staff.leave_start_date || staff.start_date || '-';
-        const endDateStr = staff.leave_end_date || staff.end_date || '-';
-        const reason = staff.leave_reason || staff.reason || 'Not specified';
-
-        let statusBadge = '';
-        
-        if (endDateStr !== '-') {
-            const endDate = new Date(endDateStr);
-            endDate.setHours(0, 0, 0, 0);
-            const diffTime = endDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays > 0) {
-                statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-[10px] font-bold">Active (${diffDays} day${diffDays > 1 ? 's' : ''} left)</span>`;
-            } else if (diffDays === 0) {
-                statusBadge = `<span class="px-2.5 py-1 bg-orange-100 text-orange-800 rounded-full text-[10px] font-bold">Ends Today</span>`;
-            } else {
-                const absDays = Math.abs(diffDays);
-                statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-[10px] font-bold">Expired ${absDays}d ago (Counted as Absent)</span>`;
-            }
-        } else {
-            statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold">Active Leave</span>`;
+        if (!leaveData || leaveData.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No approved leave records found in the database.</td></tr>`;
+            tableSubtitle.textContent = "Detailed breakdown of leave reasons, durations, and expiration monitoring";
+            return;
         }
 
-        tableBody.innerHTML += `
-            <tr class="hover:bg-slate-50">
-                <td class="py-3 px-4 font-mono font-bold text-slate-700">${staff.sdms_id || '-'}</td>
-                <td class="py-3 px-4 font-bold text-slate-900">${staff.staff_name || '-'}</td>
-                <td class="py-3 px-4 text-slate-600">${reason}</td>
-                <td class="py-3 px-4 text-slate-600">${startDateStr}</td>
-                <td class="py-3 px-4 text-slate-600">${endDateStr}</td>
-                <td class="py-3 px-4">${statusBadge}</td>
-            </tr>
-        `;
-    });
+        tableBody.innerHTML = '';
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let countFound = 0;
+
+        leaveData.forEach(leave => {
+            const staff = cachedStaff.find(s => String(s.sdms_id).trim() === String(leave.sdms_id).trim()) || {};
+            
+            // Read directly from the new columns (with fallbacks if old rows are empty)
+            const startDateStr = leave.start_date || leave.leave_date || '-';
+            const endDateStr = leave.end_date || startDateStr; 
+            const reason = leave.reason || 'Not specified';
+
+            let statusBadge = '';
+            if (endDateStr !== '-') {
+                const endDate = new Date(endDateStr);
+                endDate.setHours(0, 0, 0, 0);
+                const diffTime = endDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays > 0) {
+                    statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-[10px] font-bold">Active (${diffDays} day${diffDays > 1 ? 's' : ''} left)</span>`;
+                } else if (diffDays === 0) {
+                    statusBadge = `<span class="px-2.5 py-1 bg-orange-100 text-orange-800 rounded-full text-[10px] font-bold">Ends Today</span>`;
+                } else {
+                    const absDays = Math.abs(diffDays);
+                    statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-[10px] font-bold">Expired ${absDays}d ago (Counted as Absent)</span>`;
+                }
+            } else {
+                statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold">Active Leave</span>`;
+            }
+
+            countFound++;
+
+            tableBody.innerHTML += `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-3 px-4 font-mono font-bold text-slate-700">${leave.sdms_id || '-'}</td>
+                    <td class="py-3 px-4 font-bold text-slate-900">${staff.staff_name || staff.name || 'Unknown Staff'}</td>
+                    <td class="py-3 px-4 text-slate-600">${reason}</td>
+                    <td class="py-3 px-4 text-slate-600">${startDateStr}</td>
+                    <td class="py-3 px-4 text-slate-600">${endDateStr}</td>
+                    <td class="py-3 px-4">${statusBadge}</td>
+                </tr>
+            `;
+        });
+
+        tableSubtitle.textContent = `Showing ${countFound} approved leave record(s) synced from database`;
+
+    } catch (err) {
+        console.error('Error fetching leave requests:', err);
+        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500 font-medium">Error loading leave records: ${err.message}</td></tr>`;
+    }
 }
 </script>
 </div>
