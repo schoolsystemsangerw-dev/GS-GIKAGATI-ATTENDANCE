@@ -1617,7 +1617,13 @@ async function filterStaffByStatus(statusType) {
     }
 
     try {
-        const client = window._supabase || window.supabase;
+        // Robustly find the active Supabase client instance
+        const client = window.supabase || window.supabaseClient || window._supabase || (typeof supabase !== 'undefined' ? supabase : null);
+        
+        if (!client || typeof client.from !== 'function') {
+            throw new Error("Supabase client instance not detected in global scope.");
+        }
+
         const { data: leaveData, error } = await client
             .from('leave_requests')
             .select('*')
@@ -1640,7 +1646,6 @@ async function filterStaffByStatus(statusType) {
         leaveData.forEach(leave => {
             const staff = cachedStaff.find(s => String(s.sdms_id).trim() === String(leave.sdms_id).trim()) || {};
             
-            // Read directly from the new columns (with fallbacks if old rows are empty)
             const startDateStr = leave.start_date || leave.leave_date || '-';
             const endDateStr = leave.end_date || startDateStr; 
             const reason = leave.reason || 'Not specified';
