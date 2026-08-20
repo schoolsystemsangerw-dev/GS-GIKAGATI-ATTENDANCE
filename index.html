@@ -1250,31 +1250,7 @@ function sendOfficialReport() {
         });
     }
 }
-// Leave Permit Modal Controls & PDF Generator with Full-Content QR Code
-        function openLeavePermitModal() {
-            const selectElem = document.getElementById('leaveStaffSelect');
-            selectElem.innerHTML = '<option value="">-- Choose Staff Member --</option>';
-            
-            cachedStaff.forEach(staff => {
-                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || 'Unknown';
-                const opt = document.createElement('option');
-                opt.value = staff.sdms_id;
-                opt.textContent = `${fullName} (SDMS: ${staff.sdms_id})`;
-                selectElem.appendChild(opt);
-            });
-
-            document.getElementById('leaveStartDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('leaveEndDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('leaveReason').value = '';
-
-            document.getElementById('leaveModal').classList.remove('hidden');
-        }
-
-        function closeLeavePermitModal() {
-            document.getElementById('leaveModal').classList.add('hidden');
-        }
-
-        function generateLeavePermitPDFDirect() {
+async function generateLeavePermitDirect() {
             const staffId = document.getElementById('leaveStaffSelect').value;
             const startDate = document.getElementById('leaveStartDate').value;
             const endDate = document.getElementById('leaveEndDate').value;
@@ -1296,6 +1272,28 @@ function sendOfficialReport() {
             const staffObj = cachedStaff.find(s => s.sdms_id === staffId);
             const staffName = staffObj ? `${staffObj.first_name || ''} ${staffObj.last_name || ''}`.trim() : 'Staff Member';
             const staffPosition = staffObj ? (staffObj.position_name || 'Staff') : 'Staff';
+
+            // 1. Save the permit directly to Supabase leave_requests table
+            try {
+                const { error: insertError } = await supabaseClient
+                    .from('leave_requests')
+                    .insert([
+                        {
+                            sdms_id: staffId,
+                            start_date: startDate,
+                            end_date: endDate,
+                            reason: reason,
+                            status: 'approved'
+                        }
+                    ]);
+
+                if (insertError) {
+                    console.error("Error saving permit to database:", insertError);
+                    alert("Warning: PDF will generate, but saving to database failed: " + insertError.message);
+                }
+            } catch (dbErr) {
+                console.error("Database exception:", dbErr);
+            }
 
             // Create temporary container for QR code generation
             const qrContainer = document.createElement('div');
@@ -1469,11 +1467,6 @@ function sendOfficialReport() {
                 }
             }, 100);
         }
-
-        window.onload = function() {
-           loadDashboardData();
-};
-
 // --- SCHOOL CALENDAR & HOLIDAYS MODAL LOGIC ---
 function openCalendarModal() {
     const modal = document.getElementById('calendarModal');
