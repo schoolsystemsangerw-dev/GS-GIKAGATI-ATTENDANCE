@@ -1274,7 +1274,7 @@ function sendOfficialReport() {
             document.getElementById('leaveModal').classList.add('hidden');
         }
 
-        function generateLeavePermitPDFDirect() {
+      async function generateLeavePermitPDFDirect() {
             const staffId = document.getElementById('leaveStaffSelect').value;
             const startDate = document.getElementById('leaveStartDate').value;
             const endDate = document.getElementById('leaveEndDate').value;
@@ -1292,7 +1292,27 @@ function sendOfficialReport() {
                 alert("Please provide a reason or permit type.");
                 return;
             }
+// Save the permit directly to Supabase leave_requests table
+            try {
+                const { error: insertError } = await supabaseClient
+                    .from('leave_requests')
+                    .insert([
+                        {
+                            sdms_id: staffId,
+                            start_date: startDate,
+                            end_date: endDate,
+                            reason: reason,
+                            status: 'approved'
+                        }
+                    ]);
 
+                if (insertError) {
+                    console.error("Error saving permit to database:", insertError);
+                    alert("Warning: PDF will generate, but database save failed: " + insertError.message);
+                }
+            } catch (dbErr) {
+                console.error("Database exception:", dbErr);
+            }
             const staffObj = cachedStaff.find(s => s.sdms_id === staffId);
             const staffName = staffObj ? `${staffObj.first_name || ''} ${staffObj.last_name || ''}`.trim() : 'Staff Member';
             const staffPosition = staffObj ? (staffObj.position_name || 'Staff') : 'Staff';
