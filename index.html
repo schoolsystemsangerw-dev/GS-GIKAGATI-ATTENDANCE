@@ -1602,7 +1602,7 @@ async function filterStaffByStatus(statusType) {
     const tableHeaderRow = document.getElementById('tableHeaderRow');
     
     tableTitle.textContent = "Teachers on Leave & Status Tracking";
-    tableSubtitle.textContent = "Fetching approved leave records and staff details...";
+    tableSubtitle.textContent = "Fetching all leave records and permits from database...";
     tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Loading records...</td></tr>`;
 
     if (tableHeaderRow) {
@@ -1617,8 +1617,9 @@ async function filterStaffByStatus(statusType) {
     }
 
     try {
+        // Fetch all leave requests and staff members without restricting by status
         const [leaveRes, staffRes] = await Promise.all([
-            supabaseClient.from('leave_requests').select('*').eq('status', 'approved'),
+            supabaseClient.from('leave_requests').select('*'),
             supabaseClient.from('staffs').select('*')
         ]);
 
@@ -1629,7 +1630,7 @@ async function filterStaffByStatus(statusType) {
         const staffList = staffRes.data || [];
 
         if (!leaveData || leaveData.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No approved leave records found in the database.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No leave records or permits found in the database.</td></tr>`;
             tableSubtitle.textContent = "Detailed breakdown of leave reasons, durations, and expiration monitoring";
             return;
         }
@@ -1641,17 +1642,15 @@ async function filterStaffByStatus(statusType) {
         let countFound = 0;
 
         leaveData.forEach(leave => {
-            // Find staff matching the SDMS ID
             const staff = staffList.find(s => String(s.sdms_id).trim() === String(leave.sdms_id).trim()) || {};
             
-            // Combine first_name and last_name from your staffs table structure
             const firstName = staff.first_name || '';
             const lastName = staff.last_name || '';
             const staffName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : 'Unknown Staff';
             
             const startDateStr = leave.start_date || leave.leave_date || '-';
             const endDateStr = leave.end_date || startDateStr; 
-            const reason = leave.reason || 'Not specified';
+            const reason = leave.reason || leave.permit_type || 'Official Permit';
 
             let statusBadge = '';
             if (endDateStr !== '-') {
@@ -1686,7 +1685,7 @@ async function filterStaffByStatus(statusType) {
             `;
         });
 
-        tableSubtitle.textContent = `Showing ${countFound} approved leave record(s) synced from database`;
+        tableSubtitle.textContent = `Showing ${countFound} total leave record(s) and permits synced from database`;
 
     } catch (err) {
         console.error('Error fetching leave records:', err);
