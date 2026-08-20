@@ -1595,84 +1595,73 @@ function closeCalendarModal() {
     </div>
     // --- TEACHERS ON LEAVE HUB & REMAINING DAYS LOGIC ---
     <script>
-function filterStaffByStatus(status) {
-    const allBtn = document.getElementById('filterBtnAll');
-    const leaveBtn = document.getElementById('filterBtnLeave');
+function filterStaffByStatus(statusType) {
+    const tableBody = document.getElementById('masterTableBody');
+    const tableTitle = document.getElementById('tableTitle');
+    const tableSubtitle = document.getElementById('tableSubtitle');
+    const tableHeaderRow = document.getElementById('tableHeaderRow');
+    
+    tableTitle.textContent = "Teachers on Leave & Status Tracking";
+    tableSubtitle.textContent = "Detailed breakdown of leave reasons, durations, and expiration monitoring";
+    tableBody.innerHTML = '';
 
-    // Safe button styling
-    if (leaveBtn && allBtn) {
-        if (status === 'on-leave') {
-            leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white shadow-sm";
-            allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600";
-        } else {
-            allBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-sm";
-            leaveBtn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-emerald-600 text-emerald-700 bg-emerald-50";
-        }
+    // Update the table headers dynamically to include leave details
+    if (tableHeaderRow) {
+        tableHeaderRow.innerHTML = `
+            <th class="py-3 px-4">SDMS ID</th>
+            <th class="py-3 px-4">Staff Name</th>
+            <th class="py-3 px-4">Reason</th>
+            <th class="py-3 px-4">Start Date</th>
+            <th class="py-3 px-4">End Date</th>
+            <th class="py-3 px-4">Leave Status / Countdown</th>
+        `;
     }
 
-    // Filter staff & handle auto-expiration using your exact Supabase schema
-    const todayStr = new Date().toISOString().split('T')[0];
-    
-    const processedStaff = cachedStaff.map(staff => {
-        if ((staff.status === 'on-leave' || staff.status === 'approved') && staff.leave_date && staff.leave_date < todayStr) {
-            return { ...staff, status: 'absent', leave_expired: true };
-        }
-        return staff;
-    });
+    const leaveStaff = cachedStaff.filter(staff => staff.status === statusType);
 
-    const filtered = status === 'on-leave' 
-        ? processedStaff.filter(staff => staff.status === 'on-leave' || staff.status === 'approved' || staff.leave_date)
-        : processedStaff;
-    
-    renderStaffTable(filtered, status);
-}
+    if (leaveStaff.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No teachers currently on leave.</td></tr>`;
+        return;
+    }
 
-// Custom table renderer matching your exact Supabase columns (leave_date, reason)
-function renderStaffTable(staffList, currentFilter = 'all') {
-    const tbody = document.getElementById('tableBody') || document.querySelector('table tbody');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    staffList.forEach(staff => {
-        const tr = document.createElement('tr');
-        tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
+    leaveStaff.forEach(staff => {
+        const startDateStr = staff.leave_start_date || staff.start_date || '-';
+        const endDateStr = staff.leave_end_date || staff.end_date || '-';
+        const reason = staff.leave_reason || staff.reason || 'Not specified';
 
         let statusBadge = '';
-        if (staff.status === 'on-leave' || staff.status === 'approved' || staff.leave_date) {
-            const leaveDateVal = staff.leave_date || staff.leave_start_date;
-            const leaveTypeVal = staff.reason || staff.leave_type || 'Authorized Leave';
-            
-            let countdownText = 'Active Leave';
-            if (leaveDateVal) {
-                const endDate = new Date(leaveDateVal);
-                const diffTime = endDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                countdownText = diffDays > 0 ? `${diffDays} days left` : `Ending today or past`;
+        
+        if (endDateStr !== '-') {
+            const endDate = new Date(endDateStr);
+            endDate.setHours(0, 0, 0, 0);
+            const diffTime = endDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 0) {
+                statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-[10px] font-bold">Active (${diffDays} day${diffDays > 1 ? 's' : ''} left)</span>`;
+            } else if (diffDays === 0) {
+                statusBadge = `<span class="px-2.5 py-1 bg-orange-100 text-orange-800 rounded-full text-[10px] font-bold">Ends Today</span>`;
+            } else {
+                const absDays = Math.abs(diffDays);
+                statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-[10px] font-bold">Expired ${absDays}d ago (Counted as Absent)</span>`;
             }
-            
-            statusBadge = `
-                <div class="flex flex-col gap-1">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 w-fit">On Leave (${leaveTypeVal})</span>
-                    <span class="text-[10px] text-slate-500">Leave Date: ${leaveDateVal || 'N/A'}</span>
-                    <span class="text-[10px] font-semibold text-emerald-600">⏳ ${countdownText}</span>
-                </div>
-            `;
-        } else if (staff.status === 'present') {
-            statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Present</span>`;
         } else {
-            statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Absent / Unexcused</span>`;
+            statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold">Active Leave</span>`;
         }
 
-        tr.innerHTML = `
-            <td class="py-3 px-4 text-xs font-mono text-slate-600">${staff.sdms_id || staff.id}</td>
-            <td class="py-3 px-4 text-xs font-semibold text-slate-900">${staff.name || staff.staff_name}</td>
-            <td class="py-3 px-4 text-xs text-slate-600">${staff.position || 'Teacher'}</td>
-            <td class="py-3 px-4 text-xs text-slate-600">${staff.role || 'Staff'}</td>
-            <td class="py-3 px-4 text-xs">${statusBadge}</td>
+        tableBody.innerHTML += `
+            <tr class="hover:bg-slate-50">
+                <td class="py-3 px-4 font-mono font-bold text-slate-700">${staff.sdms_id || '-'}</td>
+                <td class="py-3 px-4 font-bold text-slate-900">${staff.staff_name || '-'}</td>
+                <td class="py-3 px-4 text-slate-600">${reason}</td>
+                <td class="py-3 px-4 text-slate-600">${startDateStr}</td>
+                <td class="py-3 px-4 text-slate-600">${endDateStr}</td>
+                <td class="py-3 px-4">${statusBadge}</td>
+            </tr>
         `;
-        tbody.appendChild(tr);
     });
 }
 </script>
