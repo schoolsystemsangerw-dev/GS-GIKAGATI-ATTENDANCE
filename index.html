@@ -1768,20 +1768,19 @@ async function filterStaffByStatus(statusType) {
     const selectedTerm = termSelector.value;
 
     console.log(`Switching global view to: ${selectedYear} - ${selectedTerm}`);
-
-    try {
-      const { data: leaveData, error: leaveError } = await supabase
+      
+try {
+      const { data: leaveData, error: leaveError } = await supabaseClient
         .from('leave_requests')
         .select('*')
         .eq('academic_year', selectedYear)
         .eq('term', selectedTerm);
 
-      const { data: attendanceData, error: attendanceError } = await supabase
+      const { data: attendanceData, error: attendanceError } = await supabaseClient
         .from('attendances')
         .select('*')
         .eq('academic_year', selectedYear)
         .eq('term', selectedTerm);
-
       if (leaveError) throw leaveError;
       if (attendanceError) throw attendanceError;
 
