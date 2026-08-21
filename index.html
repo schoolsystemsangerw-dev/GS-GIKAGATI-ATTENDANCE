@@ -387,35 +387,11 @@ function updateBigLiveClock() {
 
 setInterval(updateBigLiveClock, 1000);
 updateBigLiveClock();
-async function handleAcademicPeriodChange() {
+function handleAcademicPeriodChange() {
     const selectedYear = document.getElementById('academicYearSelector').value;
     const selectedTerm = document.getElementById('termSelector').value;
-
     console.log(`Active Academic Period Updated -> Year: ${selectedYear}, Term: ${selectedTerm}`);
-
-    try {
-      const { data: leaveData, error: leaveError } = await supabaseClient
-        .from('leave_requests')
-        .select('*')
-        .eq('academic_year', selectedYear)
-        .eq('term', selectedTerm);
-
-      const { data: attendanceData, error: attendanceError } = await supabaseClient
-        .from('attendances')
-        .select('*')
-        .eq('academic_year', selectedYear)
-        .eq('term', selectedTerm);
-
-      if (leaveError) throw leaveError;
-      if (attendanceError) throw attendanceError;
-
-      console.log("Loaded data for period:", leaveData.length, "leaves,", attendanceData.length, "attendances");
-      // Call your reload/render functions here if needed!
-
-    } catch (err) {
-      console.error("Error updating academic period view:", err);
-    }
-  }
+}
         const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
 
@@ -427,8 +403,6 @@ async function handleAcademicPeriodChange() {
         let cachedLeaves = [];
 
         async function loadDashboardData() {
-            const selectedYear = document.getElementById('academicYearSelector').value;
-const selectedTerm = document.getElementById('termSelector').value;
             const tableBody = document.getElementById('masterTableBody');
             const totalCountElem = document.getElementById('totalCount');
             const presentCountElem = document.getElementById('presentCount');
@@ -450,35 +424,31 @@ const selectedTerm = document.getElementById('termSelector').value;
 
                 if (staffError) throw staffError;
                 cachedStaff = staffData || [];
-// 2. Fetch attendances
-    const { data: attData, error: attError } = await supabaseClient
-      .from('attendances')
-      .select('*')
-      .eq('academic_year', selectedYear)
-      .eq('term', selectedTerm)
-      .order('created_at', { ascending: false });
 
-    if (attError) throw attError;
-    cachedAttendances = attData || [];
+                // 2. Fetch attendances
+                const { data: attData, error: attError } = await supabaseClient
+                    .from('attendances')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (attError) throw attError;
+                cachedAttendances = attData || [];
+
                 // 3. Fetch leave requests from 'leave_requests' table (matching your Supabase schema screenshot)
                 try {
-                   const { data: leaveData, error: leaveError } = await supabaseClient
-        .from('leave_requests')
-        .select('*')
-        .eq('academic_year', selectedYear)
-        .eq('term', selectedTerm)
-        .order('leave_date', { ascending: false });
+                    const { data: leaveData, error: leaveError } = await supabaseClient
+                        .from('leave_requests')
+                        .select('*')
+                        .order('leave_date', { ascending: false });
                     
                     if (!leaveError) {
                         cachedLeaves = leaveData || [];
                     } else {
                         // Fallback to 'leaves' if needed
-                       const { data: leaveDataAlt, error: leaveErrorAlt } = await supabaseClient
-  .from('leaves')
-  .select('*')
-  .eq('academic_year', selectedYear)
-  .eq('term', selectedTerm)
-  .order('created_at', { ascending: false });
+                        const { data: leaveDataAlt, error: leaveErrorAlt } = await supabaseClient
+                            .from('leaves')
+                            .select('*')
+                            .order('created_at', { ascending: false });
                         if (!leaveErrorAlt) {
                             cachedLeaves = leaveDataAlt || [];
                         }
@@ -1765,81 +1735,6 @@ async function filterStaffByStatus(statusType) {
         tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500 font-medium">Error loading leave records: ${err.message}</td></tr>`;
     }
 }
-  // --- MASTER ACADEMIC PERIOD CHANGE HANDLER ---
-  const academicYearSelector = document.getElementById('academicYearSelector');
-  const termSelector = document.getElementById('termSelector');
-
-  async function handleAcademicPeriodChange() {
-    const selectedYear = academicYearSelector.value;
-    const selectedTerm = termSelector.value;
-
-    console.log(`Switching global view to: ${selectedYear} - ${selectedTerm}`);
-      
-try {
-      const { data: leaveData, error: leaveError } = await supabaseClient
-        .from('leave_requests')
-        .select('*')
-        .eq('academic_year', selectedYear)
-        .eq('term', selectedTerm);
-
-      const { data: attendanceData, error: attendanceError } = await supabaseClient
-        .from('attendances')
-        .select('*')
-        .eq('academic_year', selectedYear)
-        .eq('term', selectedTerm);
-      if (leaveError) throw leaveError;
-      if (attendanceError) throw attendanceError;
-
-      updateDashboardUI(selectedYear, selectedTerm, leaveData, attendanceData);
-
-    } catch (err) {
-      console.error("Error updating academic period view:", err);
-    }
-  }
-
-function updateDashboardUI(year, term, leaves, attendances) {
-      console.log("Dashboard updated successfully for:", year, term);
-      
-      // Update global cached arrays
-      cachedLeaves = leaves;
-      cachedAttendances = attendances;
-
-     // Directly render the attendance rows into your table body
-      const tableBody = document.getElementById('masterTableBody');
-      if (tableBody) {
-        if (attendances.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500 font-medium">No records found for this period.</td></tr>`;
-        } else {
-          tableBody.innerHTML = attendances.map(record => `
-            <tr>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.sdms_id || ''}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${record.staff_name || ''}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.position || ''}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.role || ''}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.status || 'PENDING'}</td>
-            </tr>
-          `).join('');
-        }
-      }
-      // If you have a counter update function, call it here too, or re-run loadDashboardData's UI section:
-      const totalStaffElem = document.getElementById('totalCount');
-      if (totalStaffElem) {
-        totalStaffElem.textContent = attendances.length > 0 ? attendances.length : '0';
-      }
-// Alternatively, if your script uses a general refresh function, trigger it here:
-    if (typeof updateCardCounters === 'function') {
-      updateCardCounters();
-    }
-  }
-
-  document.getElementById('academicYearSelector').addEventListener('change', function() {
-    loadDashboardData(this.value, document.getElementById('termSelector').value);
-  });
-
-  document.getElementById('termSelector').addEventListener('change', function() {
-    loadDashboardData(document.getElementById('academicYearSelector').value, this.value);
-  });
-</script>
 </script>
 </div>
 </body>
