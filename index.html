@@ -1791,9 +1791,18 @@ try {
     }
   }
 
-  function updateDashboardUI(year, term, leaves, attendances) {
-    console.log("Dashboard updated successfully for:", year, term);
-  }
+ function updateDashboardUI(year, term, leaves, attendances) {
+      console.log("Dashboard updated successfully for:", year, term);
+      
+      // Update global cached arrays so your tables and cards render the filtered data
+      cachedLeaves = leaves;
+      cachedAttendances = attendances;
+
+      // Re-run your main dashboard loader function if it exists
+      if (typeof loadDashboardData === 'function') {
+        loadDashboardData();
+      }
+    }
 </script>
 </script>
 </div>
