@@ -1791,14 +1791,21 @@ try {
     }
   }
 
- function updateDashboardUI(year, term, leaves, attendances) {
+function updateDashboardUI(year, term, leaves, attendances) {
       console.log("Dashboard updated successfully for:", year, term);
       
-      // Update global cached arrays so your tables and cards render the filtered data
+      // Update global cached arrays so your tables display the filtered items
       cachedLeaves = leaves;
       cachedAttendances = attendances;
 
-      // Re-run your main dashboard loader function if it exists
+      // Update your top counter cards dynamically based on the filtered data length
+      const totalStaffElem = document.getElementById('totalCount');
+      if (totalStaffElem) {
+        totalStaffElem.textContent = attendances.length > 0 ? attendances.length : '0';
+      }
+
+      // Re-run your main dashboard loader function if it reads from the cache, 
+      // or call your specific table rendering functions directly here:
       if (typeof loadDashboardData === 'function') {
         loadDashboardData();
       }
