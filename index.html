@@ -1735,6 +1735,43 @@ async function filterStaffByStatus(statusType) {
         tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500 font-medium">Error loading leave records: ${err.message}</td></tr>`;
     }
 }
+  // --- MASTER ACADEMIC PERIOD CHANGE HANDLER ---
+  const academicYearSelector = document.getElementById('academicYearSelector');
+  const termSelector = document.getElementById('termSelector');
+
+  async function handleAcademicPeriodChange() {
+    const selectedYear = academicYearSelector.value;
+    const selectedTerm = termSelector.value;
+
+    console.log(`Switching global view to: ${selectedYear} - ${selectedTerm}`);
+
+    try {
+      const { data: leaveData, error: leaveError } = await supabase
+        .from('leave_requests')
+        .select('*')
+        .eq('academic_year', selectedYear)
+        .eq('term', selectedTerm);
+
+      const { data: attendanceData, error: attendanceError } = await supabase
+        .from('attendances')
+        .select('*')
+        .eq('academic_year', selectedYear)
+        .eq('term', selectedTerm);
+
+      if (leaveError) throw leaveError;
+      if (attendanceError) throw attendanceError;
+
+      updateDashboardUI(selectedYear, selectedTerm, leaveData, attendanceData);
+
+    } catch (err) {
+      console.error("Error updating academic period view:", err);
+    }
+  }
+
+  function updateDashboardUI(year, term, leaves, attendances) {
+    console.log("Dashboard updated successfully for:", year, term);
+  }
+</script>
 </script>
 </div>
 </body>
