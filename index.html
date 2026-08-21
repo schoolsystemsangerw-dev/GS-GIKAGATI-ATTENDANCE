@@ -427,6 +427,8 @@ async function handleAcademicPeriodChange() {
         let cachedLeaves = [];
 
         async function loadDashboardData() {
+            const selectedYear = document.getElementById('academicYearSelector').value;
+const selectedTerm = document.getElementById('termSelector').value;
             const tableBody = document.getElementById('masterTableBody');
             const totalCountElem = document.getElementById('totalCount');
             const presentCountElem = document.getElementById('presentCount');
@@ -448,31 +450,35 @@ async function handleAcademicPeriodChange() {
 
                 if (staffError) throw staffError;
                 cachedStaff = staffData || [];
+// 2. Fetch attendances
+    const { data: attData, error: attError } = await supabaseClient
+      .from('attendances')
+      .select('*')
+      .eq('academic_year', selectedYear)
+      .eq('term', selectedTerm)
+      .order('created_at', { ascending: false });
 
-                // 2. Fetch attendances
-                const { data: attData, error: attError } = await supabaseClient
-                    .from('attendances')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (attError) throw attError;
-                cachedAttendances = attData || [];
-
+    if (attError) throw attError;
+    cachedAttendances = attData || [];
                 // 3. Fetch leave requests from 'leave_requests' table (matching your Supabase schema screenshot)
                 try {
-                    const { data: leaveData, error: leaveError } = await supabaseClient
-                        .from('leave_requests')
-                        .select('*')
-                        .order('leave_date', { ascending: false });
+                   const { data: leaveData, error: leaveError } = await supabaseClient
+        .from('leave_requests')
+        .select('*')
+        .eq('academic_year', selectedYear)
+        .eq('term', selectedTerm)
+        .order('leave_date', { ascending: false });
                     
                     if (!leaveError) {
                         cachedLeaves = leaveData || [];
                     } else {
                         // Fallback to 'leaves' if needed
-                        const { data: leaveDataAlt, error: leaveErrorAlt } = await supabaseClient
-                            .from('leaves')
-                            .select('*')
-                            .order('created_at', { ascending: false });
+                       const { data: leaveDataAlt, error: leaveErrorAlt } = await supabaseClient
+  .from('leaves')
+  .select('*')
+  .eq('academic_year', selectedYear)
+  .eq('term', selectedTerm)
+  .order('created_at', { ascending: false });
                         if (!leaveErrorAlt) {
                             cachedLeaves = leaveDataAlt || [];
                         }
@@ -1807,6 +1813,8 @@ function updateDashboardUI(year, term, leaves, attendances) {
         window.location.reload();
       }
     }
+        document.getElementById('academicYearSelector').addEventListener('change', loadDashboardData);
+document.getElementById('termSelector').addEventListener('change', loadDashboardData);
 </script>
 </script>
 </div>
