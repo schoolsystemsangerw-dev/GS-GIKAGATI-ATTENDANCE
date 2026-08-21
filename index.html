@@ -1794,20 +1794,17 @@ try {
 function updateDashboardUI(year, term, leaves, attendances) {
       console.log("Dashboard updated successfully for:", year, term);
       
-      // Update global cached arrays so your tables display the filtered items
+      // Update global cached arrays
       cachedLeaves = leaves;
       cachedAttendances = attendances;
 
-      // Update your top counter cards dynamically based on the filtered data length
-      const totalStaffElem = document.getElementById('totalCount');
-      if (totalStaffElem) {
-        totalStaffElem.textContent = attendances.length > 0 ? attendances.length : '0';
-      }
-
-      // Re-run your main dashboard loader function if it reads from the cache, 
-      // or call your specific table rendering functions directly here:
+      // If your main data loader accepts year and term, pass them directly here:
       if (typeof loadDashboardData === 'function') {
-        loadDashboardData();
+        // Try calling your loader with the selected period parameters
+        loadDashboardData(year, term);
+      } else {
+        // Fallback: reload the page window view or trigger your render routines
+        window.location.reload();
       }
     }
 </script>
