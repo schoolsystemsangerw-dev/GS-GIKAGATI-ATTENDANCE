@@ -1814,24 +1814,19 @@ function updateDashboardUI(year, term, leaves, attendances) {
       if (totalStaffElem) {
         totalStaffElem.textContent = attendances.length > 0 ? attendances.length : '0';
       }
-
-      // Alternatively, if your script uses a general refresh function, trigger it here:
-      if (typeof updateCardCounters === 'function') {
-        updateCardCounters();
-      }
+// Alternatively, if your script uses a general refresh function, trigger it here:
+    if (typeof updateCardCounters === 'function') {
+      updateCardCounters();
     }
-      } else {
-        // Fallback: reload the page window view or trigger your render routines
-        window.location.reload();
-      }
-    }
-        document.getElementById('academicYearSelector').addEventListener('change', function() {
-      loadDashboardData(this.value, document.getElementById('termSelector').value);
-    });
+  }
 
-    document.getElementById('termSelector').addEventListener('change', function() {
-      loadDashboardData(document.getElementById('academicYearSelector').value, this.value);
-    });
+  document.getElementById('academicYearSelector').addEventListener('change', function() {
+    loadDashboardData(this.value, document.getElementById('termSelector').value);
+  });
+
+  document.getElementById('termSelector').addEventListener('change', function() {
+    loadDashboardData(document.getElementById('academicYearSelector').value, this.value);
+  });
 </script>
 </script>
 </div>
