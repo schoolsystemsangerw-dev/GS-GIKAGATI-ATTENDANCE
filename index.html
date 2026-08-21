@@ -1804,17 +1804,34 @@ function updateDashboardUI(year, term, leaves, attendances) {
       cachedLeaves = leaves;
       cachedAttendances = attendances;
 
-      // If your main data loader accepts year and term, pass them directly here:
-      if (typeof loadDashboardData === 'function') {
-        // Try calling your loader with the selected period parameters
-        loadDashboardData(year, term);
+      // Re-render your main dashboard table and counters using the new cached data
+      if (typeof renderMasterTable === 'function') {
+        renderMasterTable(attendances);
+      }
+      
+      // If you have a counter update function, call it here too, or re-run loadDashboardData's UI section:
+      const totalStaffElem = document.getElementById('totalCount');
+      if (totalStaffElem) {
+        totalStaffElem.textContent = attendances.length > 0 ? attendances.length : '0';
+      }
+
+      // Alternatively, if your script uses a general refresh function, trigger it here:
+      if (typeof updateCardCounters === 'function') {
+        updateCardCounters();
+      }
+    }
       } else {
         // Fallback: reload the page window view or trigger your render routines
         window.location.reload();
       }
     }
-        document.getElementById('academicYearSelector').addEventListener('change', loadDashboardData);
-document.getElementById('termSelector').addEventListener('change', loadDashboardData);
+        document.getElementById('academicYearSelector').addEventListener('change', function() {
+      loadDashboardData(this.value, document.getElementById('termSelector').value);
+    });
+
+    document.getElementById('termSelector').addEventListener('change', function() {
+      loadDashboardData(document.getElementById('academicYearSelector').value, this.value);
+    });
 </script>
 </script>
 </div>
