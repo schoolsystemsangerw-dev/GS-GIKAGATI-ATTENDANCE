@@ -1804,11 +1804,23 @@ function updateDashboardUI(year, term, leaves, attendances) {
       cachedLeaves = leaves;
       cachedAttendances = attendances;
 
-      // Re-render your main dashboard table and counters using the new cached data
-      if (typeof renderMasterTable === 'function') {
-        renderMasterTable(attendances);
+     // Directly render the attendance rows into your table body
+      const tableBody = document.getElementById('masterTableBody');
+      if (tableBody) {
+        if (attendances.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500 font-medium">No records found for this period.</td></tr>`;
+        } else {
+          tableBody.innerHTML = attendances.map(record => `
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.sdms_id || ''}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${record.staff_name || ''}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.position || ''}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.role || ''}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.status || 'PENDING'}</td>
+            </tr>
+          `).join('');
+        }
       }
-      
       // If you have a counter update function, call it here too, or re-run loadDashboardData's UI section:
       const totalStaffElem = document.getElementById('totalCount');
       if (totalStaffElem) {
