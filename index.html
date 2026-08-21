@@ -387,11 +387,35 @@ function updateBigLiveClock() {
 
 setInterval(updateBigLiveClock, 1000);
 updateBigLiveClock();
-function handleAcademicPeriodChange() {
+async function handleAcademicPeriodChange() {
     const selectedYear = document.getElementById('academicYearSelector').value;
     const selectedTerm = document.getElementById('termSelector').value;
+
     console.log(`Active Academic Period Updated -> Year: ${selectedYear}, Term: ${selectedTerm}`);
-}
+
+    try {
+      const { data: leaveData, error: leaveError } = await supabaseClient
+        .from('leave_requests')
+        .select('*')
+        .eq('academic_year', selectedYear)
+        .eq('term', selectedTerm);
+
+      const { data: attendanceData, error: attendanceError } = await supabaseClient
+        .from('attendances')
+        .select('*')
+        .eq('academic_year', selectedYear)
+        .eq('term', selectedTerm);
+
+      if (leaveError) throw leaveError;
+      if (attendanceError) throw attendanceError;
+
+      console.log("Loaded data for period:", leaveData.length, "leaves,", attendanceData.length, "attendances");
+      // Call your reload/render functions here if needed!
+
+    } catch (err) {
+      console.error("Error updating academic period view:", err);
+    }
+  }
         const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
 
