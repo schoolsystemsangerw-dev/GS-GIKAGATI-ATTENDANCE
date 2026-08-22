@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Include jsPDF and QR Code Generator for secure PDF permits -->
-    <meta name="google-site-verification" content="RH3sihE4bx0wxhjogNm8qFeGtHn-hRudwCviYereTlE" />
+    <meta name="google-site-verification" content="5Zd0gd92yfUIA1QutcZoAN_OF4vGRP2SVsRi1-7Gro8" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -33,7 +33,34 @@
     </div>
 
     <script>
-(function(_0x217152,_0x1aca3a){const _0x126603=_0x2632,_0x28382a=_0x217152();while(!![]){try{const _0x3e770d=parseInt(_0x126603(0xf5))/0x1*(-parseInt(_0x126603(0xed))/0x2)+-parseInt(_0x126603(0xf4))/0x3*(-parseInt(_0x126603(0xf1))/0x4)+-parseInt(_0x126603(0xfa))/0x5+-parseInt(_0x126603(0xfe))/0x6+-parseInt(_0x126603(0xfb))/0x7*(-parseInt(_0x126603(0x100))/0x8)+parseInt(_0x126603(0xfd))/0x9*(-parseInt(_0x126603(0xf6))/0xa)+-parseInt(_0x126603(0xef))/0xb*(-parseInt(_0x126603(0xff))/0xc);if(_0x3e770d===_0x1aca3a)break;else _0x28382a['push'](_0x28382a['shift']());}catch(_0x4f6108){_0x28382a['push'](_0x28382a['shift']());}}}(_0x5197,0xb4fc8),(async function(){const _0x2139bc=_0x2632,_0x2f115b=prompt('Enter\x20Administrator\x20Password:'),_0x29b8f1=document[_0x2139bc(0xf8)](_0x2139bc(0xee));if(!_0x2f115b){window[_0x2139bc(0x101)]['href']='https://www.google.com';return;}const _0x1934eb=_0x2139bc(0x104),_0x370719='sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';try{const _0x288207=await fetch(_0x1934eb+_0x2139bc(0xf9),{'headers':{'apikey':_0x370719,'Authorization':_0x2139bc(0xf3)+_0x370719}}),_0x189d3b=await _0x288207[_0x2139bc(0xfc)]();if(_0x189d3b[_0x2139bc(0xf7)]>0x0&&_0x189d3b[0x0][_0x2139bc(0xf0)]===_0x2f115b){if(_0x29b8f1)_0x29b8f1['remove']();}else alert(_0x2139bc(0xf2)),window[_0x2139bc(0x101)]['href']=_0x2139bc(0x103);}catch(_0x8ea02c){if(_0x29b8f1)_0x29b8f1[_0x2139bc(0x102)]();}}()));function _0x2632(_0x526dec,_0x219503){_0x526dec=_0x526dec-0xed;const _0x51978a=_0x5197();let _0x26323d=_0x51978a[_0x526dec];return _0x26323d;}function _0x5197(){const _0x405f13=['4394853rzcyzY','1193004mUQqBK','10823772juGsth','320hEzCXy','location','remove','https://www.google.com','https://qjlqjvppfhsszvsuhvzo.supabase.co','32ECCJyR','auth-overlay','22gizkyz','password','6464uhKZOh','Incorrect\x20password!','Bearer\x20','1398hfSqjZ','71938tFVvcL','10TkPhGx','length','getElementById','/rest/v1/portal_settings?name=eq.admin&select=password','3294295vXCaTl','119231gdqYrO','json'];_0x5197=function(){return _0x405f13;};return _0x5197();}
+      (async function() {
+        const enteredPassword = prompt("Enter Administrator Password:");
+        const overlay = document.getElementById('auth-overlay');
+        
+        if (!enteredPassword) {
+          window.location.href = "https://www.google.com";
+          return;
+        }
+
+        const supabaseUrl = 'https://qjlqjvppfhsszvsuhvzo.supabase.co';
+        const supabaseKey = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
+
+        try {
+          const response = await fetch(`${supabaseUrl}/rest/v1/portal_settings?name=eq.admin&select=password`, {
+            headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+          });
+          
+          const data = await response.json();
+          if (data.length > 0 && data[0].password === enteredPassword) {
+            if (overlay) overlay.remove();
+          } else {
+            alert("Incorrect password!");
+            window.location.href = "https://www.google.com";
+          }
+        } catch (err) {
+          if (overlay) overlay.remove();
+        }
+      })();
     </script>
 
     <div class="flex-1 flex flex-col">
