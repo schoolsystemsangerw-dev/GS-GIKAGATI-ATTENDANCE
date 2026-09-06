@@ -3,114 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOS Portal | GS Gikagati</title>
+    <title>Official Master Control | GS Gikagati</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Include jsPDF and QR Code Generator for secure PDF permits -->
+    <meta name="google-site-verification" content="5Zd0gd92yfUIA1QutcZoAN_OF4vGRP2SVsRi1-7Gro8" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .animate-marquee {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 25s linear infinite;
-        }
-        #auth-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #0f172a;
-            z-index: 999999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
-        }
+      #auth-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: #ffffff;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+      }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800 flex flex-1 flex-col min-h-screen">
-    <!-- Security Authentication Overlay with Form -->
+<body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen selection:bg-blue-900 selection:text-white">
+    <!-- Security Overlay & Authentication Script -->
     <div id="auth-overlay">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full border border-slate-700 text-center">
-            <h2 class="text-2xl font-black text-blue-950 mb-1">GS Gikagati DOS Portal</h2>
-            <p class="text-xs text-slate-500 mb-6 font-medium">Secured Area. Please enter your authentication password.</p>
-            
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-left">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
-                    <input type="password" id="passwordInput" required placeholder="Enter DOS Password" 
-                        class="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-950 focus:outline-none">
-                </div>
-                <button type="submit" id="loginBtn" class="w-full py-3 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition shadow">
-                    Authenticate & Access
-                </button>
-            </form>
-            <p id="errorMsg" class="text-xs text-rose-600 font-bold mt-4 hidden"></p>
-        </div>
+      <h2>GS Gikagati Attendance Portal</h2>
+      <p>Secured Area. Please authenticate...</p>
     </div>
 
-    <!-- Main Dashboard Container -->
-    <div id="main-dashboard" class="flex-1 flex flex-col" style="display: none;">
+    <script>
+      (async function() {
+        const enteredPassword = prompt("Enter Administrator Password:");
+        const overlay = document.getElementById('auth-overlay');
+        
+        if (!enteredPassword) {
+          window.location.href = "https://www.google.com";
+          return;
+        }
+
+        const supabaseUrl = 'https://qjlqjvppfhsszvsuhvzo.supabase.co';
+        const supabaseKey = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
+
+        try {
+          const response = await fetch(`${supabaseUrl}/rest/v1/portal_settings?name=eq.admin&select=password`, {
+            headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+          });
+          
+          const data = await response.json();
+          if (data.length > 0 && data[0].password === enteredPassword) {
+            if (overlay) overlay.remove();
+          } else {
+            alert("Incorrect password!");
+            window.location.href = "https://www.google.com";
+          }
+        } catch (err) {
+          if (overlay) overlay.remove();
+        }
+      })();
+    </script>
+
+    <div class="flex-1 flex flex-col">
+        
+        <!-- Official Top Header & Moving Marquee -->
         <header class="bg-blue-950 text-white shadow-md border-b-2 border-amber-500">
-            <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden uppercase shadow-inner">
-                <div class="animate-marquee">
-                    WELCOME TO GS GIKAGATI. SEEK THE TRUTH &nbsp;&bull;&nbsp; DOS PORTAL &nbsp;&bull;&nbsp; ACADEMIC STAFF ATTENDANCE MONITORING &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WELCOME TO GS GIKAGATI. SEEK THE TRUTH &nbsp;&bull;&nbsp; DOS PORTAL &nbsp;&bull;&nbsp; ACADEMIC STAFF ATTENDANCE MONITORING
+            <!-- Institutional Marquee Banner -->
+            <div class="bg-amber-500 text-blue-950 font-black text-xs tracking-widest py-1.5 overflow-hidden whitespace-nowrap uppercase shadow-inner">
+                <div class="inline-block animate-[marquee_25s_linear_infinite]">
+                    🏛️ GS GIKAGATI OFFICIAL ADMINISTRATIVE PORTAL &nbsp;&bull;&nbsp; SEEK THE TRUTH &nbsp;&bull;&nbsp; STAFF ATTENDANCE & SYSTEM CONTROL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🏛️ GS GIKAGATI OFFICIAL ADMINISTRATIVE PORTAL &nbsp;&bull;&nbsp; SEEK THE TRUTH &nbsp;&bull;&nbsp; STAFF ATTENDANCE & SYSTEM CONTROL
                 </div>
             </div>
+
+            <!-- Main Header Content -->
             <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col lg:flex-row justify-between items-center gap-6">
                 <div class="flex items-center space-x-5">
-                    <div class="w-20 h-20 bg-white rounded-xl p-1.5 shadow border-2 border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
-                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-blue-950 font-black text-xs\'>GSG</span>';">
+                    <!-- School Logo -->
+                    <div class="w-20 h-20 bg-white rounded-xl p-1.5 shadow border-2 border-amber-400 flex items-center justify-center overflow-hidden">
+                        <img src="gikagati.png" alt="GS Gikagati Logo" class="w-full h-full object-contain">
                     </div>
+                    <!-- Title -->
                     <div>
-                        <div class="flex items-center space-x-3 mb-1">
-                            <h1 class="text-2xl lg:text-3xl font-black tracking-tight text-white">GS GIKAGATI</h1>
-                            <span class="bg-blue-900 border border-blue-700 text-amber-400 text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider">DOS Portal</span>
-                        </div>
-                        <p class="text-xs text-slate-300 font-medium">Director of Studies Control Panel &bull; Authorized User: <span class="text-amber-300 font-bold">Jean Marie Vianne MBONYUMUKU</span></p>
+                        <h2 class="text-xl md:text-2xl font-black tracking-wide text-white">GS GIKAGATI</h2>
+                        <p class="text-xs text-amber-400 font-bold uppercase tracking-wider">Head Teacher Master Control Panel</p>
                     </div>
                 </div>
+
+                <!-- Head Teacher Profile Badge (ld.png & Email) -->
+                <div class="flex items-center space-x-3 bg-blue-900/60 px-4 py-2.5 rounded-xl border border-blue-800 shadow-inner">
+                    <img src="ld.png" alt="Head Teacher Photo" class="w-12 h-12 rounded-full object-cover border-2 border-amber-400 shadow-sm">
+                    <div class="text-left text-sm">
+                        <p class="font-bold text-white flex items-center">
+                            Ladislas 
+                            <span class="text-[10px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded font-extrabold ml-1.5 uppercase">Authorized</span>
+                        </p>
+                        <p class="text-xs text-slate-300 font-mono">ladislasuwituze@gmail.com</p>
+                    </div>
+                </div>
+
+                <!-- Administrative Location Info Card -->
+                <div class="bg-blue-900/60 border border-blue-800 rounded-xl p-3 text-[11px] text-slate-200 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1">
+                    <div><span class="text-amber-400 font-semibold">Province:</span> East</div>
+                    <div><span class="text-amber-400 font-semibold">District:</span> Nyagatare</div>
+                    <div><span class="text-amber-400 font-semibold">Sector:</span> Karama</div>
+                    <div><span class="text-amber-400 font-semibold">Cell:</span> Gikagati</div>
+                    <div><span class="text-amber-400 font-semibold">Village:</span> Rutegamatwi</div>
+                    <div><span class="text-amber-400 font-semibold">Phone:</span> 0788754668</div>
+                </div>
+
+                <!-- Secure Logout -->
                 <div>
-                    <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-5 py-2.5 rounded-lg font-bold shadow transition duration-150 border border-slate-700 flex items-center space-x-1">
+                    <a href="index.html" class="bg-red-700 hover:bg-red-800 text-white text-xs px-5 py-2.5 rounded-lg font-bold shadow transition duration-150 flex items-center space-x-1 border border-red-600">
                         <span>Sign Out</span>
                     </a>
                 </div>
+            </div><!-- Big Modern Live Digital Clock -->
+        <div class="flex items-center space-x-3 bg-slate-900 text-white px-4 py-2 rounded-xl shadow-inner border border-slate-700">
+            <div class="text-xl">🕒</div>
+            <div class="flex flex-col">
+                <div class="flex items-baseline space-x-1">
+                    <span id="clockHours" class="text-lg font-black tracking-wider text-emerald-400">00</span>
+                    <span class="text-sm font-bold text-slate-400">:</span>
+                    <span id="clockMinutes" class="text-lg font-black tracking-wider text-white">00</span>
+                    <span class="text-sm font-bold text-slate-400">:</span>
+                    <span id="clockSeconds" class="text-sm font-bold text-amber-400">00</span>
+                    <span id="clockAmpm" class="text-[10px] font-bold uppercase ml-1 text-slate-300">--</span>
+                </div>
+                <span id="clockDate" class="text-[11px] font-medium text-slate-400 tracking-wide">Loading date...</span>
             </div>
+        </div>
         </header>
-
+        <!-- Main Content Layout with Sidebar Navigation -->
         <div class="max-w-7xl w-full mx-auto p-6 flex flex-col md:flex-row gap-6 flex-1">
+            
+            <!-- Left Sidebar Navigation / View Controls -->
             <aside class="w-full md:w-64 bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 flex flex-col gap-2.5 shrink-0 h-fit">
+             <!-- School Calendar Button -->
+    <div class="px-1 pt-1 pb-2">
+        <button onclick="openCalendarModal()" class="group relative w-full bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-900 hover:from-indigo-800 hover:to-slate-800 text-slate-100 text-xs font-semibold py-2.5 px-3.5 rounded-xl border border-indigo-500/30 shadow-sm hover:shadow-indigo-500/10 flex items-center justify-between transition-all duration-200">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform">
+                    <span class="text-sm">📅</span>
+                </div>
+                <div class="text-left">
+                    <p class="font-bold text-slate-200 tracking-tight">School Calendar</p>
+                    <p class="text-[10px] text-slate-400 font-medium">Terms, Breaks & Holidays</p>
+                </div>
+            </div>
+            <span class="text-indigo-400 text-xs group-hover:translate-x-0.5 transition-transform">→</span>
+        </button>
+    </div>
+                <!-- Academic Period & Term Selector Control -->
+    <div class="pt-2 pb-2 px-1">
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Academic Period 📋</label>
+        <div class="space-y-2">
+            <select id="academicYearSelector" onchange="handleAcademicPeriodChange()" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="2025-2026" selected>Academic Year: 2025-2026</option>
+                <option value="2026-2027">Academic Year: 2026-2027</option>
+                <option value="2024-2025">Academic Year: 2024-2025</option>
+            </select>
+            <select id="termSelector" onchange="handleAcademicPeriodChange()" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="Term 1">Term 1 (Jan - Apr)</option>
+                <option value="Term 2" selected>Term 2 (May - Aug)</option>
+                <option value="Term 3">Term 3 (Sep - Dec)</option>
+            </select>
+        </div>
+    </div>
                 <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 pt-1 mb-0.5">Control Views</h3>
+                
                 <button onclick="switchView('staff')" id="btnStaffView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-blue-950 text-white shadow-sm transition flex items-center justify-between group">
                     <span>Staff Overview</span>
                     <span class="text-[10px] bg-blue-900 text-amber-300 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarTotalCount">-</span>
                 </button>
-                <button onclick="switchView('checkins')" id="btnCheckinsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 transition flex items-center justify-between group">
+                <button onclick="switchView('checkins')" id="btnCheckinsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
                     <span>Check-In Logs</span>
                     <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckinCount">-</span>
                 </button>
-                <button onclick="switchView('checkouts')" id="btnCheckoutsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 transition flex items-center justify-between group">
+                <button onclick="switchView('checkouts')" id="btnCheckoutsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
                     <span>Check-Out Logs</span>
                     <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarCheckoutCount">-</span>
                 </button>
-                <button onclick="switchView('dailylogs')" id="btnDailylogsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 transition flex items-center justify-between group">
-                    <span>Daily Logs by Weekday</span>
-                    <span class="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded font-mono font-semibold">Days</span>
-                </button>
+
                 <div class="h-px bg-slate-200 my-2"></div>
-                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Actions</h3>
+                
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Attendance Filters</h3>
+                
+                <button onclick="switchView('ontime')" id="btnOntimeView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>On Time Today</span>
+                    </span>
+                    <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarOnTimeCount">-</span>
+                </button>
+                <button onclick="switchView('late')" id="btnLateView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span>Late Arrivals Today</span>
+                    </span>
+                    <span class="text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarLateCount">-</span>
+                </button>
+                <button onclick="switchView('dailylogs')" id="btnDailylogsView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span>Daily Logs by Weekday</span>
+                    </span>
+                    <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarDailyLogsCount">-</span>
+                </button>
+                <button onclick="switchView('leaves')" id="btnLeavesView" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                        <span>Leave Requests</span>
+                    </span>
+                    <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-mono font-semibold" id="sidebarLeaveCount">-</span>
+                </button>
+
+                <div class="h-px bg-slate-200 my-2"></div>
+
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-wider px-2 mb-0.5">Government Actions</h3>
+                
                 <button onclick="exportAttendancePDF()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <span>Export Attendance PDF</span>
+                </button>
+                <button onclick="sendOfficialReport()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-emerald-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <span>Send Report to Gov</span>
+                </button>
+                <button onclick="openLeavePermitModal()" class="w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-amber-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4"></path></svg>
+                    <span>Issue Leave Permit</span>
                 </button>
             </aside>
 
+            <!-- Main Display Area -->
             <main class="flex-1 flex flex-col gap-6">
+                <!-- Statistics Summary Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-blue-950 flex flex-col justify-between">
                         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Staff Registered</p>
@@ -126,14 +252,22 @@
                     </div>
                 </div>
 
+                <!-- Dynamic Data Table Card -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-6 flex flex-col">
-                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-slate-100 gap-4">
                         <div>
                             <h3 class="text-base font-black text-slate-900 uppercase tracking-wide" id="tableTitle">Master Staff Attendance Overview</h3>
                             <p class="text-xs text-slate-500 mt-0.5" id="tableSubtitle">Real-time database records synced directly from Supabase</p>
                         </div>
-                        <button onclick="loadDashboardData()" class="px-4 py-2 bg-slate-900 hover:bg-blue-950 text-white text-xs font-bold rounded-lg transition shadow-sm">Refresh Records</button>
+                        <button onclick="loadDashboardData()" class="px-4 py-2 bg-slate-900 hover:bg-blue-950 text-white text-xs font-bold rounded-lg transition shadow-sm flex items-center space-x-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span>Refresh Records</span>
+                        </button>
+                       <button onclick="filterStaffByStatus('on-leave')" id="filterBtnLeave" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-emerald-600 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-all ml-2 flex items-center gap-1.5">
+    <i class="fas fa-umbrella-beach text-emerald-500"></i> Teachers on Leave
+</button>
                     </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -146,7 +280,9 @@
                                 </tr>
                             </thead>
                             <tbody id="masterTableBody" class="text-xs text-slate-600 divide-y divide-slate-100">
-                                <tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">Connecting to database...</td></tr>
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-slate-400 font-medium">Establishing connection to database...</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -155,91 +291,268 @@
         </div>
     </div>
 
+    <!-- Leave Permit Modal (Direct Generation) -->
+    <div id="leaveModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden flex flex-col">
+            <div class="bg-blue-950 text-white p-5 flex justify-between items-center border-b-2 border-amber-500">
+                <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                    <h3 class="font-black text-sm uppercase tracking-wider">Issue Official Staff Leave Permit</h3>
+                </div>
+                <button onclick="closeLeavePermitModal()" class="text-slate-300 hover:text-white font-bold text-lg px-2">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Select Staff Member:</label>
+                    <select id="leaveStaffSelect" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-800 focus:outline-blue-950">
+                        <option value="">-- Choose Staff Member --</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Start Date:</label>
+                        <input type="date" id="leaveStartDate" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-800 focus:outline-blue-950">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">End Date:</label>
+                        <input type="date" id="leaveEndDate" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-800 focus:outline-blue-950">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Reason for Leave / Permit Type:</label>
+                    <textarea id="leaveReason" rows="3" placeholder="e.g. Annual Leave, Medical Leave, Official Mission..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-800 focus:outline-blue-950"></textarea>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-amber-900 text-[11px] font-medium">
+                    ⚠️ Generating this permit will download an official authorized PDF document signed by Head Teacher Ladislas for GS Gikagati.
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end space-x-3">
+                <button onclick="closeLeavePermitModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition">Cancel</button>
+                <button onclick="generateLeavePermitPDFDirect()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition shadow">Generate Permit PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Official Institutional Footer -->
+    <footer class="bg-slate-950 text-slate-400 text-xs py-6 px-6 text-center border-t border-slate-900 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p>&copy; 2026 GS Gikagati &bull; All Rights Reserved &bull; Government of Rwanda Public Institution.</p>
+            <p class="text-slate-300 font-medium">IT CREATOR & DESIGNER: <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-amber-400 hover:underline">schoolsystems.ange.rw@gmail.com</a></p>
+        </div>
+    </footer>
+
+    <!-- Marquee Keyframes -->
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+
     <script>
+function updateBigLiveClock() {
+    const now = new Date();
+    
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+    const formattedHours = String(hours).padStart(2, '0');
+    
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    const dateString = now.toLocaleDateString(undefined, options);
+
+    const hEl = document.getElementById('clockHours');
+    const mEl = document.getElementById('clockMinutes');
+    const sEl = document.getElementById('clockSeconds');
+    const aEl = document.getElementById('clockAmpm');
+    const dEl = document.getElementById('clockDate');
+
+    if (hEl && mEl && sEl && aEl && dEl) {
+        hEl.textContent = formattedHours;
+        mEl.textContent = minutes;
+        sEl.textContent = seconds;
+        aEl.textContent = ampm;
+        dEl.textContent = dateString;
+    }
+}
+
+setInterval(updateBigLiveClock, 1000);
+updateBigLiveClock();
+function handleAcademicPeriodChange() {
+    const selectedYear = document.getElementById('academicYearSelector').value;
+    const selectedTerm = document.getElementById('termSelector').value;
+    console.log(`Active Academic Period Updated -> Year: ${selectedYear}, Term: ${selectedTerm}`);
+}
         const SUPABASE_URL = 'https://qjqljvppfhsszvsuhvzo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_b2zYmY5IaM7_quyh3yfQ-A_aACGNTfq';
+
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentView = 'staff';
+        let currentView = 'staff'; 
         let cachedStaff = [];
         let cachedAttendances = [];
-
-        function handleLogin(event) {
-            event.preventDefault();
-            const enteredPassword = document.getElementById('passwordInput').value.trim();
-            const errorMsg = document.getElementById('errorMsg');
-            const overlay = document.getElementById('auth-overlay');
-            const dashboard = document.getElementById('main-dashboard');
-
-            errorMsg.classList.add('hidden');
-
-            if (enteredPassword === 'GSGikagatiDS2026!') {
-                overlay.remove();
-                dashboard.style.display = 'flex';
-                loadDashboardData();
-            } else {
-                errorMsg.textContent = 'Incorrect password. Please try again.';
-                errorMsg.classList.remove('hidden');
-            }
-        }
+        let cachedLeaves = [];
 
         async function loadDashboardData() {
+            const tableBody = document.getElementById('masterTableBody');
+            const totalCountElem = document.getElementById('totalCount');
+            const presentCountElem = document.getElementById('presentCount');
+            const absentCountElem = document.getElementById('absentCount');
+            
+            const sidebarTotal = document.getElementById('sidebarTotalCount');
+            const sidebarCheckin = document.getElementById('sidebarCheckinCount');
+            const sidebarCheckout = document.getElementById('sidebarCheckoutCount');
+            const sidebarOnTime = document.getElementById('sidebarOnTimeCount');
+            const sidebarLate = document.getElementById('sidebarLateCount');
+            const sidebarDailyLogs = document.getElementById('sidebarDailyLogsCount');
+            const sidebarLeave = document.getElementById('sidebarLeaveCount');
+
             try {
-                const { data: staffData } = await supabaseClient.from('staffs').select('*');
+                // 1. Fetch staff members
+                const { data: staffData, error: staffError } = await supabaseClient
+                    .from('staffs')
+                    .select('*');
+
+                if (staffError) throw staffError;
                 cachedStaff = staffData || [];
-                const { data: attData } = await supabaseClient.from('attendances').select('*').order('created_at', { ascending: false });
+
+                // 2. Fetch attendances
+                const { data: attData, error: attError } = await supabaseClient
+                    .from('attendances')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (attError) throw attError;
                 cachedAttendances = attData || [];
 
-                const todayString = new Date().toISOString().split('T')[0];
-                const todayAttendanceMap = {};
-                cachedAttendances.forEach(r => { if (r.date === todayString && r.sdms_id) todayAttendanceMap[r.sdms_id] = r; });
+                // 3. Fetch leave requests from 'leave_requests' table (matching your Supabase schema screenshot)
+                try {
+                    const { data: leaveData, error: leaveError } = await supabaseClient
+                        .from('leave_requests')
+                        .select('*')
+                        .order('leave_date', { ascending: false });
+                    
+                    if (!leaveError) {
+                        cachedLeaves = leaveData || [];
+                    } else {
+                        // Fallback to 'leaves' if needed
+                        const { data: leaveDataAlt, error: leaveErrorAlt } = await supabaseClient
+                            .from('leaves')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+                        if (!leaveErrorAlt) {
+                            cachedLeaves = leaveDataAlt || [];
+                        }
+                    }
+                } catch(e) {
+                    cachedLeaves = [];
+                }
 
-                let presentCount = cachedStaff.filter(s => todayAttendanceMap[s.sdms_id]).length;
-                document.getElementById('totalCount').textContent = cachedStaff.length;
-                document.getElementById('presentCount').textContent = presentCount;
-                document.getElementById('absentCount').textContent = cachedStaff.length - presentCount;
-                document.getElementById('sidebarTotalCount').textContent = cachedStaff.length;
-                document.getElementById('sidebarCheckinCount').textContent = cachedAttendances.filter(r => r.status === 'check-in').length;
-                document.getElementById('sidebarCheckoutCount').textContent = cachedAttendances.filter(r => r.status === 'check-out').length;
+                const todayString = new Date().toISOString().split('T')[0];
+                
+                const todayAttendanceMap = {};
+                let checkinCountToday = 0;
+                let checkoutCountToday = 0;
+                let onTimeCountToday = 0;
+                let lateCountToday = 0;
+
+                cachedAttendances.forEach(record => {
+                    const recordDate = record.date || '';
+                    if (recordDate === todayString && record.sdms_id) {
+                        todayAttendanceMap[record.sdms_id] = record;
+                    }
+                    if (record.status === 'check-in') {
+                        checkinCountToday++;
+                        if (record.created_at) {
+                            const checkInDate = new Date(record.created_at);
+                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                            if (totalMinutes > (7 * 60 + 30)) {
+                                lateCountToday++;
+                            } else {
+                                onTimeCountToday++;
+                            }
+                        }
+                    } else if (record.status === 'check-out') {
+                        checkoutCountToday++;
+                    }
+                });
+
+                let presentCount = 0;
+                cachedStaff.forEach(staff => {
+                    if (todayAttendanceMap[staff.sdms_id]) {
+                        presentCount++;
+                    }
+                });
+// Exclude approved leave staff from unexcused absent/pending totals
+   // Get today's date in YYYY-MM-DD format
+const todayStr = new Date().toISOString().split('T')[0];
+
+// Find staff IDs currently on an active, approved leave today
+// Find all staff IDs whose leaves are currently running/active today
+const activeLeaveIds = [...new Set(
+    cachedLeaves
+        .filter(leave => {
+            const status = leave.status ? leave.status.trim().toLowerCase() : '';
+            // Match approved status or rows that are actively tracked
+            const isApproved = status === 'approved' || status === 'active' || status === '';
+            
+            // Check if today falls into start/end range, matches leave_date, or if status implies active
+            const matchesToday = (leave.leave_date && leave.leave_date === todayStr) ||
+                                 (leave.start_date && leave.end_date && todayStr >= leave.start_date && todayStr <= leave.end_date);
+            
+            return isApproved && matchesToday;
+        })
+        .map(leave => leave.sdms_id)
+)];
+let onLeaveCount = activeLeaveIds.length;
+
+// Absent = Total staff minus present minus those on active leave (ensuring no negative counts)
+let absentCount = Math.max(0, cachedStaff.length - presentCount - activeLeaveIds.length);
+
+    // Update Metric Cards
+    totalCountElem.textContent = cachedStaff.length;
+    presentCountElem.textContent = presentCount;
+    absentCountElem.textContent = absentCount;
+                // Update Sidebar Badges
+                sidebarTotal.textContent = cachedStaff.length;
+                sidebarCheckin.textContent = cachedAttendances.filter(r => r.status === 'check-in').length;
+                sidebarCheckout.textContent = cachedAttendances.filter(r => r.status === 'check-out').length;
+                sidebarOnTime.textContent = onTimeCountToday;
+                sidebarLate.textContent = lateCountToday;
+                sidebarDailyLogs.textContent = cachedAttendances.length;
+                sidebarLeave.textContent = cachedLeaves.filter(l => !l.status || l.status === 'pending').length;
 
                 renderView();
+
             } catch (err) {
-                console.error(err);
+                tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-rose-600 font-medium">Database Connection Error: ${err.message}</td></tr>`;
+                console.error("Dashboard Sync Error:", err);
             }
         }
 
         function switchView(viewName) {
             currentView = viewName;
-            ['staff', 'checkins', 'checkouts', 'dailylogs'].forEach(v => {
+            
+            const views = ['staff', 'checkins', 'checkouts', 'ontime', 'late', 'dailylogs', 'leaves'];
+            views.forEach(v => {
                 const btn = document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}View`);
                 if (btn) {
                     btn.className = viewName === v 
                         ? 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs bg-blue-950 text-white shadow-sm transition flex items-center justify-between group'
-                        : 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 transition flex items-center justify-between group';
+                        : 'w-full text-left px-3.5 py-2.5 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center justify-between group';
                 }
             });
-            renderView();
-        }
 
-        function groupAttendancesByDay(attendances) {
-            const grouped = {};
-            attendances.forEach(record => {
-                const dateKey = record.date; 
-                if (!grouped[dateKey]) {
-                    grouped[dateKey] = {
-                        date: dateKey,
-                        dayName: new Date(dateKey).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }),
-                        checkins: [],
-                        checkouts: []
-                    };
-                }
-                if (record.status === 'check-in') {
-                    grouped[dateKey].checkins.push(record);
-                } else if (record.status === 'check-out') {
-                    grouped[dateKey].checkouts.push(record);
-                }
-            });
-            return Object.values(grouped).sort((a, b) => new Date(b.date) - new Date(a.date));
+            renderView();
         }
 
         function renderView() {
@@ -266,35 +579,124 @@
                     <th class="py-3 px-4">Today's Status</th>
                 `;
 
+                if (cachedStaff.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No active staff records found.</td></tr>`;
+                    return;
+                }
+
                 const todayMap = {};
-                cachedAttendances.forEach(r => { if (r.date === todayString && r.sdms_id) todayMap[r.sdms_id] = r; });
+                cachedAttendances.forEach(r => {
+                    if (r.date === todayString && r.sdms_id) {
+                        todayMap[r.sdms_id] = r;
+                    }
+                });
 
                 tableBody.innerHTML = '';
                 cachedStaff.forEach(staff => {
                     const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || '-';
                     const record = todayMap[staff.sdms_id];
-                    let badge = '<span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
+                    
+                    let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">Pending</span>';
+                    
                     if (record) {
-                        badge = record.status === 'check-out' 
-                            ? '<span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>' 
-                            : '<span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>';
+                        if (record.status === 'check-out') {
+                            badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Checked Out</span>';
+                        } else if (record.status === 'check-in' && record.created_at) {
+                            const checkInDate = new Date(record.created_at);
+                            const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                            const cutoffMinutes = 7 * 60 + 30; // 7:30 AM limit
+                            const timeFormatted = checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            
+                            if (totalMinutes > cutoffMinutes) {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${timeFormatted})</span>`;
+                            } else {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${timeFormatted})</span>`;
+                            }
+                        }
                     }
+
                     const row = document.createElement('tr');
-                    row.className = 'hover:bg-slate-50';
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
-                        <td class="py-3 px-4 font-mono font-bold">${staff.sdms_id || '-'}</td>
-                        <td class="py-3 px-4 font-semibold">${fullName}</td>
-                        <td class="py-3 px-4">${staff.position_name || '-'}</td>
-                        <td class="py-3 px-4">${staff.system_role || '-'}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${staff.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${fullName}</td>
+                        <td class="py-3 px-4 text-slate-600">${staff.position_name || '-'}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium border border-slate-200">${staff.system_role || '-'}</span></td>
                         <td class="py-3 px-4">${badge}</td>
                     `;
                     tableBody.appendChild(row);
                 });
-            } else if (currentView === 'checkins' || currentView === 'checkouts') {
-                const isCheckin = currentView === 'checkins';
-                titleElem.textContent = isCheckin ? "All Check-In Logs" : "All Check-Out Logs";
-                subtitleElem.textContent = isCheckin ? "Chronological history of staff check-in submissions" : "Chronological history of staff check-out submissions";
+
+            } else if (currentView === 'checkins' || currentView === 'ontime' || currentView === 'late') {
+                if (currentView === 'checkins') {
+                    titleElem.textContent = "All Check-In Logs";
+                    subtitleElem.textContent = "Complete chronological history of staff check-in submissions";
+                } else if (currentView === 'ontime') {
+                    titleElem.textContent = "On-Time Staff Arrivals Today";
+                    subtitleElem.textContent = "Staff members who completed check-in on or before 7:30 AM";
+                } else if (currentView === 'late') {
+                    titleElem.textContent = "Late Staff Arrivals Today";
+                    subtitleElem.textContent = "Staff members who completed check-in after 7:30 AM";
+                }
+
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Arrival Status</th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Exact Time</th>
+                `;
+
+                let logs = cachedAttendances.filter(r => r.status === 'check-in');
                 
+                if (currentView === 'ontime') {
+                    logs = logs.filter(r => {
+                        if (!r.created_at) return false;
+                        const d = new Date(r.created_at);
+                        return (d.getHours() * 60 + d.getMinutes()) <= (7 * 60 + 30);
+                    });
+                } else if (currentView === 'late') {
+                    logs = logs.filter(r => {
+                        if (!r.created_at) return false;
+                        const d = new Date(r.created_at);
+                        return (d.getHours() * 60 + d.getMinutes()) > (7 * 60 + 30);
+                    });
+                }
+
+                if (logs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-in entries found matching this criterion.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                logs.forEach(record => {
+                    const name = staffLookup[record.sdms_id] || 'Unknown Staff';
+                    const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
+                    
+                    let statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time</span>';
+                    if (record.created_at) {
+                        const checkInDate = new Date(record.created_at);
+                        const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                        if (totalMinutes > (7 * 60 + 30)) {
+                            statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late</span>';
+                        }
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } else if (currentView === 'checkouts') {
+                titleElem.textContent = "All Check-Out Logs";
+                subtitleElem.textContent = "Complete chronological history of staff check-out submissions";
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
@@ -303,93 +705,1037 @@
                     <th class="py-3 px-4">Exact Time</th>
                 `;
 
-                const logs = cachedAttendances.filter(r => r.status === (isCheckin ? 'check-in' : 'check-out'));
-                if (logs.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No records found.</td></tr>`;
+                const checkoutLogs = cachedAttendances.filter(r => r.status === 'check-out');
+                if (checkoutLogs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No check-out records found.</td></tr>`;
                     return;
                 }
 
                 tableBody.innerHTML = '';
-                logs.forEach(record => {
+                checkoutLogs.forEach(record => {
                     const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                     const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
-                    const badgeClass = isCheckin ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200';
-                    const badgeText = isCheckin ? 'Check-In' : 'Check-Out';
-
                     const row = document.createElement('tr');
-                    row.className = 'hover:bg-slate-50';
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
                     row.innerHTML = `
-                        <td class="py-3 px-4 font-mono font-bold">${record.sdms_id || '-'}</td>
-                        <td class="py-3 px-4 font-semibold">${name}</td>
-                        <td class="py-3 px-4"><span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase border ${badgeClass}">${badgeText}</span></td>
-                        <td class="py-3 px-4 font-mono">${record.date || '-'}</td>
-                        <td class="py-3 px-4 font-mono">${timeFormatted}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4"><span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out</span></td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${timeFormatted}</td>
                     `;
                     tableBody.appendChild(row);
                 });
+
             } else if (currentView === 'dailylogs') {
-                titleElem.textContent = "Daily Separated Attendance Logs";
-                subtitleElem.textContent = "Chronological history grouped by weekdays and dates";
-                
+                titleElem.textContent = "Daily Logs By Weekday";
+                subtitleElem.textContent = "Grouped day-by-day logs with clear visual separation between different days";
                 headerRow.innerHTML = `
                     <th class="py-3 px-4">SDMS ID</th>
                     <th class="py-3 px-4">Staff Name</th>
                     <th class="py-3 px-4">Action Type</th>
-                    <th class="py-3 px-4">Date</th>
-                    <th class="py-3 px-4">Exact Time</th>
+                    <th class="py-3 px-4">Date / Weekday</th>
+                    <th class="py-3 px-4">Status / Time</th>
                 `;
 
-                const groupedData = groupAttendancesByDay(cachedAttendances);
-                if (groupedData.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No attendance records found.</td></tr>`;
+                if (cachedAttendances.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No attendance logs available.</td></tr>`;
                     return;
                 }
 
                 tableBody.innerHTML = '';
-                groupedData.forEach(group => {
-                    const sectionRow = document.createElement('tr');
-                    sectionRow.className = 'bg-slate-100 border-t-2 border-slate-300';
-                    sectionRow.innerHTML = `
-                        <td colspan="5" class="py-2.5 px-4 font-black text-xs text-blue-950 uppercase tracking-wider">
-                            📅 ${group.dayName}
+
+                const groupedByDate = {};
+                cachedAttendances.forEach(record => {
+                    const recordDateStr = record.date || (record.created_at ? record.created_at.split('T')[0] : 'Unknown Date');
+                    if (!groupedByDate[recordDateStr]) {
+                        groupedByDate[recordDateStr] = [];
+                    }
+                    groupedByDate[recordDateStr].push(record);
+                });
+
+                const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
+
+                sortedDates.forEach((dateStr, index) => {
+                    const dateObj = new Date(dateStr + 'T00:00:00');
+                    const weekdayName = !isNaN(dateObj) 
+                        ? dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) 
+                        : dateStr;
+
+                    const separatorRow = document.createElement('tr');
+                    const topMarginClass = index > 0 ? 'border-t-4 border-slate-200' : '';
+                    separatorRow.className = `bg-slate-100 font-bold text-slate-900 ${topMarginClass}`;
+                    separatorRow.innerHTML = `
+                        <td colspan="5" class="py-3 px-4 text-xs uppercase tracking-wider text-blue-950 flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                            <span>📅 Date Group: ${weekdayName} (${dateStr})</span>
                         </td>
                     `;
-                    tableBody.appendChild(sectionRow);
+                    tableBody.appendChild(separatorRow);
 
-                    const dayRecords = [...group.checkins, ...group.checkouts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                    dayRecords.forEach(record => {
+                    groupedByDate[dateStr].forEach(record => {
                         const name = staffLookup[record.sdms_id] || 'Unknown Staff';
                         const timeFormatted = record.created_at ? new Date(record.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '-';
-                        const isCheckin = record.status === 'check-in';
-                        const badgeClass = isCheckin ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200';
-                        const badgeText = isCheckin ? 'Check-In' : 'Check-Out';
+                        
+                        let badge = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-700 border border-slate-200">-</span>';
+                        
+                        if (record.status === 'check-in') {
+                            if (record.created_at) {
+                                const checkInDate = new Date(record.created_at);
+                                const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                                if (totalMinutes > (7 * 60 + 30)) {
+                                    badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Late (${timeFormatted})</span>`;
+                                } else {
+                                    badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">On Time (${timeFormatted})</span>`;
+                                }
+                            } else {
+                                badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Check-In</span>`;
+                            }
+                        } else if (record.status === 'check-out') {
+                            badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">Check-Out (${timeFormatted})</span>`;
+                        } else {
+                            badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-amber-50 text-amber-800 border border-amber-200">${record.status || 'Unknown'} (${timeFormatted})</span>`;
+                        }
 
                         const row = document.createElement('tr');
-                        row.className = 'hover:bg-slate-50 border-b border-slate-100';
+                        row.className = 'hover:bg-slate-50/80 transition duration-150';
                         row.innerHTML = `
-                            <td class="py-3 px-4 font-mono font-bold">${record.sdms_id || '-'}</td>
-                            <td class="py-3 px-4 font-semibold">${name}</td>
-                            <td class="py-3 px-4"><span class="px-2.5 py-1 rounded text-[10px] font-bold uppercase border ${badgeClass}">${badgeText}</span></td>
-                            <td class="py-3 px-4 font-mono text-slate-500">${record.date}</td>
-                            <td class="py-3 px-4 font-mono">${timeFormatted}</td>
+                            <td class="py-3 px-4 font-mono font-bold text-slate-800">${record.sdms_id || '-'}</td>
+                            <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                            <td class="py-3 px-4 uppercase text-[11px] font-bold text-slate-700">${record.status || '-'}</td>
+                            <td class="py-3 px-4 text-slate-600 font-mono">${record.date || '-'}</td>
+                            <td class="py-3 px-4">${badge}</td>
                         `;
                         tableBody.appendChild(row);
                     });
                 });
+
+            } else if (currentView === 'leaves') {
+                titleElem.textContent = "Staff Leave Requests (Supabase leave_requests)";
+                subtitleElem.textContent = "Review leave requests submitted by staff members and approve or reject them directly";
+                headerRow.innerHTML = `
+                    <th class="py-3 px-4">Request ID</th>
+                    <th class="py-3 px-4">SDMS ID</th>
+                    <th class="py-3 px-4">Staff Name</th>
+                    <th class="py-3 px-4">Leave Date</th>
+                    <th class="py-3 px-4">Reason</th>
+                    <th class="py-3 px-4">Current Status & Action</th>
+                `;
+
+                if (cachedLeaves.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No leave requests found in 'leave_requests' table.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                cachedLeaves.forEach(req => {
+                    const name = staffLookup[req.sdms_id] || 'Unknown Staff';
+                    const status = (req.status || 'pending').toLowerCase();
+                    const shortId = req.id ? req.id.substring(0, 8) + '...' : '-';
+                    
+                    let actionHtml = '';
+                    if (status === 'approved' || status === 'granted') {
+                        actionHtml = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">Approved</span>';
+                    } else if (status === 'rejected') {
+                        actionHtml = '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase bg-rose-50 text-rose-700 border border-rose-200">Rejected</span>';
+                    } else {
+                        actionHtml = `
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateLeaveRequestStatus('${req.id}', 'approved')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] shadow transition">Approve</button>
+                                <button onclick="updateLeaveRequestStatus('${req.id}', 'rejected')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded text-[10px] shadow transition">Reject</button>
+                            </div>
+                        `;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/80 transition duration-150';
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono text-slate-400" title="${req.id || ''}">${shortId}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${req.sdms_id || '-'}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${name}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">${req.leave_date || '-'}</td>
+                        <td class="py-3 px-4 text-slate-700 max-w-xs truncate" title="${req.reason || ''}">${req.reason || '-'}</td>
+                        <td class="py-3 px-4">${actionHtml}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
             }
         }
 
-        function exportAttendancePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text("GS GIKAGATI - DOS ATTENDANCE REPORT", 14, 20);
-            doc.autoTable({
-                startY: 30,
-                head: [['SDMS ID', 'Staff Name', 'Position', 'Role']],
-                body: cachedStaff.map(s => [s.sdms_id, `${s.first_name} ${s.last_name}`, s.position_name, s.system_role])
-            });
-            doc.save(`DOS_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        // Handle Approve / Reject Action on leave_requests table
+        async function updateLeaveRequestStatus(requestId, newStatus) {
+            try {
+                const { error } = await supabaseClient
+                    .from('leave_requests')
+                    .update({ status: newStatus })
+                    .eq('id', requestId);
+
+                if (error) throw error;
+
+                alert(`Leave request successfully ${newStatus}!`);
+                loadDashboardData();
+            } catch (err) {
+                alert(`Error updating leave request status: ${err.message}`);
+                console.error(err);
+            }
         }
+
+    // Action: Export Formal Professional Attendance PDF with School Logo & Digital Stamp/Signature
+function exportAttendancePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    const todayString = new Date().toISOString().split('T')[0];
+    const generatedTime = new Date().toLocaleString();
+
+    // Direct raw image URLs from your GitHub repository
+    const logoUrl = "https://schoolsystemsangerw-dev.github.io/GS-GIKAGATI-ATTENDANCE/gikagati.png";
+    const stampAndSigUrl = "https://schoolsystemsangerw-dev.github.io/GS-GIKAGATI-ATTENDANCE/stamp%20gikagati.png";
+
+    // Helper function to convert image URL to Base64 so jsPDF can embed it reliably
+    function addImageToPdf(url, callback) {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            callback(canvas.toDataURL('image/png'));
+        };
+        img.onerror = function() {
+            console.warn("Could not load image: " + url);
+            callback(null);
+        };
+        img.src = url;
+    }
+
+    // Fetch both images concurrently, then build and save the PDF
+    addImageToPdf(logoUrl, function(logoBase64) {
+        addImageToPdf(stampAndSigUrl, function(stampBase64) {
+
+            // 1. Calculate Summary Metrics
+            let presentCount = 0;
+            let lateCount = 0;
+            const todayMap = {};
+            
+            cachedAttendances.forEach(r => {
+                if (r.date === todayString && r.sdms_id) {
+                    todayMap[r.sdms_id] = r;
+                }
+            });
+
+            cachedStaff.forEach(staff => {
+                const record = todayMap[staff.sdms_id];
+                if (record && record.status !== 'check-out') {
+                    presentCount++;
+                    if (record.status === 'check-in' && record.created_at) {
+                        const checkInDate = new Date(record.created_at);
+                        if ((checkInDate.getHours() * 60 + checkInDate.getMinutes()) > (7 * 60 + 30)) {
+                            lateCount++;
+                        }
+                    }
+                }
+            });
+
+            const totalStaffCount = cachedStaff.length;
+            const onTimeCount = presentCount - lateCount;
+            const absentCount = totalStaffCount - presentCount;
+
+            // 2. Official Header Block
+            doc.setFillColor(15, 23, 42); // Dark slate blue
+            doc.rect(14, 12, 182, 20, 'F');
+            
+            // Insert School Logo if loaded successfully
+            if (logoBase64) {
+                doc.addImage(logoBase64, 'PNG', 17, 14, 16, 16);
+            }
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10.5);
+            doc.text("REPUBLIC OF RWANDA | MINISTRY OF EDUCATION", 108, 19, { align: "center" });
+            
+            doc.setFontSize(8.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(203, 213, 225);
+            doc.text("EAST PROVINCE | NYAGATARE DISTRICT | KARAMA SECTOR", 108, 25, { align: "center" });
+
+            // Document Title
+            doc.setTextColor(15, 23, 42);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(13);
+            doc.text("GS GIKAGATI - OFFICIAL DAILY STAFF ATTENDANCE REPORT", 14, 40);
+
+            // 3. Metadata Box
+            doc.setDrawColor(203, 213, 225);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(14, 44, 182, 16, 1, 1, 'FD');
+
+            doc.setFontSize(8.5);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(51, 65, 85);
+            doc.text("Institution:", 18, 50);
+            doc.text("Date:", 120, 50);
+            doc.text("Generated:", 120, 56);
+
+            doc.setFont("helvetica", "normal");
+            doc.text("Groupes Scolaire Gikagati", 40, 50);
+            doc.text(todayString, 142, 50);
+            doc.text(generatedTime, 142, 56);
+            doc.text("System: GS Gikagati Master Control Portal", 18, 56);
+
+            // 4. Metrics Summary Blocks
+            const cardWidth = 43;
+            const cardHeight = 12;
+            const cardY = 64;
+            const startX = 14;
+            const gap = 3.3;
+
+            const metrics = [
+                { label: "Total Registered", val: totalStaffCount, color: [15, 23, 42] },
+                { label: "On Time", val: onTimeCount, color: [21, 128, 61] },
+                { label: "Late Arrivals", val: lateCount, color: [180, 83, 9] },
+                { label: "Absent / Pending", val: absentCount, color: [153, 27, 27] }
+            ];
+
+            metrics.forEach((m, idx) => {
+                const x = startX + idx * (cardWidth + gap);
+                doc.setFillColor(241, 245, 249);
+                doc.setDrawColor(203, 213, 225);
+                doc.roundedRect(x, cardY, cardWidth, cardHeight, 1, 1, 'FD');
+
+                doc.setFontSize(7.5);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(100, 116, 139);
+                doc.text(m.label.toUpperCase(), x + (cardWidth / 2), cardY + 4.5, { align: "center" });
+
+                doc.setFontSize(10);
+                doc.setTextColor(m.color[0], m.color[1], m.color[2]);
+                doc.text(String(m.val), x + (cardWidth / 2), cardY + 10, { align: "center" });
+            });
+
+            // 5. Build Staff Table Rows
+            let tableData = [];
+            cachedStaff.forEach((staff, index) => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || staff.staff_name || '-';
+                const record = todayMap[staff.sdms_id];
+                let statusText = "Pending / Absent";
+                
+                if (record) {
+                    if (record.status === 'check-out') {
+                        statusText = "Checked Out";
+                    } else if (record.status === 'check-in' && record.created_at) {
+                        const checkInDate = new Date(record.created_at);
+                        const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                        if (totalMinutes > (7 * 60 + 30)) {
+                            statusText = `Late (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                        } else {
+                            statusText = `On Time (${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                        }
+                    }
+                }
+
+                tableData.push([
+                    index + 1,
+                    staff.sdms_id || '-',
+                    fullName,
+                    staff.position_name || staff.position || '-',
+                    staff.system_role || staff.role || 'Staff',
+                    statusText
+                ]);
+            });
+
+            // 6. Generate AutoTable with Professional Styling & Footer Callbacks
+            doc.autoTable({
+                startY: 80,
+                head: [['#', 'SDMS ID', 'Staff Name', 'Position', 'Role', "Today's Status"]],
+                body: tableData,
+                theme: 'grid',
+                headStyles: { 
+                    fillColor: [15, 23, 42], 
+                    textColor: [255, 255, 255], 
+                    fontStyle: 'bold',
+                    fontSize: 8.5,
+                    cellPadding: 4
+                },
+                bodyStyles: { 
+                    fontSize: 8, 
+                    textColor: [51, 65, 85],
+                    cellPadding: 3.5
+                },
+                alternateRowStyles: { 
+                    fillColor: [248, 250, 252] 
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' },
+                    1: { cellWidth: 26 },
+                    2: { cellWidth: 46, fontStyle: 'bold' },
+                    3: { cellWidth: 46 },
+                    4: { cellWidth: 22 },
+                    5: { cellWidth: 32, halign: 'center' }
+                },
+                didDrawPage: function (data) {
+                    const pageCount = doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(148, 163, 184);
+                    doc.text(
+                        `GS Gikagati Official Administrative Record  |  Page ${data.pageNumber} of ${pageCount}`, 
+                        105, 
+                        290, 
+                        { align: "center" }
+                    );
+                },
+                margin: { top: 80, bottom: 25, left: 14, right: 14 }
+            });
+
+            // 7. Signature and Stamp Section
+            const finalY = doc.lastAutoTable.finalY + 10;
+            
+            // If table ends too low on the page, move signature section to a new page
+            if (finalY > 235) {
+                doc.addPage();
+            }
+
+            const sigY = finalY > 235 ? 20 : finalY;
+
+            doc.setDrawColor(203, 213, 225);
+            doc.line(14, sigY, 196, sigY);
+
+            doc.setFontSize(8.5);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(15, 23, 42);
+            doc.text("AUTHENTICATED DIGITAL RECORD & INSTITUTIONAL APPROVAL", 14, sigY + 6);
+
+            // Insert Stamp and Signature Image if loaded successfully
+            if (stampBase64) {
+                // Placing the stamp & signature image cleanly above the signer's name
+                doc.addImage(stampBase64, 'PNG', 14, sigY + 9, 45, 22);
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42);
+            doc.text("Ladislas UWITUZE", 14, sigY + 36);
+            
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(100, 116, 139);
+            doc.text("Head Teacher, GS Gikagati", 14, sigY + 41);
+
+            // Save the PDF file
+            doc.save(`GS_Gikagati_Attendance_${todayString}.pdf`);
+        });
+    });
+}   
+// Action: Official Report Transmission with Embedded Logo, Stamp & Signature Image, and QR Code
+function sendOfficialReport() {
+    const govEmail = prompt("Enter the official government destination email address:", "sector.karama@nyagatare.gov.rw");
+    
+    if (govEmail === null) return;
+
+    if (!govEmail.trim() || !govEmail.includes("@") || !govEmail.includes(".")) {
+        alert("Operation cancelled or invalid email format provided.");
+        return;
+    }
+
+    const todayString = new Date().toISOString().split('T')[0];
+    let presentCount = 0;
+    let lateCount = 0;
+
+    cachedStaff.forEach(staff => {
+        const record = cachedAttendances.find(r => r.date === todayString && r.sdms_id === staff.sdms_id && r.status === 'check-in');
+        if (record) {
+            presentCount++;
+            const checkInTime = new Date(record.created_at);
+            if ((checkInTime.getHours() * 60 + checkInTime.getMinutes()) > (7 * 60 + 30)) {
+                lateCount++;
+            }
+        }
+    });
+
+    const totalStaffCount = cachedStaff.length;
+    const onTimeCount = presentCount - lateCount;
+    const absentCount = totalStaffCount - presentCount;
+
+    const subject = `GS GIKAGATI OFFICIAL DAILY ATTENDANCE REPORT - (${todayString})`;
+    
+    // Direct raw URLs from your GitHub repository files
+    const logoUrl = "https://schoolsystemsangerw-dev.github.io/GS-GIKAGATI-ATTENDANCE/gikagati.png";
+    const stampAndSigUrl = "https://schoolsystemsangerw-dev.github.io/GS-GIKAGATI-ATTENDANCE/stamp%20gikagati.png";
+
+    // QR Code generation URL
+    const verificationText = encodeURIComponent(`GS GIKAGATI OFFICIAL REPORT\nDate: ${todayString}\nPresent: ${presentCount}/${totalStaffCount}\nAbsent: ${absentCount}\nHead Teacher: Ladislas Uwituze`);
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${verificationText}`;
+
+    // Professional HTML Layout incorporating Logo, Combined Stamp & Signature, and QR Code
+    const htmlBody = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+    <!-- Header Banner with Logo -->
+    <div style="background-color: #0f172a; color: #f8fafc; padding: 24px; text-align: center;">
+        <img src="${logoUrl}" alt="GS Gikagati Logo" style="width: 64px; height: 64px; object-fit: contain; margin-bottom: 8px; background: white; border-radius: 50%; padding: 4px;" />
+        <h1 style="margin: 0; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #fbbf24;">GS GIKAGATI</h1>
+        <p style="margin: 4px 0 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8;">Republic of Rwanda | Ministry of Education</p>
+    </div>
+
+    <!-- Title Bar -->
+    <div style="background-color: #1e293b; color: #ffffff; padding: 12px 24px; text-align: center; border-bottom: 3px solid #fbbf24;">
+        <h2 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">OFFICIAL DAILY ATTENDANCE REPORT</h2>
+    </div>
+
+    <!-- Metadata Section -->
+    <div style="padding: 20px 24px; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 4px 0;"><strong>Institution:</strong> GS Gikagati</td>
+                <td style="padding: 4px 0; text-align: right;"><strong>Date:</strong> ${todayString}</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding: 4px 0;"><strong>Administrative Location:</strong> East Province | Nyagatare District | Karama Sector</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Metrics Table -->
+    <div style="padding: 24px;">
+        <p style="font-size: 13px; color: #475569; margin-top: 0;">Please find below the certified daily staff attendance summary records for institutional review:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px;">
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #334155;">Total Registered Staff</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #0f172a;">${totalStaffCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #15803d;">Present On Time</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #15803d;">${onTimeCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px; color: #b45309;">Late Arrivals (> 07:30 AM)</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #b45309;">${lateCount}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e2e8f0; background-color: #f8fafc;">
+                <td style="padding: 10px; color: #0f172a; font-weight: bold;">Total Present</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #0f172a;">${presentCount}</td>
+            </tr>
+            <tr style="border-bottom: 2px solid #cbd5e1; background-color: #fef2f2;">
+                <td style="padding: 10px; color: #991b1b; font-weight: bold;">Total Absent / Pending Staff</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: #991b1b;">${absentCount}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Digital Signature, Combined Stamp & Signature, and QR Verification Block -->
+    <div style="padding: 20px 24px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #475569;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="vertical-align: top; width: 55%;">
+                    <p style="margin: 0; font-weight: bold; color: #0f172a;">AUTHENTICATED DIGITAL RECORD</p>
+                    <p style="margin: 2px 0 10px 0; color: #64748b;">Generated securely via GS Gikagati Master Control Portal</p>
+                    
+                    <!-- Combined Stamp & Signature Image -->
+                    <div style="margin-bottom: 4px;">
+                        <img src="${stampAndSigUrl}" alt="Official Stamp & Signature" style="max-height: 90px; object-fit: contain;" />
+                    </div>
+                    <p style="margin: 0; font-weight: bold; color: #0f172a;">Ladislas Uwituze</p>
+                    <p style="margin: 2px 0 0 0; color: #64748b;">Head Teacher, GS Gikagati</p>
+                </td>
+                <td style="vertical-align: top; text-align: right; width: 45%;">
+                    <!-- QR Verification Code -->
+                    <img src="${qrCodeUrl}" alt="Official Verification QR Code" style="width: 85px; height: 85px; border: 1px solid #cbd5e1; padding: 4px; background: #ffffff; border-radius: 4px;" />
+                    <p style="margin: 4px 0 0 0; font-size: 9px; color: #64748b; text-transform: uppercase;">Scan to Verify</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Footer Note -->
+    <div style="background-color: #0f172a; color: #94a3b8; padding: 10px 24px; text-align: center; font-size: 10px;">
+        This is an official automated transmission. No signature required if transmitted through verified school administrative tools.
+    </div>
+</div>
+    `;
+
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(govEmail.trim())}&su=${encodeURIComponent(subject)}`;
+    const newWindow = window.open(gmailUrl, '_blank');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        const clipboardItem = new ClipboardItem({
+            "text/html": new Blob([htmlBody], { type: "text/html" }),
+            "text/plain": new Blob([htmlBody.replace(/<[^>]*>?/gm, '')], { type: "text/plain" })
+        });
+        navigator.clipboard.write([clipboardItem]).then(() => {
+            alert("Official report generated! The layout featuring your school logo, combined signature & stamp document, and QR code has been copied to your clipboard. Just press Ctrl+V inside your Gmail compose window to paste it.");
+        }).catch(err => {
+            console.error("Clipboard write failed", err);
+        });
+    }
+}
+// Leave Permit Modal Controls & PDF Generator with Full-Content QR Code
+        function openLeavePermitModal() {
+            const selectElem = document.getElementById('leaveStaffSelect');
+            selectElem.innerHTML = '<option value="">-- Choose Staff Member --</option>';
+            
+            cachedStaff.forEach(staff => {
+                const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || 'Unknown';
+                const opt = document.createElement('option');
+                opt.value = staff.sdms_id;
+                opt.textContent = `${fullName} (SDMS: ${staff.sdms_id})`;
+                selectElem.appendChild(opt);
+            });
+
+            document.getElementById('leaveStartDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('leaveEndDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('leaveReason').value = '';
+
+            document.getElementById('leaveModal').classList.remove('hidden');
+        }
+
+        function closeLeavePermitModal() {
+            document.getElementById('leaveModal').classList.add('hidden');
+        }
+
+      async function generateLeavePermitPDFDirect() {
+            const staffId = document.getElementById('leaveStaffSelect').value;
+            const startDate = document.getElementById('leaveStartDate').value;
+            const endDate = document.getElementById('leaveEndDate').value;
+            const reason = document.getElementById('leaveReason').value.trim();
+
+            if (!staffId) {
+                alert("Please select a staff member for the leave permit.");
+                return;
+            }
+            if (!startDate || !endDate) {
+                alert("Please specify both start and end dates.");
+                return;
+            }
+            if (!reason) {
+                alert("Please provide a reason or permit type.");
+                return;
+            }
+// Save the permit directly to Supabase leave_requests table
+            try {
+                const { error: insertError } = await supabaseClient
+                    .from('leave_requests')
+                    .insert([
+                        {
+                            sdms_id: staffId,
+                            start_date: startDate,
+                            end_date: endDate,
+                            reason: reason,
+                            status: 'approved'
+                        }
+                    ]);
+
+                if (insertError) {
+                    console.error("Error saving permit to database:", insertError);
+                    alert("Warning: PDF will generate, but database save failed: " + insertError.message);
+                }
+            } catch (dbErr) {
+                console.error("Database exception:", dbErr);
+            }
+            const staffObj = cachedStaff.find(s => s.sdms_id === staffId);
+            const staffName = staffObj ? `${staffObj.first_name || ''} ${staffObj.last_name || ''}`.trim() : 'Staff Member';
+            const staffPosition = staffObj ? (staffObj.position_name || 'Staff') : 'Staff';
+
+            // Create temporary container for QR code generation
+            const qrContainer = document.createElement('div');
+            qrContainer.style.display = 'none';
+            document.body.appendChild(qrContainer);
+
+            // Encode all certificate information into the QR code text payload
+            const verificationData = 
+                `=== GS GIKAGATI OFFICIAL LEAVE PERMIT ===\n` +
+                `Republic of Rwanda | East Province | Nyagatare District | Karama Sector\n` +
+                `CERTIFICATE OF AUTHORIZED LEAVE\n` +
+                `Staff Name: ${staffName}\n` +
+                `SDMS ID: ${staffId}\n` +
+                `Position / Title: ${staffPosition}\n` +
+                `Period of Leave: From ${startDate} To ${endDate}\n` +
+                `Reason / Permit Category: ${reason}\n` +
+                `Date of Issuance: ${new Date().toLocaleDateString()}\n` +
+                `Authorization: Approved & Signed by Ladislas UWITUZE (Head Teacher, GS Gikagati, Phone: 0788754668)\n` +
+                `Status: OFFICIAL & VERIFIED`;
+
+            new QRCode(qrContainer, {
+                text: verificationData,
+                width: 150,
+                height: 150,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+
+            setTimeout(() => {
+                const qrCanvas = qrContainer.querySelector('canvas');
+                const qrDataUrl = qrCanvas ? qrCanvas.toDataURL('image/png') : null;
+                document.body.removeChild(qrContainer);
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Load both logo and stamp securely
+                const logoImg = new Image();
+                logoImg.src = 'gikagati.png';
+
+                logoImg.onload = function() {
+                    const stampImg = new Image();
+                    stampImg.src = 'stamp gikagati.png';
+
+                    stampImg.onload = function() {
+                        buildPDFWithImages(logoImg, stampImg, qrDataUrl);
+                    };
+                    stampImg.onerror = function() {
+                        buildPDFWithImages(logoImg, null, qrDataUrl);
+                    };
+                };
+                logoImg.onerror = function() {
+                    buildPDFWithImages(null, null, qrDataUrl);
+                };
+
+                function buildPDFWithImages(logo, stamp, qrCode) {
+                    // Outer decorative border
+                    doc.setDrawColor(15, 23, 42);
+                    doc.setLineWidth(0.8);
+                    doc.rect(8, 8, 194, 281);
+
+                    doc.setDrawColor(203, 213, 225);
+                    doc.setLineWidth(0.3);
+                    doc.rect(11, 11, 188, 275);
+
+                    // Header Banner Background
+                    doc.setFillColor(15, 23, 42);
+                    doc.rect(12, 12, 186, 32, 'F');
+                    
+                    // Add School Logo if loaded
+                    if (logo) {
+                        try {
+                            doc.addImage(logo, 'PNG', 16, 15, 26, 26);
+                        } catch (e) {
+                            console.error("Logo error:", e);
+                        }
+                    }
+
+                    // Header Text
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(14);
+                    doc.text("GS GIKAGATI - OFFICIAL LEAVE PERMIT", logo ? 46 : 18, 22);
+                    
+                    doc.setFontSize(8.5);
+                    doc.setFont("helvetica", "normal");
+                    doc.text("Republic of Rwanda | East Province | Nyagatare District | Karama Sector", logo ? 46 : 18, 30);
+
+                    // Document Body Container Box
+                    doc.setDrawColor(226, 232, 240);
+                    doc.setFillColor(248, 250, 252);
+                    doc.roundedRect(16, 50, 178, 120, 2, 2, 'FD');
+
+                    doc.setTextColor(15, 23, 42);
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("CERTIFICATE OF AUTHORIZED LEAVE", 22, 62);
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+                    let y = 74;
+                    
+                    const details = [
+                        `Staff Name: ${staffName}`,
+                        `SDMS ID: ${staffId}`,
+                        `Position / Title: ${staffPosition}`,
+                        `Period of Leave: From ${startDate} To ${endDate}`,
+                        `Reason / Permit Category: ${reason}`,
+                        `Date of Issuance: ${new Date().toLocaleDateString()}`
+                    ];
+
+                    details.forEach(line => {
+                        doc.text(line, 22, y);
+                        y += 9.5;
+                    });
+
+                    // Divider line inside box
+                    doc.setDrawColor(203, 213, 225);
+                    doc.line(22, y + 2, 188, y + 2);
+
+                    // Authorization Section
+                    y += 14;
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(10);
+                    doc.text("AUTHORIZATION & APPROVAL:", 16, y);
+                    
+                    y += 6;
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(9.5);
+                    doc.text("This official leave permit has been duly granted and authorized by the Head Teacher.", 16, y);
+
+                    // Head Teacher Details & Stamp Position
+                    y += 18;
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Ladislas UWITUZE", 16, y);
+                    y += 5;
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(9);
+                    doc.text("Head Teacher, GS Gikagati", 16, y);
+                    doc.text("Phone: 0788754668", 16, y + 5);
+
+                    // Add Full-Content QR Code on the left-bottom authorization section
+                    if (qrCode) {
+                        try {
+                            doc.addImage(qrCode, 'PNG', 16, y + 10, 28, 28);
+                            doc.setFontSize(7.5);
+                            doc.setTextColor(100, 116, 139);
+                            doc.text("Scan to View Content", 17, y + 40);
+                        } catch (e) {
+                            console.error("QR Code error:", e);
+                        }
+                    }
+
+                    // Add Combined Stamp & Signature Image if loaded
+                    if (stamp) {
+                        try {
+                            doc.addImage(stamp, 'PNG', 115, y - 5, 72, 36);
+                        } catch (e) {
+                            console.error("Stamp error:", e);
+                        }
+                    }
+
+                    // Footer Note
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 116, 139);
+                    doc.text("This document is generated automatically by GS Gikagati Staff Attendance & Management System.", 105, 278, { align: 'center' });
+
+                    doc.save(`GS_Gikagati_Leave_Permit_${staffId}.pdf`);
+                    closeLeavePermitModal();
+                }
+            }, 100);
+        }
+
+        window.onload = function() {
+           loadDashboardData();
+};
+
+// --- SCHOOL CALENDAR & HOLIDAYS MODAL LOGIC ---
+function openCalendarModal() {
+    const modal = document.getElementById('calendarModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+
+function closeCalendarModal() {
+    const modal = document.getElementById('calendarModal');
+    if (modal) {
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+}
+</script>
     </script>
+    <!-- School Calendar & Holidays Modal -->
+<div id="calendarModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
+        <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+                    <span class="text-base">📅</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm tracking-wide text-slate-100">GS Gikagati Official School Calendar</h3>
+                    <p class="text-[10px] text-slate-400">NESA Academic Year 2026 / 2027</p>
+                </div>
+            </div>
+            <button onclick="closeCalendarModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center font-bold transition-colors">&times;</button>
+        </div>
+        
+        <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto text-xs text-slate-700">
+            <!-- Term Schedule Table -->
+            <div class="space-y-2.5">
+                <p class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Academic Terms (2026/2027)</p>
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white text-[11px]">
+                                <th class="p-2.5 font-semibold">Term</th>
+                                <th class="p-2.5 font-semibold">Start</th>
+                                <th class="p-2.5 font-semibold">End</th>
+                                <th class="p-2.5 font-semibold">Duration</th>
+                                <th class="p-2.5 font-semibold">Holidays</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-slate-50/50">
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-2.5 font-bold text-slate-800">Term I</td>
+                                <td class="p-2.5 text-slate-600">Mon 07 Sept 2026</td>
+                                <td class="p-2.5 text-slate-600">Fri 18 Dec 2026</td>
+                                <td class="p-2.5 text-slate-600">15 weeks</td>
+                                <td class="p-2.5 text-slate-600">2 Weeks</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-2.5 font-bold text-slate-800">Term II</td>
+                                <td class="p-2.5 text-slate-600">Mon 4 Jan 2027</td>
+                                <td class="p-2.5 text-slate-600">Fri 2 Apr 2027</td>
+                                <td class="p-2.5 text-slate-600">13 weeks</td>
+                                <td class="p-2.5 text-slate-600">2 Weeks</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-2.5 font-bold text-slate-800">Term III</td>
+                                <td class="p-2.5 text-slate-600">Mon 19 Apr 2027</td>
+                                <td class="p-2.5 text-slate-600">Fri 2 Jul 2027</td>
+                                <td class="p-2.5 text-slate-600">11 weeks</td>
+                                <td class="p-2.5 text-slate-600">2 Months</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Examination Schedule Table -->
+            <div class="space-y-2.5 pt-2">
+                <p class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">National Examination Schedule</p>
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-indigo-950 text-white text-[11px]">
+                                <th class="p-2.5 font-semibold">Examination</th>
+                                <th class="p-2.5 font-semibold">Start</th>
+                                <th class="p-2.5 font-semibold">End</th>
+                                <th class="p-2.5 font-semibold">Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-slate-50/50">
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-2.5 font-bold text-slate-800">Practical Examinations <span class="block text-[10px] text-slate-500 font-normal">(PBA, TSS, TTC, ACC & ANP)</span></td>
+                                <td class="p-2.5 text-slate-600">31 May 2027</td>
+                                <td class="p-2.5 text-slate-600">18 Jun 2027</td>
+                                <td class="p-2.5 text-slate-600">3 weeks</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-2.5 font-bold text-slate-800">Primary Leaving Examinations</td>
+                                <td class="p-2.5 text-slate-600">6 Jul 2027</td>
+                                <td class="p-2.5 text-slate-600">8 Jul 2027</td>
+                                <td class="p-2.5 text-slate-600">3 Days</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-2.5 font-bold text-slate-800">Secondary National Examinations (Written)</td>
+                                <td class="p-2.5 text-slate-600">14 Jul 2027</td>
+                                <td class="p-2.5 text-slate-600">23 Jul 2027</td>
+                                <td class="p-2.5 text-slate-600">10 Days</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-100 flex justify-between items-center">
+            <span class="text-[10px] text-slate-400 font-medium">Source: Ministry of Education & NESA Rwanda</span>
+            <button onclick="closeCalendarModal()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-sm transition-colors">Close Calendar</button>
+        </div>
+    </div>
+    // --- TEACHERS ON LEAVE HUB & REMAINING DAYS LOGIC ---
+    <script>
+async function filterStaffByStatus(statusType) {
+    const tableBody = document.getElementById('masterTableBody');
+    const tableTitle = document.getElementById('tableTitle');
+    const tableSubtitle = document.getElementById('tableSubtitle');
+    const tableHeaderRow = document.getElementById('tableHeaderRow');
+    
+    tableTitle.textContent = "Teachers on Leave & Status Tracking";
+    tableSubtitle.textContent = "Fetching approved leave records and staff details...";
+    tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Loading records...</td></tr>`;
+
+    if (tableHeaderRow) {
+        tableHeaderRow.innerHTML = `
+            <th class="py-3 px-4">SDMS ID</th>
+            <th class="py-3 px-4">Staff Name</th>
+            <th class="py-3 px-4">Reason</th>
+            <th class="py-3 px-4">Start Date</th>
+            <th class="py-3 px-4">End Date</th>
+            <th class="py-3 px-4">Leave Status / Countdown</th>
+        `;
+    }
+
+    try {
+        const [leaveRes, staffRes] = await Promise.all([
+            supabaseClient.from('leave_requests').select('*').eq('status', 'approved'),
+            supabaseClient.from('staffs').select('*')
+        ]);
+
+        if (leaveRes.error) throw leaveRes.error;
+        if (staffRes.error) throw staffRes.error;
+
+        const leaveData = leaveRes.data;
+        const staffList = staffRes.data || [];
+
+        if (!leaveData || leaveData.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No approved leave records found in the database.</td></tr>`;
+            tableSubtitle.textContent = "Detailed breakdown of leave reasons, durations, and expiration monitoring";
+            return;
+        }
+
+        tableBody.innerHTML = '';
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let countFound = 0;
+
+        leaveData.forEach(leave => {
+            // Find staff matching the SDMS ID
+            const staff = staffList.find(s => String(s.sdms_id).trim() === String(leave.sdms_id).trim()) || {};
+            
+            // Combine first_name and last_name from your staffs table structure
+            const firstName = staff.first_name || '';
+            const lastName = staff.last_name || '';
+            const staffName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : 'Unknown Staff';
+            
+            const startDateStr = leave.start_date || leave.leave_date || '-';
+            const endDateStr = leave.end_date || startDateStr; 
+            const reason = leave.reason || 'Not specified';
+
+            let statusBadge = '';
+            if (endDateStr !== '-') {
+                const endDate = new Date(endDateStr);
+                endDate.setHours(0, 0, 0, 0);
+                const diffTime = endDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays > 0) {
+                    statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-[10px] font-bold">Active (${diffDays} day${diffDays > 1 ? 's' : ''} left)</span>`;
+                } else if (diffDays === 0) {
+                    statusBadge = `<span class="px-2.5 py-1 bg-orange-100 text-orange-800 rounded-full text-[10px] font-bold">Ends Today</span>`;
+                } else {
+                    const absDays = Math.abs(diffDays);
+                    statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-[10px] font-bold">Expired ${absDays}d ago (Counted as Absent)</span>`;
+                }
+            } else {
+                statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold">Active Leave</span>`;
+            }
+
+            countFound++;
+
+            tableBody.innerHTML += `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-3 px-4 font-mono font-bold text-slate-700">${leave.sdms_id || '-'}</td>
+                    <td class="py-3 px-4 font-bold text-slate-900">${staffName}</td>
+                    <td class="py-3 px-4 text-slate-600">${reason}</td>
+                    <td class="py-3 px-4 text-slate-600">${startDateStr}</td>
+                    <td class="py-3 px-4 text-slate-600">${endDateStr}</td>
+                    <td class="py-3 px-4">${statusBadge}</td>
+                </tr>
+            `;
+        });
+
+        tableSubtitle.textContent = `Showing ${countFound} approved leave record(s) synced from database`;
+
+    } catch (err) {
+        console.error('Error fetching leave records:', err);
+        tableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500 font-medium">Error loading leave records: ${err.message}</td></tr>`;
+    }
+}
+</script>
+</div>
 </body>
 </html>
